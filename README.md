@@ -27,14 +27,12 @@ sin configuración adicional:
 1. En Railway: **New Project → Deploy from GitHub repo**, elige este repositorio y la
    rama `claude/poultry-quality-inspection-chbub6`.
 2. Railway detecta Next.js automáticamente (Nixpacks) y corre `npm install` (que ejecuta
-   `prisma generate` vía `postinstall`) y luego `npm run build` + `npm start`.
+   `prisma generate` vía `postinstall`), luego `npm run build`, y al iniciar `npm start`
+   aplica las migraciones y carga los datos de catálogo + usuarios de prueba
+   automáticamente (no requiere pasos manuales).
 3. Variables de entorno: agrega `DATABASE_URL=file:./dev.db` (opcional, es el valor por
    defecto).
-4. Tras el primer deploy, abre la pestaña **Shell** del servicio en Railway y corre:
-   ```bash
-   npm run db:setup
-   ```
-   Esto crea las tablas y carga los datos de catálogo + usuarios de prueba.
+4. En **Settings → Networking**, genera un dominio público (botón "Generate Domain").
 5. Abre la URL pública que Railway asigna al servicio.
 
 Para producción real con uso continuo, agrega un **Volume** montado en el directorio del
