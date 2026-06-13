@@ -123,6 +123,8 @@ model Foto {
 
   path        String
   descripcion String?
+  latitud     Float?
+  longitud    Float?
 
   createdAt DateTime @default(now())
 }

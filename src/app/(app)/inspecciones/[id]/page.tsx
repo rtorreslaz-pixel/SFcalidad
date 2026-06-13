@@ -115,16 +115,28 @@ export default async function InspeccionDetallePage({
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
             {insp.fotos.map((foto) => (
-              <a key={foto.id} href={foto.path} target="_blank" rel="noreferrer" className="block">
-                <Image
-                  src={foto.path}
-                  alt="Foto de inspección"
-                  width={200}
-                  height={200}
-                  className="aspect-square w-full rounded-md object-cover ring-1 ring-slate-200"
-                  unoptimized
-                />
-              </a>
+              <div key={foto.id}>
+                <a href={foto.path} target="_blank" rel="noreferrer" className="block">
+                  <Image
+                    src={foto.path}
+                    alt="Foto de inspección"
+                    width={200}
+                    height={200}
+                    className="aspect-square w-full rounded-md object-cover ring-1 ring-slate-200"
+                    unoptimized
+                  />
+                </a>
+                {foto.latitud != null && foto.longitud != null && (
+                  <a
+                    href={`https://www.google.com/maps?q=${foto.latitud},${foto.longitud}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-1 block text-center text-xs text-emerald-700 hover:underline"
+                  >
+                    📍 Ver ubicación
+                  </a>
+                )}
+              </div>
             ))}
           </div>
         )}

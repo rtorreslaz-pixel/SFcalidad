@@ -80,6 +80,9 @@ export async function createInspectionAction(
     },
   });
 
+  const fotoLat = formData.get("fotoLat") ? Number(formData.get("fotoLat")) : null;
+  const fotoLng = formData.get("fotoLng") ? Number(formData.get("fotoLng")) : null;
+
   const fotos = formData.getAll("fotos").filter((f): f is File => f instanceof File && f.size > 0);
   const fotosToCreate: { path: string }[] = [];
   for (const foto of fotos.slice(0, 5)) {
@@ -89,7 +92,12 @@ export async function createInspectionAction(
 
   if (fotosToCreate.length > 0) {
     await prisma.foto.createMany({
-      data: fotosToCreate.map((f) => ({ inspeccionId: inspeccion.id, path: f.path })),
+      data: fotosToCreate.map((f) => ({
+        inspeccionId: inspeccion.id,
+        path: f.path,
+        latitud: fotoLat,
+        longitud: fotoLng,
+      })),
     });
   }
 

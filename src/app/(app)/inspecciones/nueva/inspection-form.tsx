@@ -87,6 +87,9 @@ export default function InspectionForm({
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galeriaInputRef = useRef<HTMLInputElement>(null);
 
+  const [ubicacion, setUbicacion] = useState<{ lat: number; lng: number } | null>(null);
+  const [ubicacionError, setUbicacionError] = useState<string | null>(null);
+
   const previews = useMemo(() => fotos.map((f) => URL.createObjectURL(f)), [fotos]);
   useEffect(() => {
     return () => previews.forEach((url) => URL.revokeObjectURL(url));
@@ -99,9 +102,25 @@ export default function InspectionForm({
     fotosInputRef.current.files = dataTransfer.files;
   }, [fotos]);
 
+  function capturarUbicacion() {
+    if (!("geolocation" in navigator)) {
+      setUbicacionError("Este dispositivo no permite obtener la ubicación.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUbicacion({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setUbicacionError(null);
+      },
+      () => setUbicacionError("No se pudo obtener la ubicación. Revisa los permisos del navegador."),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
   function addFotos(files: FileList | null) {
     if (!files || files.length === 0) return;
     setFotos((prev) => [...prev, ...Array.from(files)].slice(0, MAX_FOTOS));
+    if (!ubicacion && !ubicacionError) capturarUbicacion();
   }
 
   function removeFoto(index: number) {
@@ -344,6 +363,8 @@ export default function InspectionForm({
 
         {/* Hidden input actually submitted with the form */}
         <input ref={fotosInputRef} type="file" name="fotos" multiple className="hidden" />
+        <input type="hidden" name="fotoLat" value={ubicacion?.lat ?? ""} />
+        <input type="hidden" name="fotoLng" value={ubicacion?.lng ?? ""} />
 
         {/* Camera capture: one photo per tap, can be tapped repeatedly. Remounted
             after each capture (via key) so the next tap starts from a fresh input. */}
@@ -391,7 +412,23 @@ export default function InspectionForm({
           >
             🖼️ Elegir de galería
           </button>
+          <button
+            type="button"
+            onClick={capturarUbicacion}
+            className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+          >
+            📍 {ubicacion ? "Actualizar ubicación" : "Capturar ubicación"}
+          </button>
         </div>
+
+        {ubicacion && (
+          <p className="mb-3 text-xs text-slate-500">
+            📍 Ubicación capturada: {ubicacion.lat.toFixed(5)}, {ubicacion.lng.toFixed(5)}
+          </p>
+        )}
+        {ubicacionError && (
+          <p className="mb-3 text-xs text-amber-600">{ubicacionError}</p>
+        )}
 
         {fotos.length > 0 && (
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
