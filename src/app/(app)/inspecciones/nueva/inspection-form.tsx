@@ -108,10 +108,19 @@ export default function InspectionForm({
     setFotos((prev) => prev.filter((_, i) => i !== index));
   }
 
-  const planteles = useMemo(
-    () => clientes.find((c) => c.id === clienteId)?.planteles ?? [],
-    [clientes, clienteId]
+  const allPlanteles = useMemo(
+    () =>
+      clientes.flatMap((c) =>
+        c.planteles.map((p) => ({ ...p, clienteId: c.id, clienteNombre: c.nombre }))
+      ),
+    [clientes]
   );
+
+  const plantelLabel = (p: { codigo: string; subZona: string | null; clienteNombre: string }) =>
+    `${p.codigo}${p.subZona ? ` · ${p.subZona}` : ""} — ${p.clienteNombre}`;
+
+  const [plantelId, setPlantelId] = useState("");
+  const [plantelQuery, setPlantelQuery] = useState("");
 
   const categorias = useMemo(() => {
     const grupos = new Map<string, TipoDefecto[]>();
@@ -157,29 +166,53 @@ export default function InspectionForm({
             />
           </Field>
 
+          <Field label="Plantel">
+            <input
+              type="text"
+              list="planteles-list"
+              className="input"
+              placeholder="Busca por código, zona o cliente..."
+              value={plantelQuery}
+              onChange={(e) => {
+                const query = e.target.value;
+                setPlantelQuery(query);
+                const match = allPlanteles.find((p) => plantelLabel(p) === query);
+                if (match) {
+                  setPlantelId(match.id);
+                  setClienteId(match.clienteId);
+                } else {
+                  setPlantelId("");
+                }
+              }}
+            />
+            <datalist id="planteles-list">
+              {allPlanteles.map((p) => (
+                <option key={p.id} value={plantelLabel(p)} />
+              ))}
+            </datalist>
+            <input type="hidden" name="plantelId" value={plantelId} />
+          </Field>
+
           <Field label="Cliente" required>
             <select
               name="clienteId"
               required
               value={clienteId}
-              onChange={(e) => setClienteId(e.target.value)}
+              onChange={(e) => {
+                const newClienteId = e.target.value;
+                setClienteId(newClienteId);
+                const plantelActual = allPlanteles.find((p) => p.id === plantelId);
+                if (plantelActual && plantelActual.clienteId !== newClienteId) {
+                  setPlantelId("");
+                  setPlantelQuery("");
+                }
+              }}
               className="input"
             >
               <option value="">Selecciona...</option>
               {clientes.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.nombre}
-                </option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Plantel">
-            <select name="plantelId" className="input" disabled={!clienteId}>
-              <option value="">Selecciona...</option>
-              {planteles.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.codigo} {p.subZona ? `· ${p.subZona}` : ""}
                 </option>
               ))}
             </select>

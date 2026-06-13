@@ -26,12 +26,16 @@ await page.goto("http://localhost:3000/inspecciones/nueva");
 await page.waitForSelector('select[name="clienteId"]');
 await shot("03-nueva-inspeccion");
 
-// Fill the form
-await page.selectOption('select[name="clienteId"]', { label: "AKIM" });
+// Fill the form - pick a plantel from the autocomplete (auto-fills cliente)
+const plantelLabels = await page.locator('#planteles-list option').evaluateAll((opts) =>
+  opts.map((o) => o.getAttribute("value"))
+);
+console.log("plantel options:", plantelLabels.length);
+const plantelLabel = plantelLabels.find((v) => v && v.includes("AKIM"));
+await page.fill('input[list="planteles-list"]', plantelLabel);
 await page.waitForTimeout(300);
-const plantelOptions = await page.locator('select[name="plantelId"] option').count();
-console.log("plantel options:", plantelOptions);
-await page.selectOption('select[name="plantelId"]', { index: 1 });
+const clienteValue = await page.locator('select[name="clienteId"]').inputValue();
+console.log("cliente auto-seleccionado:", clienteValue);
 await page.fill('input[name="galpon"]', "11A");
 await page.selectOption('select[name="sexo"]', "MACHO");
 await page.fill('input[name="cantidad"]', "1800");
