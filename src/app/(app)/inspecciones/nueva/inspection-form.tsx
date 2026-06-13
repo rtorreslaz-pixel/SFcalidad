@@ -177,12 +177,7 @@ export default function InspectionForm({
                 const query = e.target.value;
                 setPlantelQuery(query);
                 const match = allPlanteles.find((p) => plantelLabel(p) === query);
-                if (match) {
-                  setPlantelId(match.id);
-                  setClienteId(match.clienteId);
-                } else {
-                  setPlantelId("");
-                }
+                setPlantelId(match ? match.id : "");
               }}
             />
             <datalist id="planteles-list">
@@ -198,15 +193,7 @@ export default function InspectionForm({
               name="clienteId"
               required
               value={clienteId}
-              onChange={(e) => {
-                const newClienteId = e.target.value;
-                setClienteId(newClienteId);
-                const plantelActual = allPlanteles.find((p) => p.id === plantelId);
-                if (plantelActual && plantelActual.clienteId !== newClienteId) {
-                  setPlantelId("");
-                  setPlantelQuery("");
-                }
-              }}
+              onChange={(e) => setClienteId(e.target.value)}
               className="input"
             >
               <option value="">Selecciona...</option>
