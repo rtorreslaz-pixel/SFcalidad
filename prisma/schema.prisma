@@ -1,0 +1,128 @@
+// Prisma schema - App de Inspección de Calidad Avícola
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  VERIFICADOR
+  SUPERVISOR
+}
+
+enum Sexo {
+  MACHO
+  HEMBRA
+  MIXTO
+}
+
+model User {
+  id           String   @id @default(cuid())
+  nombre       String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(VERIFICADOR)
+  activo       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  inspecciones Inspeccion[]
+}
+
+model Cliente {
+  id     String @id @default(cuid())
+  nombre String @unique
+
+  planteles    Plantel[]
+  inspecciones Inspeccion[]
+}
+
+model Plantel {
+  id             String  @id @default(cuid())
+  codigo         String  @unique
+  nombre         String?
+  zona           String?
+  subZona        String?
+  tipoPlantel    String?
+  zonaEvaluacion String?
+
+  clienteId String
+  cliente   Cliente @relation(fields: [clienteId], references: [id])
+
+  inspecciones Inspeccion[]
+}
+
+model TipoDefecto {
+  id        String @id @default(cuid())
+  nombre    String @unique
+  categoria String?
+  orden     Int    @default(0)
+
+  registros DefectoRegistro[]
+}
+
+model Inspeccion {
+  id       String   @id @default(cuid())
+  fecha    DateTime
+  anio     Int
+  mes      Int
+  semana   Int
+
+  campania String?
+  nroGuia  String?
+
+  clienteId String
+  cliente   Cliente @relation(fields: [clienteId], references: [id])
+
+  plantelId String?
+  plantel   Plantel? @relation(fields: [plantelId], references: [id])
+
+  galpon String?
+  sexo   Sexo?
+
+  cantidad      Int
+  pesoVivo      Float?
+  pesoBeneficio Float?
+  metaPorcentaje Float @default(0.6)
+
+  observaciones String?
+
+  verificadorId String
+  verificador   User   @relation(fields: [verificadorId], references: [id])
+
+  defectos DefectoRegistro[]
+  fotos    Foto[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DefectoRegistro {
+  id String @id @default(cuid())
+
+  inspeccionId String
+  inspeccion   Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+
+  tipoDefectoId String
+  tipoDefecto   TipoDefecto @relation(fields: [tipoDefectoId], references: [id])
+
+  unidades Int   @default(0)
+  kg       Float @default(0)
+
+  @@unique([inspeccionId, tipoDefectoId])
+}
+
+model Foto {
+  id String @id @default(cuid())
+
+  inspeccionId String
+  inspeccion   Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+
+  path        String
+  descripcion String?
+
+  createdAt DateTime @default(now())
+}
