@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useActionState } from "react";
 import { createInspectionAction } from "../inspecciones-actions";
 import { calcularPorcentajeSeleccion, META_SELECCION_DEFAULT } from "@/lib/calc";
@@ -78,6 +78,35 @@ export default function InspectionForm({
   const [cantidad, setCantidad] = useState<number>(0);
   const [meta, setMeta] = useState<number>(META_SELECCION_DEFAULT);
   const [defectos, setDefectos] = useState<Record<string, { unidades: number; kg: number }>>({});
+
+  const MAX_FOTOS = 5;
+  const [fotos, setFotos] = useState<File[]>([]);
+  const [cameraKey, setCameraKey] = useState(0);
+  const [galeriaKey, setGaleriaKey] = useState(0);
+  const fotosInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galeriaInputRef = useRef<HTMLInputElement>(null);
+
+  const previews = useMemo(() => fotos.map((f) => URL.createObjectURL(f)), [fotos]);
+  useEffect(() => {
+    return () => previews.forEach((url) => URL.revokeObjectURL(url));
+  }, [previews]);
+
+  useEffect(() => {
+    if (!fotosInputRef.current) return;
+    const dataTransfer = new DataTransfer();
+    fotos.forEach((file) => dataTransfer.items.add(file));
+    fotosInputRef.current.files = dataTransfer.files;
+  }, [fotos]);
+
+  function addFotos(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setFotos((prev) => [...prev, ...Array.from(files)].slice(0, MAX_FOTOS));
+  }
+
+  function removeFoto(index: number) {
+    setFotos((prev) => prev.filter((_, i) => i !== index));
+  }
 
   const planteles = useMemo(
     () => clientes.find((c) => c.id === clienteId)?.planteles ?? [],
@@ -289,15 +318,79 @@ export default function InspectionForm({
       {/* Fotos */}
       <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-6">
         <h2 className="mb-2 font-semibold text-slate-900">Fotos referenciales</h2>
-        <p className="mb-3 text-sm text-slate-500">Hasta 5 fotos de los hallazgos encontrados.</p>
+        <p className="mb-3 text-sm text-slate-500">
+          Hasta {MAX_FOTOS} fotos de los hallazgos encontrados ({fotos.length}/{MAX_FOTOS}).
+        </p>
+
+        {/* Hidden input actually submitted with the form */}
+        <input ref={fotosInputRef} type="file" name="fotos" multiple className="hidden" />
+
+        {/* Camera capture: one photo per tap, can be tapped repeatedly. Remounted
+            after each capture (via key) so the next tap starts from a fresh input. */}
         <input
+          key={`camera-${cameraKey}`}
+          ref={cameraInputRef}
           type="file"
-          name="fotos"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => {
+            addFotos(e.target.files);
+            setCameraKey((k) => k + 1);
+          }}
+        />
+
+        {/* Gallery picker: supports selecting multiple files at once */}
+        <input
+          key={`galeria-${galeriaKey}`}
+          ref={galeriaInputRef}
+          type="file"
           accept="image/*"
           multiple
-          capture="environment"
-          className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-emerald-700 hover:file:bg-emerald-100"
+          className="hidden"
+          onChange={(e) => {
+            addFotos(e.target.files);
+            setGaleriaKey((k) => k + 1);
+          }}
         />
+
+        <div className="mb-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => cameraInputRef.current?.click()}
+            disabled={fotos.length >= MAX_FOTOS}
+            className="rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            📷 Tomar foto
+          </button>
+          <button
+            type="button"
+            onClick={() => galeriaInputRef.current?.click()}
+            disabled={fotos.length >= MAX_FOTOS}
+            className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            🖼️ Elegir de galería
+          </button>
+        </div>
+
+        {fotos.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+            {previews.map((url, i) => (
+              <div key={i} className="group relative aspect-square overflow-hidden rounded-md ring-1 ring-slate-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt={`Foto ${i + 1}`} className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeFoto(i)}
+                  aria-label="Quitar foto"
+                  className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-xs font-bold text-white hover:bg-black/80"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Observaciones */}

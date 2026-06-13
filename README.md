@@ -36,4 +36,4 @@ sin configuración adicional:
 5. Abre la URL pública que Railway asigna al servicio.
 
 Para producción real con uso continuo, agrega un **Volume** montado en el directorio del
-proyecto para que `dev.db` y `public/uploads` persistan entre redeploys.
+proyecto para que `dev.db` y `uploads/` persistan entre redeploys.

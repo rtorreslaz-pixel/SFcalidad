@@ -1,7 +1,10 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 
-const UPLOAD_ROOT = path.join(process.cwd(), "public", "uploads", "inspecciones");
+// Stored outside `public/` because Next.js snapshots the public folder at
+// server startup, so files written at runtime (uploaded photos) would 404.
+// They are served instead via /api/uploads/[...path].
+const UPLOAD_ROOT = path.join(process.cwd(), "uploads", "inspecciones");
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"]);
 
@@ -19,5 +22,5 @@ export async function saveInspectionPhoto(inspeccionId: string, file: File): Pro
   const buffer = Buffer.from(await file.arrayBuffer());
   await writeFile(filePath, buffer);
 
-  return `/uploads/inspecciones/${inspeccionId}/${filename}`;
+  return `/api/uploads/inspecciones/${inspeccionId}/${filename}`;
 }
