@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Control de Calidad Avícola
 
-## Getting Started
+App para digitalizar el registro de inspecciones de calidad de pollo (golpes, rasguños, etc.),
+reemplazando el proceso manual en Excel.
 
-First, run the development server:
+## Desarrollo local
 
 ```bash
+npm install
+npx prisma migrate dev
+npx prisma db seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Usuarios de prueba (contraseña `demo1234`):
+- `supervisor@avicola.com` (rol Supervisor)
+- `verificador1@avicola.com` ... `verificador6@avicola.com` (rol Verificador)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Despliegue (Railway)
 
-## Learn More
+Esta app usa SQLite + archivos subidos en disco, por lo que necesita un host con
+filesystem persistente (no Vercel serverless). [Railway](https://railway.app) funciona
+sin configuración adicional:
 
-To learn more about Next.js, take a look at the following resources:
+1. En Railway: **New Project → Deploy from GitHub repo**, elige este repositorio y la
+   rama `claude/poultry-quality-inspection-chbub6`.
+2. Railway detecta Next.js automáticamente (Nixpacks) y corre `npm install` (que ejecuta
+   `prisma generate` vía `postinstall`) y luego `npm run build` + `npm start`.
+3. Variables de entorno: agrega `DATABASE_URL=file:./dev.db` (opcional, es el valor por
+   defecto).
+4. Tras el primer deploy, abre la pestaña **Shell** del servicio en Railway y corre:
+   ```bash
+   npm run db:setup
+   ```
+   Esto crea las tablas y carga los datos de catálogo + usuarios de prueba.
+5. Abre la URL pública que Railway asigna al servicio.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Para producción real con uso continuo, agrega un **Volume** montado en el directorio del
+proyecto para que `dev.db` y `public/uploads` persistan entre redeploys.
