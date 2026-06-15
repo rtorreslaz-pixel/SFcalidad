@@ -65,8 +65,6 @@ export default async function InspeccionDetallePage({
           <Info label="Sexo" value={insp.sexo ?? "-"} />
           <Info label="Cantidad de aves" value={insp.cantidad.toString()} />
           <Info label="Jabas" value={insp.jabas?.toString() ?? "-"} />
-          <Info label="Peso vivo (kg)" value={insp.pesoVivo?.toString() ?? "-"} />
-          <Info label="Peso beneficio (kg)" value={insp.pesoBeneficio?.toString() ?? "-"} />
           <Info label="Campaña" value={insp.campania ?? "-"} />
           <Info label="Nro. Guía" value={insp.nroGuia ?? "-"} />
           <Info label="Verificador" value={insp.verificador.nombre} />

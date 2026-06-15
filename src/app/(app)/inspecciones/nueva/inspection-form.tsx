@@ -448,14 +448,6 @@ export default function InspectionForm({
             />
           </Field>
 
-          <Field label="Peso vivo (kg)">
-            <input type="number" step="0.01" name="pesoVivo" className="input" />
-          </Field>
-
-          <Field label="Peso beneficio (kg)">
-            <input type="number" step="0.01" name="pesoBeneficio" className="input" />
-          </Field>
-
           <Field label="Campaña / Nro. Guía">
             <div className="flex gap-2">
               <input type="text" name="campania" placeholder="Campaña" className="input" />

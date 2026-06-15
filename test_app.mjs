@@ -37,8 +37,6 @@ await page.fill('input[list="planteles-list"]', plantelLabel);
 await page.fill('input[name="galpon"]', "11A");
 await page.selectOption('select[name="sexo"]', "MACHO");
 await page.fill('input[name="cantidad"]', "1800");
-await page.fill('input[name="pesoVivo"]', "2.7");
-await page.fill('input[name="pesoBeneficio"]', "2.4");
 
 // Fill a couple of defect inputs
 const defectInputs = await page.locator('input[name$="_unidades"]').all();

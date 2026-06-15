@@ -23,8 +23,6 @@ export async function createInspectionAction(
   const galpon = String(formData.get("galpon") ?? "").trim() || null;
   const sexo = String(formData.get("sexo") ?? "") || null;
   const cantidad = Number(formData.get("cantidad") ?? 0);
-  const pesoVivo = formData.get("pesoVivo") ? Number(formData.get("pesoVivo")) : null;
-  const pesoBeneficio = formData.get("pesoBeneficio") ? Number(formData.get("pesoBeneficio")) : null;
   const jabas = formData.get("jabas") ? Number(formData.get("jabas")) : null;
   const campania = String(formData.get("campania") ?? "").trim() || null;
   const nroGuia = String(formData.get("nroGuia") ?? "").trim() || null;
@@ -82,8 +80,6 @@ export async function createInspectionAction(
       sexo: sexo as "MACHO" | "HEMBRA" | "MIXTO" | null,
       jabas,
       cantidad,
-      pesoVivo,
-      pesoBeneficio,
       metaPorcentaje,
       observaciones,
       verificadorId,

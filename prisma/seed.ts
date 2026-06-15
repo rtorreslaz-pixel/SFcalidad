@@ -31,6 +31,8 @@ const TIPOS_DEFECTO: { nombre: string; categoria: string; orden: number; princip
   { nombre: "Pierna Grado 3°", categoria: "Pierna", orden: 21 },
   { nombre: "Pierna Rota", categoria: "Pierna", orden: 22 },
   { nombre: "Piernas Mutiladas", categoria: "Pierna", orden: 23 },
+  { nombre: "Ascitis", categoria: "General", orden: 24 },
+  { nombre: "Tarso Inflamado", categoria: "General", orden: 25 },
 ];
 
 // Clientes: destinos donde se vende el pollo a diario (independiente de los planteles).

@@ -100,8 +100,6 @@ model Inspeccion {
   jabas  Int?
 
   cantidad      Int
-  pesoVivo      Float?
-  pesoBeneficio Float?
   metaPorcentaje Float @default(0.6)
 
   observaciones String?
