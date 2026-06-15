@@ -7,29 +7,30 @@ const adapter = new PrismaBetterSqlite3({
 });
 const prisma = new PrismaClient({ adapter });
 
-const TIPOS_DEFECTO: { nombre: string; categoria: string; orden: number }[] = [
-  { nombre: "Mío Pectoral", categoria: "Miopatías", orden: 1 },
-  { nombre: "Mío Dorsal", categoria: "Miopatías", orden: 2 },
-  { nombre: "Menor Peso", categoria: "General", orden: 3 },
+const TIPOS_DEFECTO: { nombre: string; categoria: string; orden: number; principal?: boolean }[] = [
+  { nombre: "Mío Pectoral", categoria: "Miopatías", orden: 1, principal: true },
+  { nombre: "Mío Dorsal", categoria: "Miopatías", orden: 2, principal: true },
+  { nombre: "Menor Peso", categoria: "General", orden: 3, principal: true },
   { nombre: "Deshidratado", categoria: "General", orden: 4 },
   { nombre: "Celulitis Abdominal", categoria: "General", orden: 5 },
-  { nombre: "Golpeados Alas/Espalda", categoria: "Golpes", orden: 6 },
-  { nombre: "Golpes Pechuga", categoria: "Golpes", orden: 7 },
-  { nombre: "Golpes Pierna", categoria: "Golpes", orden: 8 },
+  { nombre: "Golpeados Alas/Espalda", categoria: "Golpes", orden: 6, principal: true },
+  { nombre: "Golpes Pechuga", categoria: "Golpes", orden: 7, principal: true },
+  { nombre: "Golpes Pierna", categoria: "Golpes", orden: 8, principal: true },
   { nombre: "Úlceras", categoria: "General", orden: 9 },
   { nombre: "Buchón", categoria: "General", orden: 10 },
   { nombre: "Mutilados", categoria: "General", orden: 11 },
   { nombre: "Rasguños Severos", categoria: "General", orden: 12 },
-  { nombre: "Alas Grado 1°", categoria: "Alas", orden: 13 },
-  { nombre: "Alas Grado 2°", categoria: "Alas", orden: 14 },
-  { nombre: "Alas Grado 3°", categoria: "Alas", orden: 15 },
-  { nombre: "Alas Rota", categoria: "Alas", orden: 16 },
-  { nombre: "Alas Mutiladas", categoria: "Alas", orden: 17 },
-  { nombre: "Pierna Grado 1°", categoria: "Pierna", orden: 18 },
-  { nombre: "Pierna Grado 2°", categoria: "Pierna", orden: 19 },
-  { nombre: "Pierna Grado 3°", categoria: "Pierna", orden: 20 },
-  { nombre: "Pierna Rota", categoria: "Pierna", orden: 21 },
-  { nombre: "Piernas Mutiladas", categoria: "Pierna", orden: 22 },
+  { nombre: "Pechuga Madera", categoria: "Miopatías", orden: 13 },
+  { nombre: "Alas Grado 1°", categoria: "Alas", orden: 14 },
+  { nombre: "Alas Grado 2°", categoria: "Alas", orden: 15 },
+  { nombre: "Alas Grado 3°", categoria: "Alas", orden: 16 },
+  { nombre: "Alas Rota", categoria: "Alas", orden: 17 },
+  { nombre: "Alas Mutiladas", categoria: "Alas", orden: 18 },
+  { nombre: "Pierna Grado 1°", categoria: "Pierna", orden: 19 },
+  { nombre: "Pierna Grado 2°", categoria: "Pierna", orden: 20 },
+  { nombre: "Pierna Grado 3°", categoria: "Pierna", orden: 21 },
+  { nombre: "Pierna Rota", categoria: "Pierna", orden: 22 },
+  { nombre: "Piernas Mutiladas", categoria: "Pierna", orden: 23 },
 ];
 
 // Plantel -> Zona, SubZona, TipoPlantel, Cliente, ZonaEvaluacion (extraido de hoja ZONAS)
@@ -78,10 +79,11 @@ const DEFAULT_PASSWORD = "demo1234";
 async function main() {
   console.log("Sembrando tipos de defecto...");
   for (const tipo of TIPOS_DEFECTO) {
+    const principal = tipo.principal ?? false;
     await prisma.tipoDefecto.upsert({
       where: { nombre: tipo.nombre },
-      update: { categoria: tipo.categoria, orden: tipo.orden },
-      create: tipo,
+      update: { categoria: tipo.categoria, orden: tipo.orden, principal },
+      create: { ...tipo, principal },
     });
   }
 
@@ -124,6 +126,17 @@ async function main() {
       email: "supervisor@avicola.com",
       passwordHash,
       role: "SUPERVISOR",
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: "jefe@avicola.com" },
+    update: {},
+    create: {
+      nombre: "Jefe de Calidad",
+      email: "jefe@avicola.com",
+      passwordHash,
+      role: "JEFE",
     },
   });
 

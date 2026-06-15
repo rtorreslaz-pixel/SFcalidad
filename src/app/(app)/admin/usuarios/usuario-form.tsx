@@ -20,6 +20,7 @@ export default function UsuarioForm() {
       <select name="role" className="input" defaultValue="VERIFICADOR">
         <option value="VERIFICADOR">Verificador</option>
         <option value="SUPERVISOR">Supervisor</option>
+        <option value="JEFE">Jefe</option>
       </select>
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
       {state?.success && <p className="text-sm text-emerald-600">{state.success}</p>}

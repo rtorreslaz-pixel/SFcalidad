@@ -47,6 +47,14 @@ await defectInputs[0].fill("3");
 const kgInputs = await page.locator('input[name$="_kg"]').all();
 await kgInputs[0].fill("4.5");
 
+// Jabas
+await page.fill('input[name="jabas"]', "20");
+
+// Almohadillas y Rasguños counters
+await page.getByLabel("Sumar Sin lesión").first().click();
+await page.getByLabel("Sumar Sin lesión").first().click();
+await page.getByLabel("Sumar Leve").first().click();
+
 await page.fill('textarea[name="observaciones"]', "Inspección de prueba automatizada.");
 await shot("04-form-filled");
 
@@ -82,17 +90,45 @@ await page.waitForURL("**/login");
 await page.fill('input[name="email"]', "verificador1@avicola.com");
 await page.fill('input[name="password"]', "demo1234");
 await page.click('button[type="submit"]');
-await page.waitForURL("**/dashboard");
-await shot("12-verificador-dashboard");
+await page.waitForURL("**/inspecciones/nueva");
+await shot("12-verificador-nueva-inspeccion");
+
+// Verificador should be redirected away from dashboard and inspecciones list
+await page.goto("http://localhost:3000/dashboard");
+await page.waitForURL("**/inspecciones/nueva");
+console.log("verificador dashboard url:", page.url());
 
 await page.goto("http://localhost:3000/inspecciones");
-await shot("13-verificador-inspecciones");
+await page.waitForURL("**/inspecciones/nueva");
+console.log("verificador inspecciones url:", page.url());
+await shot("13-verificador-inspecciones-redirect");
 
 // Try admin access as verificador (should redirect)
 await page.goto("http://localhost:3000/admin");
 await page.waitForTimeout(500);
 console.log("verificador admin url:", page.url());
 await shot("14-verificador-admin-redirect");
+
+// Logout and login as jefe
+await page.goto("http://localhost:3000/inspecciones/nueva");
+await page.click('button:has-text("Salir")');
+await page.waitForURL("**/login");
+
+await page.fill('input[name="email"]', "jefe@avicola.com");
+await page.fill('input[name="password"]', "demo1234");
+await page.click('button[type="submit"]');
+await page.waitForURL("**/dashboard");
+await shot("15-jefe-dashboard");
+
+// Jefe should be redirected away from inspecciones and nueva inspección
+await page.goto("http://localhost:3000/inspecciones");
+await page.waitForURL("**/dashboard");
+console.log("jefe inspecciones url:", page.url());
+
+await page.goto("http://localhost:3000/inspecciones/nueva");
+await page.waitForURL("**/dashboard");
+console.log("jefe nueva inspeccion url:", page.url());
+await shot("16-jefe-nueva-redirect");
 
 console.log("CONSOLE/PAGE ERRORS:", JSON.stringify(errors, null, 2));
 

@@ -12,12 +12,23 @@ datasource db {
 enum Role {
   VERIFICADOR
   SUPERVISOR
+  JEFE
 }
 
 enum Sexo {
   MACHO
   HEMBRA
   MIXTO
+}
+
+enum SexoAve {
+  MACHO
+  HEMBRA
+}
+
+enum CategoriaLesion {
+  ALMOHADILLAS
+  RASGUNOS
 }
 
 model User {
@@ -56,10 +67,13 @@ model Plantel {
 }
 
 model TipoDefecto {
-  id        String @id @default(cuid())
-  nombre    String @unique
+  id        String  @id @default(cuid())
+  nombre    String  @unique
   categoria String?
-  orden     Int    @default(0)
+  orden     Int     @default(0)
+  // Defectos "fijos" que siempre se muestran en el formulario; el resto del
+  // catálogo se agrega solo cuando el verificador lo necesita.
+  principal Boolean @default(false)
 
   registros DefectoRegistro[]
 }
@@ -82,6 +96,8 @@ model Inspeccion {
 
   galpon String?
   sexo   Sexo?
+  // Jabas: envases en que se trasladan las aves (densidad de 7 a 10 aves c/u).
+  jabas  Int?
 
   cantidad      Int
   pesoVivo      Float?
@@ -93,8 +109,9 @@ model Inspeccion {
   verificadorId String
   verificador   User   @relation(fields: [verificadorId], references: [id])
 
-  defectos DefectoRegistro[]
-  fotos    Foto[]
+  defectos          DefectoRegistro[]
+  fotos             Foto[]
+  evaluacionesLesion EvaluacionLesion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -127,4 +144,23 @@ model Foto {
   longitud    Float?
 
   createdAt DateTime @default(now())
+}
+
+// Conteo de calidad de almohadillas/rasguños (FQAVV026), por sexo y categoría.
+model EvaluacionLesion {
+  id String @id @default(cuid())
+
+  inspeccionId String
+  inspeccion   Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+
+  categoria CategoriaLesion
+  sexo      SexoAve
+
+  muestra   Int @default(0)
+  sinLesion Int @default(0)
+  leve      Int @default(0)
+  // "Grave" para almohadillas, "Severo" para rasguños.
+  grave     Int @default(0)
+
+  @@unique([inspeccionId, categoria, sexo])
 }

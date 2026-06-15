@@ -8,9 +8,9 @@ import type { Prisma } from "@/generated/prisma/client";
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  if (user.role === "VERIFICADOR") redirect("/inspecciones/nueva");
 
-  const where: Prisma.InspeccionWhereInput =
-    user.role === "VERIFICADOR" ? { verificadorId: user.id } : {};
+  const where: Prisma.InspeccionWhereInput = {};
 
   const inspecciones = await prisma.inspeccion.findMany({
     where,
@@ -79,9 +79,7 @@ export default async function DashboardPage() {
     <div>
       <h1 className="mb-1 text-xl font-bold text-slate-900">Dashboard</h1>
       <p className="mb-6 text-sm text-slate-500">
-        {user.role === "SUPERVISOR"
-          ? "Resumen general de inspecciones de todos los verificadores."
-          : "Resumen de tus inspecciones registradas."}
+        Resumen general de inspecciones de todos los verificadores.
       </p>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

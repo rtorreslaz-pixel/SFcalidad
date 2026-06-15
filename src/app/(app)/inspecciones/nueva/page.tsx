@@ -6,6 +6,7 @@ import InspectionForm from "./inspection-form";
 export default async function NuevaInspeccionPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  if (user.role === "JEFE") redirect("/dashboard");
 
   const [clientes, tiposDefecto, verificadores] = await Promise.all([
     prisma.cliente.findMany({

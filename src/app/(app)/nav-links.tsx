@@ -7,14 +7,17 @@ import type { Role } from "@/generated/prisma/enums";
 export default function NavLinks({ role }: { role: Role }) {
   const pathname = usePathname();
 
-  const links = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/inspecciones", label: "Inspecciones" },
-    { href: "/inspecciones/nueva", label: "Nueva inspección" },
-    ...(role === "SUPERVISOR"
-      ? [{ href: "/admin", label: "Catálogos" }]
-      : []),
-  ];
+  const links =
+    role === "SUPERVISOR"
+      ? [
+          { href: "/dashboard", label: "Dashboard" },
+          { href: "/inspecciones", label: "Inspecciones" },
+          { href: "/inspecciones/nueva", label: "Nueva inspección" },
+          { href: "/admin", label: "Catálogos" },
+        ]
+      : role === "VERIFICADOR"
+        ? [{ href: "/inspecciones/nueva", label: "Nueva inspección" }]
+        : [{ href: "/dashboard", label: "Dashboard" }];
 
   return (
     <div className="flex gap-1 overflow-x-auto pb-2 text-sm">

@@ -12,14 +12,14 @@ export default async function InspeccionesPage({
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  if (user.role === "VERIFICADOR") redirect("/inspecciones/nueva");
+  if (user.role === "JEFE") redirect("/dashboard");
 
   const params = await searchParams;
 
   const where: Prisma.InspeccionWhereInput = {};
 
-  if (user.role === "VERIFICADOR") {
-    where.verificadorId = user.id;
-  } else if (params.verificadorId) {
+  if (params.verificadorId) {
     where.verificadorId = params.verificadorId;
   }
 

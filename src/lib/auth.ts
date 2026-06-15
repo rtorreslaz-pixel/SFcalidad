@@ -50,3 +50,17 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
 
   return { id: user.id, nombre: user.nombre, email: user.email, role: user.role };
 }
+
+// Verificador: solo registra inspecciones nuevas.
+// Jefe: solo visualiza el dashboard.
+// Supervisor: acceso completo.
+export function homeRouteForRole(role: Role): string {
+  if (role === "VERIFICADOR") return "/inspecciones/nueva";
+  return "/dashboard";
+}
+
+export const ROLE_LABELS: Record<Role, string> = {
+  SUPERVISOR: "Supervisor",
+  VERIFICADOR: "Verificador",
+  JEFE: "Jefe",
+};
