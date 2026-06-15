@@ -18,7 +18,6 @@ type Plantel = {
 type Cliente = {
   id: string;
   nombre: string;
-  planteles: Plantel[];
 };
 
 type TipoDefecto = {
@@ -213,11 +212,13 @@ function ContadorLesion({
 
 export default function InspectionForm({
   clientes,
+  planteles,
   tiposDefecto,
   verificadores,
   currentUser,
 }: {
   clientes: Cliente[];
+  planteles: Plantel[];
   tiposDefecto: TipoDefecto[];
   verificadores: Verificador[];
   currentUser: CurrentUser;
@@ -281,16 +282,8 @@ export default function InspectionForm({
     setFotos((prev) => prev.filter((_, i) => i !== index));
   }
 
-  const allPlanteles = useMemo(
-    () =>
-      clientes.flatMap((c) =>
-        c.planteles.map((p) => ({ ...p, clienteId: c.id, clienteNombre: c.nombre }))
-      ),
-    [clientes]
-  );
-
-  const plantelLabel = (p: { codigo: string; subZona: string | null; clienteNombre: string }) =>
-    `${p.codigo}${p.subZona ? ` · ${p.subZona}` : ""} — ${p.clienteNombre}`;
+  const plantelLabel = (p: { codigo: string; subZona: string | null; zona: string | null }) =>
+    `${p.codigo}${p.subZona ? ` · ${p.subZona}` : ""}${p.zona ? ` (${p.zona})` : ""}`;
 
   const [plantelId, setPlantelId] = useState("");
   const [plantelQuery, setPlantelQuery] = useState("");
@@ -391,12 +384,12 @@ export default function InspectionForm({
               onChange={(e) => {
                 const query = e.target.value;
                 setPlantelQuery(query);
-                const match = allPlanteles.find((p) => plantelLabel(p) === query);
+                const match = planteles.find((p) => plantelLabel(p) === query);
                 setPlantelId(match ? match.id : "");
               }}
             />
             <datalist id="planteles-list">
-              {allPlanteles.map((p) => (
+              {planteles.map((p) => (
                 <option key={p.id} value={plantelLabel(p)} />
               ))}
             </datalist>

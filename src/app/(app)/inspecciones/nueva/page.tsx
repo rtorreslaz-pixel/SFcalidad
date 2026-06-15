@@ -8,11 +8,9 @@ export default async function NuevaInspeccionPage() {
   if (!user) redirect("/login");
   if (user.role === "JEFE") redirect("/dashboard");
 
-  const [clientes, tiposDefecto, verificadores] = await Promise.all([
-    prisma.cliente.findMany({
-      orderBy: { nombre: "asc" },
-      include: { planteles: { orderBy: { codigo: "asc" } } },
-    }),
+  const [clientes, planteles, tiposDefecto, verificadores] = await Promise.all([
+    prisma.cliente.findMany({ orderBy: { nombre: "asc" } }),
+    prisma.plantel.findMany({ orderBy: { codigo: "asc" } }),
     prisma.tipoDefecto.findMany({ orderBy: { orden: "asc" } }),
     user.role === "SUPERVISOR"
       ? prisma.user.findMany({
@@ -31,6 +29,7 @@ export default async function NuevaInspeccionPage() {
       </p>
       <InspectionForm
         clientes={clientes}
+        planteles={planteles}
         tiposDefecto={tiposDefecto}
         verificadores={verificadores}
         currentUser={{ id: user.id, nombre: user.nombre, role: user.role }}

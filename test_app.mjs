@@ -32,7 +32,7 @@ const plantelLabels = await page.locator('#planteles-list option').evaluateAll((
   opts.map((o) => o.getAttribute("value"))
 );
 console.log("plantel options:", plantelLabels.length);
-const plantelLabel = plantelLabels.find((v) => v && v.includes("AKIM"));
+const plantelLabel = plantelLabels.find((v) => v && v.includes("P006"));
 await page.fill('input[list="planteles-list"]', plantelLabel);
 await page.fill('input[name="galpon"]', "11A");
 await page.selectOption('select[name="sexo"]', "MACHO");

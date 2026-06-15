@@ -30,7 +30,7 @@ export default async function PlantelesPage() {
               {planteles.map((p) => (
                 <tr key={p.id}>
                   <td className="px-3 py-2 font-medium text-slate-800">{p.codigo}</td>
-                  <td className="px-3 py-2">{p.cliente.nombre}</td>
+                  <td className="px-3 py-2">{p.cliente?.nombre ?? "-"}</td>
                   <td className="px-3 py-2">{p.zona ?? "-"}</td>
                   <td className="px-3 py-2">{p.subZona ?? "-"}</td>
                   <td className="px-3 py-2">{p.tipoPlantel ?? "-"}</td>

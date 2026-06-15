@@ -60,8 +60,8 @@ model Plantel {
   tipoPlantel    String?
   zonaEvaluacion String?
 
-  clienteId String
-  cliente   Cliente @relation(fields: [clienteId], references: [id])
+  clienteId String?
+  cliente   Cliente? @relation(fields: [clienteId], references: [id])
 
   inspecciones Inspeccion[]
 }

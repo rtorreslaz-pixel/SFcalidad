@@ -15,10 +15,8 @@ export default function PlantelForm({ clientes }: { clientes: { id: string; nomb
     <form ref={formRef} action={formAction} className="space-y-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
       <h2 className="font-semibold text-slate-900">Nuevo plantel</h2>
       <input type="text" name="codigo" placeholder="Código (ej. P289)" required className="input" />
-      <select name="clienteId" required className="input" defaultValue="">
-        <option value="" disabled>
-          Selecciona cliente...
-        </option>
+      <select name="clienteId" className="input" defaultValue="">
+        <option value="">Sin cliente</option>
         {clientes.map((c) => (
           <option key={c.id} value={c.id}>
             {c.nombre}

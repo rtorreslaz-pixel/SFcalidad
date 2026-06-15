@@ -38,13 +38,13 @@ export async function createPlantelAction(
 ): Promise<ActionResult> {
   await requireSupervisor();
   const codigo = String(formData.get("codigo") ?? "").trim();
-  const clienteId = String(formData.get("clienteId") ?? "");
+  const clienteId = String(formData.get("clienteId") ?? "").trim() || null;
   const zona = String(formData.get("zona") ?? "").trim() || null;
   const subZona = String(formData.get("subZona") ?? "").trim() || null;
   const tipoPlantel = String(formData.get("tipoPlantel") ?? "").trim() || null;
   const zonaEvaluacion = String(formData.get("zonaEvaluacion") ?? "").trim() || null;
 
-  if (!codigo || !clienteId) return { error: "Código y cliente son obligatorios." };
+  if (!codigo) return { error: "El código es obligatorio." };
 
   try {
     await prisma.plantel.create({
