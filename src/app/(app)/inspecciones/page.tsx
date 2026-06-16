@@ -12,7 +12,7 @@ export default async function InspeccionesPage({
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role === "VERIFICADOR") redirect("/inspecciones/nueva");
+  if (user.role === "VERIFICADOR") redirect("/jornadas");
   if (user.role === "JEFE") redirect("/dashboard");
 
   const params = await searchParams;
@@ -123,10 +123,10 @@ export default async function InspeccionesPage({
                 <tr key={insp.id} className="hover:bg-slate-50">
                   <td className="px-3 py-2">
                     <Link href={`/inspecciones/${insp.id}`} className="text-emerald-700 hover:underline">
-                      {insp.fecha.toLocaleDateString("es-PE")}
+                      {insp.fecha ? insp.fecha.toLocaleDateString("es-PE") : "-"}
                     </Link>
                   </td>
-                  <td className="px-3 py-2">{insp.cliente.nombre}</td>
+                  <td className="px-3 py-2">{insp.cliente?.nombre ?? "-"}</td>
                   <td className="px-3 py-2">
                     {insp.plantel?.codigo ?? "-"} {insp.galpon ? `· ${insp.galpon}` : ""}
                   </td>
@@ -140,7 +140,7 @@ export default async function InspeccionesPage({
                       {porcentaje.toFixed(3)}%
                     </span>
                   </td>
-                  <td className="px-3 py-2">{insp.verificador.nombre}</td>
+                  <td className="px-3 py-2">{insp.verificador?.nombre ?? "-"}</td>
                   <td className="px-3 py-2">{insp._count.fotos}</td>
                 </tr>
               );

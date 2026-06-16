@@ -83,11 +83,11 @@ export async function GET(request: NextRequest) {
     const defectoMap = new Map(insp.defectos.map((d) => [d.tipoDefectoId, d]));
 
     const baseRow = [
-      insp.anio,
-      insp.mes,
-      insp.semana,
-      insp.fecha.toISOString().slice(0, 10),
-      insp.cliente.nombre,
+      insp.anio ?? "",
+      insp.mes ?? "",
+      insp.semana ?? "",
+      insp.fecha ? insp.fecha.toISOString().slice(0, 10) : "",
+      insp.cliente?.nombre ?? "",
       insp.plantel?.codigo ?? "",
       insp.galpon ?? "",
       insp.plantel?.tipoPlantel ?? "",
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
       totalKg.toFixed(2),
       porcentaje.toFixed(4),
       insp.metaPorcentaje,
-      insp.verificador.nombre,
+      insp.verificador?.nombre ?? "",
       insp.observaciones ?? "",
     ];
 

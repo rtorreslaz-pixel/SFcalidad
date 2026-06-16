@@ -15,12 +15,6 @@ enum Role {
   JEFE
 }
 
-enum Sexo {
-  MACHO
-  HEMBRA
-  MIXTO
-}
-
 enum SexoAve {
   MACHO
   HEMBRA
@@ -29,6 +23,11 @@ enum SexoAve {
 enum CategoriaLesion {
   ALMOHADILLAS
   RASGUNOS
+}
+
+enum EstadoInspeccion {
+  BORRADOR
+  COMPLETA
 }
 
 model User {
@@ -40,6 +39,7 @@ model User {
   activo       Boolean  @default(true)
   createdAt    DateTime @default(now())
 
+  jornadas     Jornada[]
   inspecciones Inspeccion[]
 }
 
@@ -48,6 +48,7 @@ model Cliente {
   nombre String @unique
 
   planteles    Plantel[]
+  jornadas     Jornada[]
   inspecciones Inspeccion[]
 }
 
@@ -71,44 +72,98 @@ model TipoDefecto {
   nombre    String  @unique
   categoria String?
   orden     Int     @default(0)
-  // Defectos "fijos" que siempre se muestran en el formulario; el resto del
-  // catálogo se agrega solo cuando el verificador lo necesita.
   principal Boolean @default(false)
 
   registros DefectoRegistro[]
 }
 
+model Jornada {
+  id     String   @id @default(cuid())
+  fecha  DateTime
+  anio   Int
+  mes    Int
+  semana Int
+
+  clienteId     String
+  cliente       Cliente @relation(fields: [clienteId], references: [id])
+  verificadorId String
+  verificador   User    @relation(fields: [verificadorId], references: [id])
+
+  saldos       SaldoDiaAnterior[]
+  inspecciones Inspeccion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SaldoDiaAnterior {
+  id        String  @id @default(cuid())
+  jornadaId String
+  jornada   Jornada @relation(fields: [jornadaId], references: [id], onDelete: Cascade)
+
+  sexo              SexoAve
+  unidades          Int     @default(0)
+  jabas             Int     @default(0)
+  unidadesSeleccion Int     @default(0)
+  remanente         Int?
+
+  @@unique([jornadaId, sexo])
+}
+
 model Inspeccion {
-  id       String   @id @default(cuid())
-  fecha    DateTime
-  anio     Int
-  mes      Int
-  semana   Int
+  id String @id @default(cuid())
 
-  campania String?
-  nroGuia  String?
+  jornadaId String?
+  jornada   Jornada? @relation(fields: [jornadaId], references: [id])
 
-  clienteId String
-  cliente   Cliente @relation(fields: [clienteId], references: [id])
+  // Legacy fields kept for existing rows
+  fecha          DateTime?
+  anio           Int?
+  mes            Int?
+  semana         Int?
+  campania       String?
+  clienteId      String?
+  cliente        Cliente?  @relation(fields: [clienteId], references: [id])
+  verificadorId  String?
+  verificador    User?     @relation(fields: [verificadorId], references: [id])
+  metaPorcentaje Float     @default(0.6)
 
   plantelId String?
   plantel   Plantel? @relation(fields: [plantelId], references: [id])
 
-  galpon String?
-  sexo   Sexo?
-  // Jabas: envases en que se trasladan las aves (densidad de 7 a 10 aves c/u).
-  jabas  Int?
+  galpon   String?
+  sexo     SexoAve?
+  jabas    Int?
+  cantidad Int      @default(0)
 
-  cantidad      Int
-  metaPorcentaje Float @default(0.6)
-
+  nroGuia       String?
+  complex       String?
   observaciones String?
 
-  verificadorId String
-  verificador   User   @relation(fields: [verificadorId], references: [id])
+  tempPlataforma Float?
+  tempCamion     Float?
+  tempAves       Float?
 
-  defectos          DefectoRegistro[]
-  fotos             Foto[]
+  hematomasCon Int?
+  hematomasSin Int?
+
+  pigNivel0 Int @default(0)
+  pigNivel1 Int @default(0)
+  pigNivel2 Int @default(0)
+  pigNivel3 Int @default(0)
+  pigNivel4 Int @default(0)
+  pigNivel5 Int @default(0)
+  pigNivel6 Int @default(0)
+  pigNivel7 Int @default(0)
+
+  mermaAlaKg    Float?
+  mermaPiernaKg Float?
+
+  estado     EstadoInspeccion @default(BORRADOR)
+  pasoActual Int              @default(1)
+
+  defectos           DefectoRegistro[]
+  fotos              Foto[]
   evaluacionesLesion EvaluacionLesion[]
 
   createdAt DateTime @default(now())
@@ -144,7 +199,6 @@ model Foto {
   createdAt DateTime @default(now())
 }
 
-// Conteo de calidad de almohadillas/rasguños (FQAVV026), por sexo y categoría.
 model EvaluacionLesion {
   id String @id @default(cuid())
 
@@ -157,7 +211,6 @@ model EvaluacionLesion {
   muestra   Int @default(0)
   sinLesion Int @default(0)
   leve      Int @default(0)
-  // "Grave" para almohadillas, "Severo" para rasguños.
   grave     Int @default(0)
 
   @@unique([inspeccionId, categoria, sexo])

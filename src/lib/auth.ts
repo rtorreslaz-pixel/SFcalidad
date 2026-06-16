@@ -55,7 +55,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
 // Jefe: solo visualiza el dashboard.
 // Supervisor: acceso completo.
 export function homeRouteForRole(role: Role): string {
-  if (role === "VERIFICADOR") return "/inspecciones/nueva";
+  if (role === "VERIFICADOR") return "/jornadas";
   return "/dashboard";
 }
 
