@@ -77,7 +77,7 @@ export async function createInspectionAction(
       clienteId,
       plantelId,
       galpon,
-      sexo: sexo as "MACHO" | "HEMBRA" | "MIXTO" | null,
+      sexo: (sexo === "MACHO" || sexo === "HEMBRA") ? sexo : null,
       jabas,
       cantidad,
       metaPorcentaje,

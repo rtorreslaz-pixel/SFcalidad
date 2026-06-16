@@ -8,7 +8,7 @@ import type { Prisma } from "@/generated/prisma/client";
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role === "VERIFICADOR") redirect("/inspecciones/nueva");
+  if (user.role === "VERIFICADOR") redirect("/jornadas");
 
   const where: Prisma.InspeccionWhereInput = {};
 
@@ -33,6 +33,7 @@ export default async function DashboardPage() {
   // Tendencia semanal
   const semanaMap = new Map<string, { unidades: number; cantidad: number; anio: number; semana: number }>();
   for (const insp of inspecciones) {
+    if (insp.anio == null || insp.semana == null) continue;
     const key = `${insp.anio}-S${insp.semana.toString().padStart(2, "0")}`;
     const entry = semanaMap.get(key) ?? { unidades: 0, cantidad: 0, anio: insp.anio, semana: insp.semana };
     entry.unidades += insp.defectos.reduce((a, d) => a + d.unidades, 0);
@@ -50,6 +51,7 @@ export default async function DashboardPage() {
   // Por cliente
   const clienteMap = new Map<string, { unidades: number; cantidad: number }>();
   for (const insp of inspecciones) {
+    if (!insp.cliente) continue;
     const entry = clienteMap.get(insp.cliente.nombre) ?? { unidades: 0, cantidad: 0 };
     entry.unidades += insp.defectos.reduce((a, d) => a + d.unidades, 0);
     entry.cantidad += insp.cantidad;

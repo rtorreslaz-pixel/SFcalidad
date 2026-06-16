@@ -11,12 +11,14 @@ export default function NavLinks({ role }: { role: Role }) {
     role === "SUPERVISOR"
       ? [
           { href: "/dashboard", label: "Dashboard" },
+          { href: "/jornadas", label: "Jornadas" },
           { href: "/inspecciones", label: "Inspecciones" },
-          { href: "/inspecciones/nueva", label: "Nueva inspección" },
           { href: "/admin", label: "Catálogos" },
         ]
       : role === "VERIFICADOR"
-        ? [{ href: "/inspecciones/nueva", label: "Nueva inspección" }]
+        ? [
+            { href: "/jornadas", label: "Mis jornadas" },
+          ]
         : [{ href: "/dashboard", label: "Dashboard" }];
 
   return (
@@ -24,8 +26,7 @@ export default function NavLinks({ role }: { role: Role }) {
       {links.map((link) => {
         const active =
           pathname === link.href ||
-          (link.href !== "/dashboard" && pathname.startsWith(link.href) && link.href !== "/inspecciones/nueva") ||
-          (link.href === "/inspecciones/nueva" && pathname === "/inspecciones/nueva");
+          (link.href !== "/dashboard" && pathname.startsWith(link.href));
         return (
           <Link
             key={link.href}

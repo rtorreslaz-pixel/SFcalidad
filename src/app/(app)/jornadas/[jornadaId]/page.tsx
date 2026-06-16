@@ -1,0 +1,117 @@
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import SaldoEditor from "./saldo-editor";
+import { createEvaluacionAction } from "./evaluacion/nueva/nueva-evaluacion-actions";
+
+export default async function JornadaDetallePage({
+  params,
+}: {
+  params: Promise<{ jornadaId: string }>;
+}) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  if (user.role === "JEFE") redirect("/dashboard");
+
+  const { jornadaId } = await params;
+
+  const jornada = await prisma.jornada.findUnique({
+    where: { id: jornadaId },
+    include: {
+      cliente: true,
+      verificador: { select: { nombre: true } },
+      saldos: { orderBy: { sexo: "asc" } },
+      inspecciones: {
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          sexo: true,
+          estado: true,
+          pasoActual: true,
+          galpon: true,
+          plantel: { select: { codigo: true } },
+        },
+      },
+    },
+  });
+
+  if (!jornada) notFound();
+
+  if (user.role === "VERIFICADOR" && jornada.verificadorId !== user.id) {
+    redirect("/jornadas");
+  }
+
+  const PASOS_LABELS = ["Cabecera", "Temperaturas", "Almohadillas y Rasguños", "Hematomas", "Pigmentación", "Selección", "Merma"];
+
+  return (
+    <div className="mx-auto max-w-lg space-y-5">
+      <div>
+        <Link href="/jornadas" className="text-sm text-emerald-700 hover:underline">← Jornadas</Link>
+        <h1 className="mt-1 text-xl font-bold text-slate-900">
+          {jornada.fecha.toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })}
+        </h1>
+        <p className="text-sm text-slate-500">{jornada.cliente.nombre} · {jornada.verificador.nombre}</p>
+      </div>
+
+      {/* Saldo día anterior */}
+      <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        <h2 className="mb-3 font-semibold text-slate-900">Saldo día anterior</h2>
+        <div className="space-y-4">
+          {jornada.saldos.map((saldo) => (
+            <SaldoEditor key={saldo.id} saldo={saldo} jornadaId={jornadaId} />
+          ))}
+        </div>
+      </section>
+
+      {/* Evaluaciones (camiones) */}
+      <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        <h2 className="mb-3 font-semibold text-slate-900">Evaluaciones del día</h2>
+
+        {jornada.inspecciones.length === 0 ? (
+          <p className="mb-3 text-sm text-slate-400">No hay evaluaciones aún.</p>
+        ) : (
+          <div className="mb-3 space-y-2">
+            {jornada.inspecciones.map((insp) => (
+              <Link
+                key={insp.id}
+                href={`/jornadas/${jornadaId}/evaluacion/${insp.id}`}
+                className="flex items-center justify-between rounded-lg border border-slate-200 p-3 hover:border-emerald-300 hover:bg-slate-50"
+              >
+                <div>
+                  <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    insp.sexo === "MACHO" ? "bg-blue-100 text-blue-700" : "bg-pink-100 text-pink-700"
+                  }`}>
+                    {insp.sexo ?? "Sin sexo"}
+                  </span>
+                  <span className="ml-2 text-sm text-slate-600">
+                    {insp.plantel?.codigo ? `${insp.plantel.codigo}${insp.galpon ? ` · ${insp.galpon}` : ""}` : "Sin plantel"}
+                  </span>
+                </div>
+                <div className="text-right">
+                  {insp.estado === "COMPLETA" ? (
+                    <span className="text-xs font-semibold text-emerald-600">Completa ✓</span>
+                  ) : (
+                    <span className="text-xs text-amber-600">
+                      Paso {insp.pasoActual}/7 · {PASOS_LABELS[(insp.pasoActual ?? 1) - 1]}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        <form action={createEvaluacionAction}>
+          <input type="hidden" name="jornadaId" value={jornadaId} />
+          <button
+            type="submit"
+            className="w-full rounded-xl border-2 border-dashed border-emerald-300 py-3 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 active:bg-emerald-100"
+          >
+            + Nueva evaluación
+          </button>
+        </form>
+      </section>
+    </div>
+  );
+}

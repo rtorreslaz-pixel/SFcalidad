@@ -31,7 +31,7 @@ export default async function InspeccionDetallePage({
   if (!insp) notFound();
 
   if (user.role === "VERIFICADOR" && insp.verificadorId !== user.id) {
-    redirect("/inspecciones/nueva");
+    redirect("/jornadas");
   }
 
   const totalUnidades = insp.defectos.reduce((acc, d) => acc + d.unidades, 0);
@@ -56,10 +56,10 @@ export default async function InspeccionDetallePage({
 
       <section className="mb-6 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-6">
         <h1 className="mb-4 text-xl font-bold text-slate-900">
-          Inspección · {insp.fecha.toLocaleDateString("es-PE")}
+          Inspección · {insp.fecha ? insp.fecha.toLocaleDateString("es-PE") : "-"}
         </h1>
         <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
-          <Info label="Cliente" value={insp.cliente.nombre} />
+          <Info label="Cliente" value={insp.cliente?.nombre ?? "-"} />
           <Info label="Plantel" value={insp.plantel?.codigo ?? "-"} />
           <Info label="Galpón" value={insp.galpon ?? "-"} />
           <Info label="Sexo" value={insp.sexo ?? "-"} />
@@ -67,7 +67,7 @@ export default async function InspeccionDetallePage({
           <Info label="Jabas" value={insp.jabas?.toString() ?? "-"} />
           <Info label="Campaña" value={insp.campania ?? "-"} />
           <Info label="Nro. Guía" value={insp.nroGuia ?? "-"} />
-          <Info label="Verificador" value={insp.verificador.nombre} />
+          <Info label="Verificador" value={insp.verificador?.nombre ?? "-"} />
           <Info label="Total unidades seleccionadas" value={totalUnidades.toString()} />
           <Info label="Total kg seleccionados" value={totalKg.toFixed(2)} />
         </div>
