@@ -25,7 +25,7 @@ export async function autoguardadoAction(
   if (user.role === "VERIFICADOR" && insp.jornada?.verificadorId !== user.id) return;
 
   // Handle nested lesion updates
-  const { lesionAlmohadillas, lesionRasgunos, defectos: defectosData, ...directFields } = patch;
+  const { lesionAlmohadillas, lesionRasgunos, defectos: defectosData, hematomaDetalles: hematomaDetallesData, ...directFields } = patch;
 
   if (Object.keys(directFields).length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,6 +57,17 @@ export async function autoguardadoAction(
         where: { inspeccionId_tipoDefectoId: { inspeccionId: evalId, tipoDefectoId: d.tipoDefectoId } },
         create: { inspeccionId: evalId, tipoDefectoId: d.tipoDefectoId, unidades: d.unidades, kg: d.kg },
         update: { unidades: d.unidades, kg: d.kg },
+      });
+    }
+  }
+
+  if (hematomaDetallesData && Array.isArray(hematomaDetallesData)) {
+    const detalles = hematomaDetallesData as { grado: "GRADO1" | "GRADO2" | "GRADO3"; ubicacion: "ALA" | "ESPINAZO" | "PECHUGA" | "PIERNA"; cantidad: number }[];
+    for (const d of detalles) {
+      await prisma.hematomaDetalle.upsert({
+        where: { inspeccionId_grado_ubicacion: { inspeccionId: evalId, grado: d.grado, ubicacion: d.ubicacion } },
+        create: { inspeccionId: evalId, grado: d.grado, ubicacion: d.ubicacion, cantidad: d.cantidad },
+        update: { cantidad: d.cantidad },
       });
     }
   }

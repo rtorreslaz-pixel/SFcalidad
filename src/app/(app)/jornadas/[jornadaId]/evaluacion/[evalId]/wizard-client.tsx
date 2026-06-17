@@ -16,6 +16,7 @@ type Plantel = { id: string; codigo: string; nombre: string | null; subZona: str
 type TipoDefecto = { id: string; nombre: string; categoria: string | null; orden: number; principal: boolean };
 type EvaluacionLesion = { id: string; categoria: string; sexo: string; sinLesion: number; leve: number; grave: number; muestra: number };
 type DefectoRegistro = { id: string; tipoDefectoId: string; unidades: number; kg: number; tipoDefecto: TipoDefecto };
+type HematomaDetalle = { id: string; grado: string; ubicacion: string; cantidad: number };
 type Foto = { id: string; path: string };
 
 type Inspeccion = {
@@ -36,6 +37,7 @@ type Inspeccion = {
   tempAves: number | null;
   hematomasCon: number | null;
   hematomasSin: number | null;
+  hematomaDetalles: HematomaDetalle[];
   pigNivel0: number; pigNivel1: number; pigNivel2: number; pigNivel3: number;
   pigNivel4: number; pigNivel5: number; pigNivel6: number; pigNivel7: number;
   mermaAlaKg: number | null;
@@ -48,6 +50,19 @@ type Inspeccion = {
 };
 
 // ---- Helpers ----
+const GRADOS_HEMATOMA = [
+  { key: "GRADO1", label: "1er grado" },
+  { key: "GRADO2", label: "2do grado" },
+  { key: "GRADO3", label: "3er grado" },
+] as const;
+
+const UBICACIONES_HEMATOMA = [
+  { key: "ALA", label: "Ala" },
+  { key: "ESPINAZO", label: "Espinazo" },
+  { key: "PECHUGA", label: "Pechuga" },
+  { key: "PIERNA", label: "Pierna" },
+] as const;
+
 const PASO_LABELS = [
   "Datos del camión",
   "Temperaturas",
@@ -161,6 +176,13 @@ export default function WizardClient({
   // Step 4 state (hematomas)
   const [hemCon, setHemCon] = useState(initial.hematomasCon ?? 0);
   const [hemSin, setHemSin] = useState(initial.hematomasSin ?? 0);
+  const [hemDetalle, setHemDetalle] = useState<Record<string, number>>(() => {
+    const vals: Record<string, number> = {};
+    initial.hematomaDetalles.forEach((d) => {
+      vals[`${d.grado}_${d.ubicacion}`] = d.cantidad;
+    });
+    return vals;
+  });
 
   // Step 5 state (pigmentación)
   const [pig, setPig] = useState([
@@ -220,6 +242,17 @@ export default function WizardClient({
     const next = { ...defectos, [id]: { unidades: defectos[id]?.unidades ?? 0, kg: defectos[id]?.kg ?? 0, [field]: value } };
     setDefectos(next);
     scheduleGuardado({ defectos: Object.entries(next).map(([tipoDefectoId, v]) => ({ tipoDefectoId, ...v })) });
+  }
+
+  function updateHematomaDetalle(grado: string, ubicacion: string, value: number) {
+    const next = { ...hemDetalle, [`${grado}_${ubicacion}`]: value };
+    setHemDetalle(next);
+    scheduleGuardado({
+      hematomaDetalles: Object.entries(next).map(([key, cantidad]) => {
+        const [grado, ubicacion] = key.split("_");
+        return { grado, ubicacion, cantidad };
+      }),
+    });
   }
 
   // Photo upload
@@ -386,7 +419,8 @@ export default function WizardClient({
         );
       }
 
-      case 4:
+      case 4: {
+        const hemDetalleTotal = Object.values(hemDetalle).reduce((a, b) => a + b, 0);
         return (
           <div className="space-y-4">
             <p className="text-sm text-slate-500">Muestra de 50 aves. Registra aves con y sin hematomas.</p>
@@ -395,8 +429,45 @@ export default function WizardClient({
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
               Total evaluadas: {hemCon + hemSin} / 50
             </div>
+
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="font-semibold text-slate-800">Clasificación por grado y ubicación</h3>
+                <span className="text-sm text-slate-500">Total: {hemDetalleTotal} / {hemCon}</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th className="p-1 text-left text-xs font-medium text-slate-500"></th>
+                      {UBICACIONES_HEMATOMA.map((u) => (
+                        <th key={u.key} className="p-1 text-center text-xs font-medium text-slate-500">{u.label}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {GRADOS_HEMATOMA.map((g) => (
+                      <tr key={g.key}>
+                        <td className="p-1 whitespace-nowrap text-xs font-medium text-slate-600">{g.label}</td>
+                        {UBICACIONES_HEMATOMA.map((u) => (
+                          <td key={u.key} className="p-1">
+                            <input
+                              type="number" min={0}
+                              value={hemDetalle[`${g.key}_${u.key}`] || ""}
+                              onChange={(e) => updateHematomaDetalle(g.key, u.key, Number(e.target.value) || 0)}
+                              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center text-sm"
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         );
+      }
 
       case 5:
         return (

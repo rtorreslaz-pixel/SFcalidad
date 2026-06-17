@@ -30,6 +30,19 @@ enum EstadoInspeccion {
   COMPLETA
 }
 
+enum GradoHematoma {
+  GRADO1
+  GRADO2
+  GRADO3
+}
+
+enum UbicacionHematoma {
+  ALA
+  ESPINAZO
+  PECHUGA
+  PIERNA
+}
+
 model User {
   id           String   @id @default(cuid())
   nombre       String
@@ -179,6 +192,7 @@ model Inspeccion {
   defectos           DefectoRegistro[]
   fotos              Foto[]
   evaluacionesLesion EvaluacionLesion[]
+  hematomaDetalles   HematomaDetalle[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -211,6 +225,20 @@ model Foto {
   longitud    Float?
 
   createdAt DateTime @default(now())
+}
+
+model HematomaDetalle {
+  id String @id @default(cuid())
+
+  inspeccionId String
+  inspeccion   Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+
+  grado     GradoHematoma
+  ubicacion UbicacionHematoma
+
+  cantidad Int @default(0)
+
+  @@unique([inspeccionId, grado, ubicacion])
 }
 
 model EvaluacionLesion {

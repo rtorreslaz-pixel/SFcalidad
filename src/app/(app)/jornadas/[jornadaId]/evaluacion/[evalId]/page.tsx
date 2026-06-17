@@ -21,6 +21,7 @@ export default async function EvaluacionWizardPage({
         jornada: { include: { cliente: true } },
         evaluacionesLesion: true,
         defectos: { include: { tipoDefecto: true } },
+        hematomaDetalles: true,
         fotos: true,
       },
     }),
