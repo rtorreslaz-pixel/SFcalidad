@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import SaldoEditor from "./saldo-editor";
+import DeleteJornadaButton from "./delete-jornada-button";
 import { createEvaluacionAction } from "./evaluacion/nueva/nueva-evaluacion-actions";
 
 export default async function JornadaDetallePage({
@@ -46,12 +47,15 @@ export default async function JornadaDetallePage({
 
   return (
     <div className="mx-auto max-w-lg space-y-5">
-      <div>
-        <Link href="/jornadas" className="text-sm text-emerald-700 hover:underline">← Jornadas</Link>
-        <h1 className="mt-1 text-xl font-bold text-slate-900">
-          {jornada.fecha.toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })}
-        </h1>
-        <p className="text-sm text-slate-500">{jornada.cliente.nombre} · {jornada.verificador.nombre}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <Link href="/jornadas" className="text-sm text-emerald-700 hover:underline">← Jornadas</Link>
+          <h1 className="mt-1 text-xl font-bold text-slate-900">
+            {jornada.fecha.toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })}
+          </h1>
+          <p className="text-sm text-slate-500">{jornada.cliente.nombre} · {jornada.verificador.nombre}</p>
+        </div>
+        {user.role === "SUPERVISOR" && <DeleteJornadaButton jornadaId={jornadaId} />}
       </div>
 
       {/* Saldo día anterior */}

@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, rm, writeFile } from "fs/promises";
 import path from "path";
 import sharp from "sharp";
 
@@ -43,4 +43,8 @@ export async function saveInspectionPhoto(inspeccionId: string, file: File): Pro
   await writeFile(filePath, buffer);
 
   return `/api/uploads/inspecciones/${inspeccionId}/${filename}`;
+}
+
+export async function deleteInspeccionPhotos(inspeccionId: string): Promise<void> {
+  await rm(path.join(UPLOAD_ROOT, inspeccionId), { recursive: true, force: true });
 }
