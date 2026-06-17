@@ -27,6 +27,8 @@ type Inspeccion = {
   galpon: string | null;
   jabas: number | null;
   cantidad: number;
+  promVivo: number | null;
+  promBeneficiado: number | null;
   nroGuia: string | null;
   complex: string | null;
   tempPlataforma: number | null;
@@ -137,6 +139,8 @@ export default function WizardClient({
   const [galpon, setGalpon] = useState(initial.galpon ?? "");
   const [jabas, setJabas] = useState(String(initial.jabas ?? ""));
   const [cantidad, setCantidad] = useState(String(initial.cantidad || ""));
+  const [promVivo, setPromVivo] = useState(String(initial.promVivo ?? ""));
+  const [promBeneficiado, setPromBeneficiado] = useState(String(initial.promBeneficiado ?? ""));
   const [nroGuia, setNroGuia] = useState(initial.nroGuia ?? "");
   const [complex, setComplex] = useState(initial.complex ?? "");
 
@@ -303,6 +307,8 @@ export default function WizardClient({
             <BigInput label="Galpón" type="text" value={galpon} onChange={(v) => { setGalpon(v); scheduleGuardado({ galpon: v || null }); }} placeholder="Ej. 11A" />
             <BigInput label="Jabas" value={jabas} onChange={(v) => { setJabas(v); scheduleGuardado({ jabas: v ? Number(v) : null }); }} />
             <BigInput label="Unidades (cantidad de aves)" value={cantidad} onChange={(v) => { setCantidad(v); scheduleGuardado({ cantidad: Number(v) || 0 }); }} />
+            <BigInput label="Promedio vivo (kg)" value={promVivo} onChange={(v) => { setPromVivo(v); scheduleGuardado({ promVivo: v ? Number(v) : null }); }} optional />
+            <BigInput label="Promedio beneficiado (kg)" value={promBeneficiado} onChange={(v) => { setPromBeneficiado(v); scheduleGuardado({ promBeneficiado: v ? Number(v) : null }); }} optional />
             <BigInput label="N° de Guía" type="text" value={nroGuia} onChange={(v) => { setNroGuia(v); scheduleGuardado({ nroGuia: v || null }); }} optional />
             <BigInput label="Complex" type="text" value={complex} onChange={(v) => { setComplex(v); scheduleGuardado({ complex: v || null }); }} optional />
           </div>

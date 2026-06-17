@@ -147,6 +147,9 @@ model Inspeccion {
   jabas    Int?
   cantidad Int      @default(0)
 
+  promVivo        Float?
+  promBeneficiado Float?
+
   nroGuia       String?
   complex       String?
   observaciones String?
