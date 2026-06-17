@@ -55,10 +55,35 @@ export async function GET(request: NextRequest) {
       verificador: { select: { nombre: true } },
       defectos: { include: { tipoDefecto: true } },
       jornada: { include: { cliente: true, verificador: { select: { nombre: true } } } },
+      hematomaDetalles: true,
+      evaluacionesLesion: true,
     },
   });
 
   const tiposDefecto = await prisma.tipoDefecto.findMany({ orderBy: { orden: "asc" } });
+
+  const HEMATOMA_GRADOS = [
+    { key: "GRADO1", label: "1er grado" },
+    { key: "GRADO2", label: "2do grado" },
+    { key: "GRADO3", label: "3er grado" },
+  ] as const;
+
+  const HEMATOMA_UBICACIONES = [
+    { key: "ALA", label: "Ala" },
+    { key: "ESPINAZO", label: "Espinazo" },
+    { key: "PECHUGA", label: "Pechuga" },
+    { key: "PIERNA", label: "Pierna" },
+  ] as const;
+
+  const LESION_CATEGORIAS = ["ALMOHADILLAS", "RASGUNOS"] as const;
+
+  const hematomaHeaders = HEMATOMA_GRADOS.flatMap((g) =>
+    HEMATOMA_UBICACIONES.map((u) => `HEMATOMAS ${g.label.toUpperCase()} ${u.label.toUpperCase()}`)
+  );
+
+  const lesionHeaders = LESION_CATEGORIAS.flatMap((cat) => [`${cat} SIN LESION`, `${cat} LEVE`, `${cat} GRAVE`]);
+
+  const pigmentacionHeaders = Array.from({ length: 8 }, (_, i) => `PIGMENTACION NIVEL ${i}`);
 
   const baseHeaders = [
     "AÑO",
@@ -75,7 +100,19 @@ export async function GET(request: NextRequest) {
     "CAMPAÑA",
     "NRO GUIA",
     "SEXO",
+    "JABAS",
     "CANTIDAD",
+    "PROMEDIO VIVO",
+    "PROMEDIO BENEFICIADO",
+    "COMPLEX",
+    "TEMP PLATAFORMA",
+    "TEMP CAMION",
+    "TEMP AVES",
+    "HEMATOMAS CON",
+    "HEMATOMAS SIN",
+    ...hematomaHeaders,
+    ...lesionHeaders,
+    ...pigmentacionHeaders,
     "SELECCION UNID",
     "SELECCION KG",
     "% SELECCION",
@@ -99,6 +136,22 @@ export async function GET(request: NextRequest) {
     const porcentaje = calcularPorcentajeSeleccion(totalUnidades, insp.cantidad);
 
     const defectoMap = new Map(insp.defectos.map((d) => [d.tipoDefectoId, d]));
+    const hematomaMap = new Map(insp.hematomaDetalles.map((d) => [`${d.grado}_${d.ubicacion}`, d]));
+    const lesionMap = new Map(insp.evaluacionesLesion.map((l) => [l.categoria, l]));
+
+    const hematomaRow = HEMATOMA_GRADOS.flatMap((g) =>
+      HEMATOMA_UBICACIONES.map((u) => hematomaMap.get(`${g.key}_${u.key}`)?.cantidad ?? 0)
+    );
+
+    const lesionRow = LESION_CATEGORIAS.flatMap((cat) => {
+      const l = lesionMap.get(cat);
+      return [l?.sinLesion ?? 0, l?.leve ?? 0, l?.grave ?? 0];
+    });
+
+    const pigmentacionRow = [
+      insp.pigNivel0, insp.pigNivel1, insp.pigNivel2, insp.pigNivel3,
+      insp.pigNivel4, insp.pigNivel5, insp.pigNivel6, insp.pigNivel7,
+    ];
 
     const baseRow = [
       anio ?? "",
@@ -115,7 +168,19 @@ export async function GET(request: NextRequest) {
       insp.campania ?? "",
       insp.nroGuia ?? "",
       insp.sexo ?? "",
+      insp.jabas ?? "",
       insp.cantidad,
+      insp.promVivo ?? "",
+      insp.promBeneficiado ?? "",
+      insp.complex ?? "",
+      insp.tempPlataforma ?? "",
+      insp.tempCamion ?? "",
+      insp.tempAves ?? "",
+      insp.hematomasCon ?? "",
+      insp.hematomasSin ?? "",
+      ...hematomaRow,
+      ...lesionRow,
+      ...pigmentacionRow,
       totalUnidades,
       totalKg.toFixed(2),
       porcentaje.toFixed(4),
