@@ -51,8 +51,8 @@ type Inspeccion = {
 
 // ---- Helpers ----
 const NOMBRES_MERMA_PASO7 = [
-  "Alas Grado 1°", "Alas Grado 2°", "Alas Grado 3°", "Alas Rota", "Alas Mutiladas",
-  "Pierna Grado 1°", "Pierna Grado 2°", "Pierna Grado 3°", "Pierna Rota", "Piernas Mutiladas",
+  "Alas Grado 1°", "Alas Grado 2°", "Alas Grado 3°", "Alas Rota",
+  "Pierna Grado 1°", "Pierna Grado 2°", "Pierna Grado 3°", "Pierna Rota",
 ];
 
 const GRADOS_HEMATOMA = [
@@ -249,6 +249,29 @@ export default function WizardClient({
     const next = { ...defectos, [id]: { unidades: defectos[id]?.unidades ?? 0, kg: defectos[id]?.kg ?? 0, [field]: value } };
     setDefectos(next);
     scheduleGuardado({ defectos: Object.entries(next).map(([tipoDefectoId, v]) => ({ tipoDefectoId, ...v })) });
+  }
+
+  function renderDefectoCampos(tipo: TipoDefecto) {
+    return (
+      <div className="grid grid-cols-2 gap-2">
+        <label className="block">
+          <span className="text-xs text-slate-500">Unidades</span>
+          <input type="number" min={0}
+            value={defectos[tipo.id]?.unidades || ""}
+            onChange={(e) => updateDefecto(tipo.id, "unidades", Number(e.target.value) || 0)}
+            className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base"
+          />
+        </label>
+        <label className="block">
+          <span className="text-xs text-slate-500">Kg</span>
+          <input type="number" min={0} step="0.01"
+            value={defectos[tipo.id]?.kg || ""}
+            onChange={(e) => updateDefecto(tipo.id, "kg", Number(e.target.value) || 0)}
+            className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base"
+          />
+        </label>
+      </div>
+    );
   }
 
   function updateHematomaDetalle(grado: string, ubicacion: string, value: number) {
@@ -578,36 +601,47 @@ export default function WizardClient({
           </div>
         );
 
-      case 7:
+      case 7: {
+        const gruposMerma = [
+          {
+            label: "Alas",
+            grados: tiposMerma.filter((t) => t.categoria === "Alas" && t.nombre.includes("Grado")),
+            rota: tiposMerma.find((t) => t.nombre === "Alas Rota"),
+          },
+          {
+            label: "Pierna",
+            grados: tiposMerma.filter((t) => t.categoria === "Pierna" && t.nombre.includes("Grado")),
+            rota: tiposMerma.find((t) => t.nombre === "Pierna Rota"),
+          },
+        ];
         return (
           <div className="space-y-4">
-            <div>
-              <h3 className="mb-3 font-semibold text-slate-800">Mutilados / Merma</h3>
-              <div className="space-y-3">
-                {tiposMerma.map((tipo) => (
-                  <div key={tipo.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <p className="mb-2 text-sm font-medium text-slate-700">{tipo.nombre}</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <label className="block">
-                        <span className="text-xs text-slate-500">Unidades</span>
-                        <input type="number" min={0}
-                          value={defectos[tipo.id]?.unidades || ""}
-                          onChange={(e) => updateDefecto(tipo.id, "unidades", Number(e.target.value) || 0)}
-                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base"
-                        />
-                      </label>
-                      <label className="block">
-                        <span className="text-xs text-slate-500">Kg</span>
-                        <input type="number" min={0} step="0.01"
-                          value={defectos[tipo.id]?.kg || ""}
-                          onChange={(e) => updateDefecto(tipo.id, "kg", Number(e.target.value) || 0)}
-                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base"
-                        />
-                      </label>
-                    </div>
+            <div className="space-y-3">
+              <h3 className="font-semibold text-slate-800">Mutilados / Merma</h3>
+              {gruposMerma.map((grupo) => (
+                <div key={grupo.label} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <p className="mb-2 text-sm font-semibold text-slate-800">{grupo.label}</p>
+
+                  <p className="mb-1 text-xs font-medium text-slate-500">Mutilación (por grado)</p>
+                  <div className="space-y-2">
+                    {grupo.grados.map((tipo) => (
+                      <div key={tipo.id} className="rounded-lg border border-slate-200 bg-white p-2">
+                        <p className="mb-1 text-xs font-medium text-slate-600">{tipo.nombre}</p>
+                        {renderDefectoCampos(tipo)}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+
+                  {grupo.rota && (
+                    <div className="mt-3">
+                      <p className="mb-1 text-xs font-medium text-slate-500">Rota (aparte, sin grado)</p>
+                      <div className="rounded-lg border border-slate-200 bg-white p-2">
+                        {renderDefectoCampos(grupo.rota)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
 
             <label className="block">
@@ -622,6 +656,7 @@ export default function WizardClient({
             </label>
           </div>
         );
+      }
 
       default:
         return null;

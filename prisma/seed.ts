@@ -25,14 +25,12 @@ const TIPOS_DEFECTO: { nombre: string; categoria: string; orden: number; princip
   { nombre: "Alas Grado 2°", categoria: "Alas", orden: 15 },
   { nombre: "Alas Grado 3°", categoria: "Alas", orden: 16 },
   { nombre: "Alas Rota", categoria: "Alas", orden: 17 },
-  { nombre: "Alas Mutiladas", categoria: "Alas", orden: 18 },
-  { nombre: "Pierna Grado 1°", categoria: "Pierna", orden: 19 },
-  { nombre: "Pierna Grado 2°", categoria: "Pierna", orden: 20 },
-  { nombre: "Pierna Grado 3°", categoria: "Pierna", orden: 21 },
-  { nombre: "Pierna Rota", categoria: "Pierna", orden: 22 },
-  { nombre: "Piernas Mutiladas", categoria: "Pierna", orden: 23 },
-  { nombre: "Ascitis", categoria: "General", orden: 24 },
-  { nombre: "Tarso Inflamado", categoria: "General", orden: 25 },
+  { nombre: "Pierna Grado 1°", categoria: "Pierna", orden: 18 },
+  { nombre: "Pierna Grado 2°", categoria: "Pierna", orden: 19 },
+  { nombre: "Pierna Grado 3°", categoria: "Pierna", orden: 20 },
+  { nombre: "Pierna Rota", categoria: "Pierna", orden: 21 },
+  { nombre: "Ascitis", categoria: "General", orden: 22 },
+  { nombre: "Tarso Inflamado", categoria: "General", orden: 23 },
 ];
 
 // Clientes: destinos donde se vende el pollo a diario (independiente de los planteles).
