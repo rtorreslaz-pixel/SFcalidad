@@ -101,11 +101,22 @@ model SaldoDiaAnterior {
   jornadaId String
   jornada   Jornada @relation(fields: [jornadaId], references: [id], onDelete: Cascade)
 
-  sexo              SexoAve
-  unidades          Int     @default(0)
-  jabas             Int     @default(0)
-  unidadesSeleccion Int     @default(0)
-  remanente         Int?
+  sexo SexoAve
+
+  // Saldo total que dejó el cliente
+  unidades Int?
+  jabas    Int?
+  kg       Float?
+
+  // De ese saldo, lo que el cliente considera selección
+  unidadesSeleccion Int?
+  jabasSeleccion    Int?
+  kgSeleccion       Float?
+
+  // Lo que quedó sin vender tras el beneficiado del saldo
+  unidadesRemanente Int?
+  jabasRemanente    Int?
+  kgRemanente       Float?
 
   @@unique([jornadaId, sexo])
 }

@@ -13,7 +13,11 @@ export async function updateSaldoAction(
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const allowed = ["unidades", "jabas", "unidadesSeleccion", "remanente"];
+  const allowed = [
+    "unidades", "jabas", "kg",
+    "unidadesSeleccion", "jabasSeleccion", "kgSeleccion",
+    "unidadesRemanente", "jabasRemanente", "kgRemanente",
+  ];
   if (!allowed.includes(field)) return { error: "Campo inválido" };
 
   await prisma.saldoDiaAnterior.update({
