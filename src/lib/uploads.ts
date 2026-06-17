@@ -5,7 +5,7 @@ import sharp from "sharp";
 // Stored outside `public/` because Next.js snapshots the public folder at
 // server startup, so files written at runtime (uploaded photos) would 404.
 // They are served instead via /api/uploads/[...path].
-const UPLOAD_ROOT = path.join(process.cwd(), "uploads", "inspecciones");
+const UPLOAD_ROOT = path.join(process.env.UPLOAD_DIR ?? path.join(process.cwd(), "uploads"), "inspecciones");
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"]);
 
