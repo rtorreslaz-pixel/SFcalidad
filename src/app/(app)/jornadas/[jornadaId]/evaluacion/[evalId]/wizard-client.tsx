@@ -145,6 +145,7 @@ export default function WizardClient({
   const [isPending, startTransition] = useTransition();
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const pendingPatchRef = useRef<Record<string, unknown>>({});
 
   const [paso, setPaso] = useState(initial.pasoActual);
   const [completed, setCompleted] = useState(initial.estado === "COMPLETA");
@@ -223,12 +224,15 @@ export default function WizardClient({
 
   // Autoguardado
   const scheduleGuardado = useCallback((patch: Record<string, unknown>) => {
+    pendingPatchRef.current = { ...pendingPatchRef.current, ...patch };
     clearTimeout(timerRef.current);
     setSaveStatus("saving");
     timerRef.current = setTimeout(() => {
+      const patchToSave = pendingPatchRef.current;
+      pendingPatchRef.current = {};
       startTransition(async () => {
         try {
-          await autoguardadoAction(initial.id, patch);
+          await autoguardadoAction(initial.id, patchToSave);
           setSaveStatus("saved");
           setTimeout(() => setSaveStatus("idle"), 2000);
         } catch {
