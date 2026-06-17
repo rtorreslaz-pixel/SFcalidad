@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
       plantel: true,
       verificador: { select: { nombre: true } },
       defectos: { include: { tipoDefecto: true } },
+      jornada: { include: { cliente: true, verificador: { select: { nombre: true } } } },
     },
   });
 
@@ -85,9 +86,14 @@ export async function GET(request: NextRequest) {
 
   const defectoHeaders = tiposDefecto.flatMap((t) => [t.nombre.toUpperCase(), `KG ${t.nombre.toUpperCase()}`]);
 
-  const rows: (string | number)[][] = [[...baseHeaders, ...defectoHeaders]];
+  const dataRows = inspecciones.map((insp) => {
+    const fecha = insp.fecha ?? insp.jornada?.fecha ?? null;
+    const anio = insp.anio ?? insp.jornada?.anio ?? null;
+    const mes = insp.mes ?? insp.jornada?.mes ?? null;
+    const semana = insp.semana ?? insp.jornada?.semana ?? null;
+    const clienteNombre = insp.cliente?.nombre ?? insp.jornada?.cliente?.nombre ?? "";
+    const verificadorNombre = insp.verificador?.nombre ?? insp.jornada?.verificador?.nombre ?? "";
 
-  for (const insp of inspecciones) {
     const totalUnidades = insp.defectos.reduce((acc, d) => acc + d.unidades, 0);
     const totalKg = insp.defectos.reduce((acc, d) => acc + d.kg, 0);
     const porcentaje = calcularPorcentajeSeleccion(totalUnidades, insp.cantidad);
@@ -95,11 +101,11 @@ export async function GET(request: NextRequest) {
     const defectoMap = new Map(insp.defectos.map((d) => [d.tipoDefectoId, d]));
 
     const baseRow = [
-      insp.anio ?? "",
-      insp.mes ?? "",
-      insp.semana ?? "",
-      insp.fecha ? insp.fecha.toISOString().slice(0, 10) : "",
-      insp.cliente?.nombre ?? "",
+      anio ?? "",
+      mes ?? "",
+      semana ?? "",
+      fecha ? fecha.toISOString().slice(0, 10) : "",
+      clienteNombre,
       insp.plantel?.codigo ?? "",
       insp.galpon ?? "",
       insp.plantel?.tipoPlantel ?? "",
@@ -114,7 +120,7 @@ export async function GET(request: NextRequest) {
       totalKg.toFixed(2),
       porcentaje.toFixed(4),
       insp.metaPorcentaje,
-      insp.verificador?.nombre ?? "",
+      verificadorNombre,
       insp.observaciones ?? "",
     ];
 
@@ -123,8 +129,12 @@ export async function GET(request: NextRequest) {
       return [d?.unidades ?? 0, d ? d.kg.toFixed(2) : "0"];
     });
 
-    rows.push([...baseRow, ...defectoRow]);
-  }
+    return { fecha, row: [...baseRow, ...defectoRow] };
+  });
+
+  dataRows.sort((a, b) => (b.fecha?.getTime() ?? 0) - (a.fecha?.getTime() ?? 0));
+
+  const rows: (string | number)[][] = [[...baseHeaders, ...defectoHeaders], ...dataRows.map((d) => d.row)];
 
   const csv = rows.map((row) => row.map(csvEscape).join(";")).join("\n");
   const bom = "﻿"; // para que Excel reconozca UTF-8
