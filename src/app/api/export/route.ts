@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redirect } from "next/navigation";
+import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { calcularPorcentajeSeleccion } from "@/lib/calc";
@@ -13,14 +14,25 @@ function csvEscape(value: string | number | null | undefined): string {
   return str;
 }
 
-export async function GET(request: NextRequest) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+function tokenMatches(provided: string, expected: string): boolean {
+  const a = Buffer.from(provided);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
 
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
+  const expectedToken = process.env.EXPORT_API_TOKEN;
+  const providedToken = searchParams.get("token");
+  const tokenAuthorized = !!expectedToken && !!providedToken && tokenMatches(providedToken, expectedToken);
+
+  const user = tokenAuthorized ? null : await getCurrentUser();
+  if (!tokenAuthorized && !user) redirect("/login");
+
   const where: Prisma.InspeccionWhereInput = {};
-  if (user.role === "VERIFICADOR") {
+  if (user?.role === "VERIFICADOR") {
     where.verificadorId = user.id;
   } else if (searchParams.get("verificadorId")) {
     where.verificadorId = searchParams.get("verificadorId")!;
