@@ -50,6 +50,8 @@ type Inspeccion = {
 };
 
 // ---- Helpers ----
+const NOMBRES_MERMA_PASO7 = ["Alas Rota", "Alas Mutiladas", "Pierna Rota", "Piernas Mutiladas"];
+
 const GRADOS_HEMATOMA = [
   { key: "GRADO1", label: "1er grado" },
   { key: "GRADO2", label: "2do grado" },
@@ -201,13 +203,14 @@ export default function WizardClient({
   });
   const [extraIds, setExtraIds] = useState<string[]>(() =>
     initial.defectos
-      .filter((d) => !tiposDefecto.find((t) => t.id === d.tipoDefectoId)?.principal)
+      .filter((d) => {
+        const tipo = tiposDefecto.find((t) => t.id === d.tipoDefectoId);
+        return tipo && !tipo.principal && !NOMBRES_MERMA_PASO7.includes(tipo.nombre);
+      })
       .map((d) => d.tipoDefectoId)
   );
 
   // Step 7 state
-  const [mermaAla, setMermaAla] = useState(String(initial.mermaAlaKg ?? ""));
-  const [mermaPierna, setMermaPierna] = useState(String(initial.mermaPiernaKg ?? ""));
   const [observaciones, setObservaciones] = useState(initial.observaciones ?? "");
 
   // Photos
@@ -234,7 +237,8 @@ export default function WizardClient({
 
   // Defects helpers
   const principales = useMemo(() => tiposDefecto.filter((t) => t.principal).sort((a, b) => a.orden - b.orden), [tiposDefecto]);
-  const catalogoAdicional = useMemo(() => tiposDefecto.filter((t) => !t.principal).sort((a, b) => a.orden - b.orden), [tiposDefecto]);
+  const tiposMerma = useMemo(() => tiposDefecto.filter((t) => NOMBRES_MERMA_PASO7.includes(t.nombre)).sort((a, b) => a.orden - b.orden), [tiposDefecto]);
+  const catalogoAdicional = useMemo(() => tiposDefecto.filter((t) => !t.principal && !NOMBRES_MERMA_PASO7.includes(t.nombre)).sort((a, b) => a.orden - b.orden), [tiposDefecto]);
   const extraTipos = useMemo(() => extraIds.map((id) => tiposDefecto.find((t) => t.id === id)).filter(Boolean) as TipoDefecto[], [extraIds, tiposDefecto]);
   const disponibles = useMemo(() => catalogoAdicional.filter((t) => !extraIds.includes(t.id)), [catalogoAdicional, extraIds]);
 
@@ -576,17 +580,30 @@ export default function WizardClient({
           <div className="space-y-4">
             <div>
               <h3 className="mb-3 font-semibold text-slate-800">Mutilados / Merma</h3>
-              <BigInput
-                label="Ala mutilada (kg)"
-                value={mermaAla}
-                onChange={(v) => { setMermaAla(v); scheduleGuardado({ mermaAlaKg: v ? Number(v) : null }); }}
-              />
-              <div className="mt-3">
-                <BigInput
-                  label="Pierna mutilada (kg)"
-                  value={mermaPierna}
-                  onChange={(v) => { setMermaPierna(v); scheduleGuardado({ mermaPiernaKg: v ? Number(v) : null }); }}
-                />
+              <div className="space-y-3">
+                {tiposMerma.map((tipo) => (
+                  <div key={tipo.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <p className="mb-2 text-sm font-medium text-slate-700">{tipo.nombre}</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <label className="block">
+                        <span className="text-xs text-slate-500">Unidades</span>
+                        <input type="number" min={0}
+                          value={defectos[tipo.id]?.unidades || ""}
+                          onChange={(e) => updateDefecto(tipo.id, "unidades", Number(e.target.value) || 0)}
+                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-xs text-slate-500">Kg</span>
+                        <input type="number" min={0} step="0.01"
+                          value={defectos[tipo.id]?.kg || ""}
+                          onChange={(e) => updateDefecto(tipo.id, "kg", Number(e.target.value) || 0)}
+                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
