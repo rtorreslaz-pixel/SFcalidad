@@ -50,7 +50,10 @@ type Inspeccion = {
 };
 
 // ---- Helpers ----
-const NOMBRES_MERMA_PASO7 = ["Alas Rota", "Alas Mutiladas", "Pierna Rota", "Piernas Mutiladas"];
+const NOMBRES_MERMA_PASO7 = [
+  "Alas Grado 1°", "Alas Grado 2°", "Alas Grado 3°", "Alas Rota", "Alas Mutiladas",
+  "Pierna Grado 1°", "Pierna Grado 2°", "Pierna Grado 3°", "Pierna Rota", "Piernas Mutiladas",
+];
 
 const GRADOS_HEMATOMA = [
   { key: "GRADO1", label: "1er grado" },
