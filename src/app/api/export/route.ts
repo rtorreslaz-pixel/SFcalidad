@@ -1,50 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
-import { redirect } from "next/navigation";
-import { timingSafeEqual } from "crypto";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
 import { calcularPorcentajeSeleccion } from "@/lib/calc";
-import type { Prisma } from "@/generated/prisma/client";
+import { resolveExportUser, buildInspeccionWhere, csvResponse } from "@/lib/export-csv";
 
-function csvEscape(value: string | number | null | undefined): string {
-  const str = value === null || value === undefined ? "" : String(value);
-  if (/[",\n;]/.test(str)) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-}
-
-function tokenMatches(provided: string, expected: string): boolean {
-  const a = Buffer.from(provided);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length) return false;
-  return timingSafeEqual(a, b);
-}
+const NOMBRES_MERMA_PASO7 = [
+  "Alas Grado 1°", "Alas Grado 2°", "Alas Grado 3°", "Alas Rota",
+  "Pierna Grado 1°", "Pierna Grado 2°", "Pierna Grado 3°", "Pierna Rota",
+];
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-
-  const expectedToken = process.env.EXPORT_API_TOKEN;
-  const providedToken = searchParams.get("token");
-  const tokenAuthorized = !!expectedToken && !!providedToken && tokenMatches(providedToken, expectedToken);
-
-  const user = tokenAuthorized ? null : await getCurrentUser();
-  if (!tokenAuthorized && !user) redirect("/login");
-
-  const where: Prisma.InspeccionWhereInput = {};
-  if (user?.role === "VERIFICADOR") {
-    where.verificadorId = user.id;
-  } else if (searchParams.get("verificadorId")) {
-    where.verificadorId = searchParams.get("verificadorId")!;
-  }
-  if (searchParams.get("clienteId")) where.clienteId = searchParams.get("clienteId")!;
-  const desde = searchParams.get("desde");
-  const hasta = searchParams.get("hasta");
-  if (desde || hasta) {
-    where.fecha = {};
-    if (desde) where.fecha.gte = new Date(desde);
-    if (hasta) where.fecha.lte = new Date(hasta + "T23:59:59");
-  }
+  const user = await resolveExportUser(request);
+  const where = buildInspeccionWhere(searchParams, user);
 
   const inspecciones = await prisma.inspeccion.findMany({
     where,
@@ -60,7 +27,9 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  const tiposDefecto = await prisma.tipoDefecto.findMany({ orderBy: { orden: "asc" } });
+  const tiposDefecto = (await prisma.tipoDefecto.findMany({ orderBy: { orden: "asc" } })).filter(
+    (t) => !NOMBRES_MERMA_PASO7.includes(t.nombre)
+  );
 
   const HEMATOMA_GRADOS = [
     { key: "GRADO1", label: "1er grado" },
@@ -86,6 +55,7 @@ export async function GET(request: NextRequest) {
   const pigmentacionHeaders = Array.from({ length: 8 }, (_, i) => `PIGMENTACION NIVEL ${i}`);
 
   const baseHeaders = [
+    "ID",
     "AÑO",
     "MES",
     "SEMANA",
@@ -131,8 +101,9 @@ export async function GET(request: NextRequest) {
     const clienteNombre = insp.cliente?.nombre ?? insp.jornada?.cliente?.nombre ?? "";
     const verificadorNombre = insp.verificador?.nombre ?? insp.jornada?.verificador?.nombre ?? "";
 
-    const totalUnidades = insp.defectos.reduce((acc, d) => acc + d.unidades, 0);
-    const totalKg = insp.defectos.reduce((acc, d) => acc + d.kg, 0);
+    const defectosSeleccion = insp.defectos.filter((d) => !NOMBRES_MERMA_PASO7.includes(d.tipoDefecto.nombre));
+    const totalUnidades = defectosSeleccion.reduce((acc, d) => acc + d.unidades, 0);
+    const totalKg = defectosSeleccion.reduce((acc, d) => acc + d.kg, 0);
     const porcentaje = calcularPorcentajeSeleccion(totalUnidades, insp.cantidad);
 
     const defectoMap = new Map(insp.defectos.map((d) => [d.tipoDefectoId, d]));
@@ -154,6 +125,7 @@ export async function GET(request: NextRequest) {
     ];
 
     const baseRow = [
+      insp.id,
       anio ?? "",
       mes ?? "",
       semana ?? "",
@@ -201,13 +173,5 @@ export async function GET(request: NextRequest) {
 
   const rows: (string | number)[][] = [[...baseHeaders, ...defectoHeaders], ...dataRows.map((d) => d.row)];
 
-  const csv = rows.map((row) => row.map(csvEscape).join(";")).join("\n");
-  const bom = "﻿"; // para que Excel reconozca UTF-8
-
-  return new NextResponse(bom + csv, {
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="inspecciones_${new Date().toISOString().slice(0, 10)}.csv"`,
-    },
-  });
+  return csvResponse(rows, "inspecciones");
 }
