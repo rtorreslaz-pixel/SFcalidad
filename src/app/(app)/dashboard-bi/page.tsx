@@ -54,6 +54,7 @@ export default async function DashboardBiPage({
       include: {
         plantel: true,
         defectos: { include: { tipoDefecto: true } },
+        evaluacionesLesion: true,
         jornada: { select: { fecha: true } },
       },
       orderBy: { fecha: "asc" },
@@ -102,6 +103,26 @@ export default async function DashboardBiPage({
     });
   }
   const pigmentacionProm = pigUnidades ? pigSumaNiveles / pigUnidades : null;
+
+  // Pododermatitis (almohadillas) y rasguños tienen su propia muestra (EvaluacionLesion.muestra),
+  // igual que hematomas: no se dividen por `cantidad`, sino por su propio tamaño de muestra.
+  let almohadillasMuestra = 0;
+  let almohadillasConLesion = 0;
+  let rasgunosMuestra = 0;
+  let rasgunosConLesion = 0;
+  for (const insp of inspecciones) {
+    for (const l of insp.evaluacionesLesion) {
+      if (l.categoria === "ALMOHADILLAS") {
+        almohadillasMuestra += l.muestra;
+        almohadillasConLesion += l.leve + l.grave;
+      } else {
+        rasgunosMuestra += l.muestra;
+        rasgunosConLesion += l.leve + l.grave;
+      }
+    }
+  }
+  const pctPododermatitis = pct(almohadillasConLesion, almohadillasMuestra);
+  const pctRasgunos = pct(rasgunosConLesion, rasgunosMuestra);
 
   const pctSeleccion = pct(totalSeleccionUnid, totalUnidades);
   const pctMerma = pct(totalMermaUnid, totalUnidades);
@@ -214,7 +235,7 @@ export default async function DashboardBiPage({
         />
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
         <KpiCard
           label="Temp. promedio camión"
           value={tempCamionProm != null ? `${tempCamionProm.toFixed(1)} °C` : "Sin datos"}
@@ -224,6 +245,12 @@ export default async function DashboardBiPage({
           value={pigmentacionProm != null ? pigmentacionProm.toFixed(2) : "Sin datos"}
           sub="Meta: 3.5"
         />
+        <KpiCard
+          label="% Pododermatitis"
+          value={`${pctPododermatitis.toFixed(2)}%`}
+          sub="Almohadillas, muestra propia"
+        />
+        <KpiCard label="% Rasguños" value={`${pctRasgunos.toFixed(2)}%`} sub="Muestra propia" />
         <KpiCard label="Planteles evaluados" value={ranking.length.toString()} />
         <KpiCard
           label="Evaluaciones solo lesión/pigmentación"
