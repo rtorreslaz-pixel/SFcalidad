@@ -7,6 +7,7 @@ import { TendenciaChart, RankingChart } from "./charts";
 const NOMBRES_MERMA_PASO7 = [
   "Alas Grado 1°", "Alas Grado 2°", "Alas Grado 3°", "Alas Rota",
   "Pierna Grado 1°", "Pierna Grado 2°", "Pierna Grado 3°", "Pierna Rota",
+  "Alas Mutiladas", "Piernas Mutiladas",
 ];
 
 const UMBRAL_MERMA = { verde: 2, amarillo: 5 };
