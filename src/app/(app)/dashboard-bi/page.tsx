@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
-import { TendenciaChart, RankingChart } from "./charts";
+import { TendenciaChart, RankingChart, PigmentacionChart, LesionChart } from "./charts";
 
 const NOMBRES_MERMA_PASO7 = [
   "Alas Grado 1°", "Alas Grado 2°", "Alas Grado 3°", "Alas Rota",
@@ -12,6 +12,12 @@ const NOMBRES_MERMA_PASO7 = [
 
 const UMBRAL_MERMA = { verde: 2, amarillo: 5 };
 const UMBRAL_HEMATOMAS = { verde: 5, amarillo: 15 };
+
+// Objetivos del reporte diario de calidad pecuaria (fuente: reporte usado en planta).
+const OBJETIVO_SELECCION = 0.6;
+const OBJETIVO_PIGMENTACION = { min: 3.0, max: 3.5 };
+const OBJETIVO_PODODERMATITIS = 11;
+const OBJETIVO_RASGUNOS = 10;
 
 const SEMAFORO_BADGE = {
   verde: "bg-emerald-100 text-emerald-700",
@@ -35,20 +41,45 @@ function semaforo(value: number, umbral: { verde: number; amarillo: number }): "
   return "rojo";
 }
 
+// Objetivos del reporte diario: un solo umbral (no hay franja amarilla intermedia).
+function semaforoMax(value: number, objetivo: number): "verde" | "rojo" {
+  return value <= objetivo ? "verde" : "rojo";
+}
+
+function semaforoRango(value: number, min: number, max: number): "verde" | "rojo" {
+  return value >= min && value <= max ? "verde" : "rojo";
+}
+
+function buildHref(params: Record<string, string | undefined>) {
+  const sp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v) sp.set(k, v);
+  }
+  const qs = sp.toString();
+  return qs ? `/dashboard-bi?${qs}` : "/dashboard-bi";
+}
+
+function isoDaysAgo(dias: number) {
+  return new Date(Date.now() - dias * 86400000).toISOString().slice(0, 10);
+}
+
 export default async function DashboardBiPage({
   searchParams,
 }: {
-  searchParams: Promise<{ clienteId?: string }>;
+  searchParams: Promise<{ clienteId?: string; plantelId?: string; desde?: string; hasta?: string }>;
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role === "VERIFICADOR") redirect("/jornadas");
 
-  const { clienteId } = await searchParams;
+  const { clienteId, plantelId, desde, hasta } = await searchParams;
 
-  const where: Prisma.InspeccionWhereInput = clienteId ? { clienteId } : {};
+  const where: Prisma.InspeccionWhereInput = {
+    ...(clienteId ? { clienteId } : {}),
+    ...(plantelId ? { plantelId } : {}),
+  };
 
-  const [inspecciones, clientes] = await Promise.all([
+  const [inspeccionesSinFecha, clientes, planteles] = await Promise.all([
     prisma.inspeccion.findMany({
       where,
       include: {
@@ -60,7 +91,24 @@ export default async function DashboardBiPage({
       orderBy: { fecha: "asc" },
     }),
     prisma.cliente.findMany({ orderBy: { nombre: "asc" } }),
+    prisma.plantel.findMany({
+      where: clienteId ? { clienteId } : {},
+      orderBy: { codigo: "asc" },
+    }),
   ]);
+
+  // El horizonte temporal se aplica en memoria porque la fecha "efectiva" de una
+  // inspección puede venir del campo legacy `fecha` o de `jornada.fecha`.
+  const desdeDate = desde ? new Date(desde) : null;
+  const hastaDate = hasta ? new Date(`${hasta}T23:59:59.999`) : null;
+  const inspecciones = inspeccionesSinFecha.filter((insp) => {
+    if (!desdeDate && !hastaDate) return true;
+    const fecha = insp.fecha ?? insp.jornada?.fecha ?? null;
+    if (!fecha) return false;
+    if (desdeDate && fecha < desdeDate) return false;
+    if (hastaDate && fecha > hastaDate) return false;
+    return true;
+  });
 
   // Las evaluaciones "solo lesión/pigmentación" no traen censo de selección/merma:
   // se excluyen de esos ratios para no diluirlos con su tamaño de muestra.
@@ -106,23 +154,24 @@ export default async function DashboardBiPage({
 
   // Pododermatitis (almohadillas) y rasguños tienen su propia muestra (EvaluacionLesion.muestra),
   // igual que hematomas: no se dividen por `cantidad`, sino por su propio tamaño de muestra.
+  // El objetivo del reporte diario solo califica el Grado 2 (lesión grave), no leve+grave.
   let almohadillasMuestra = 0;
-  let almohadillasConLesion = 0;
+  let almohadillasGrado2 = 0;
   let rasgunosMuestra = 0;
-  let rasgunosConLesion = 0;
+  let rasgunosGrado2 = 0;
   for (const insp of inspecciones) {
     for (const l of insp.evaluacionesLesion) {
       if (l.categoria === "ALMOHADILLAS") {
         almohadillasMuestra += l.muestra;
-        almohadillasConLesion += l.leve + l.grave;
+        almohadillasGrado2 += l.grave;
       } else {
         rasgunosMuestra += l.muestra;
-        rasgunosConLesion += l.leve + l.grave;
+        rasgunosGrado2 += l.grave;
       }
     }
   }
-  const pctPododermatitis = pct(almohadillasConLesion, almohadillasMuestra);
-  const pctRasgunos = pct(rasgunosConLesion, rasgunosMuestra);
+  const pctPododermatitis = pct(almohadillasGrado2, almohadillasMuestra);
+  const pctRasgunos = pct(rasgunosGrado2, rasgunosMuestra);
 
   const pctSeleccion = pct(totalSeleccionUnid, totalUnidades);
   const pctMerma = pct(totalMermaUnid, totalUnidades);
@@ -169,22 +218,62 @@ export default async function DashboardBiPage({
     color: SEMAFORO_HEX[semaforo(p.pctMerma, UMBRAL_MERMA)],
   }));
 
-  // Tendencia en el tiempo (por fecha)
-  type FechaAgg = { fecha: string; cantidad: number; seleccionUnid: number; mermaUnid: number; hemCon: number; hemSin: number };
+  // Tendencia en el tiempo (por fecha). Selección/merma usan solo evaluaciones completas
+  // (censo); hematomas, pigmentación y lesión usan todas las inspecciones, igual que sus KPIs.
+  type FechaAgg = {
+    fecha: string;
+    cantidad: number; seleccionUnid: number; mermaUnid: number;
+    hemCon: number; hemSin: number;
+    pigUnidades: number; pigSuma: number;
+    podoMuestra: number; podoGrado2: number;
+    rasgMuestra: number; rasgGrado2: number;
+  };
   const fechaMap = new Map<string, FechaAgg>();
+  function fechaEntry(key: string): FechaAgg {
+    let entry = fechaMap.get(key);
+    if (!entry) {
+      entry = {
+        fecha: key, cantidad: 0, seleccionUnid: 0, mermaUnid: 0,
+        hemCon: 0, hemSin: 0, pigUnidades: 0, pigSuma: 0,
+        podoMuestra: 0, podoGrado2: 0, rasgMuestra: 0, rasgGrado2: 0,
+      };
+      fechaMap.set(key, entry);
+    }
+    return entry;
+  }
   for (const insp of inspeccionesCompletas) {
     const fecha = insp.fecha ?? insp.jornada?.fecha ?? null;
     if (!fecha) continue;
-    const key = fecha.toISOString().slice(0, 10);
-    const entry = fechaMap.get(key) ?? { fecha: key, cantidad: 0, seleccionUnid: 0, mermaUnid: 0, hemCon: 0, hemSin: 0 };
+    const entry = fechaEntry(fecha.toISOString().slice(0, 10));
     entry.cantidad += insp.cantidad;
-    entry.hemCon += insp.hematomasCon ?? 0;
-    entry.hemSin += insp.hematomasSin ?? 0;
     for (const d of insp.defectos) {
       if (NOMBRES_MERMA_PASO7.includes(d.tipoDefecto.nombre)) entry.mermaUnid += d.unidades;
       else entry.seleccionUnid += d.unidades;
     }
-    fechaMap.set(key, entry);
+  }
+  for (const insp of inspecciones) {
+    const fecha = insp.fecha ?? insp.jornada?.fecha ?? null;
+    if (!fecha) continue;
+    const entry = fechaEntry(fecha.toISOString().slice(0, 10));
+    entry.hemCon += insp.hematomasCon ?? 0;
+    entry.hemSin += insp.hematomasSin ?? 0;
+    const niveles = [
+      insp.pigNivel0, insp.pigNivel1, insp.pigNivel2, insp.pigNivel3,
+      insp.pigNivel4, insp.pigNivel5, insp.pigNivel6, insp.pigNivel7,
+    ];
+    niveles.forEach((cantidad, nivel) => {
+      entry.pigUnidades += cantidad;
+      entry.pigSuma += cantidad * nivel;
+    });
+    for (const l of insp.evaluacionesLesion) {
+      if (l.categoria === "ALMOHADILLAS") {
+        entry.podoMuestra += l.muestra;
+        entry.podoGrado2 += l.grave;
+      } else {
+        entry.rasgMuestra += l.muestra;
+        entry.rasgGrado2 += l.grave;
+      }
+    }
   }
   const tendencia = Array.from(fechaMap.values())
     .sort((a, b) => a.fecha.localeCompare(b.fecha))
@@ -193,7 +282,18 @@ export default async function DashboardBiPage({
       pctSeleccion: Number(pct(f.seleccionUnid, f.cantidad).toFixed(3)),
       pctMerma: Number(pct(f.mermaUnid, f.cantidad).toFixed(3)),
       pctHematomas: Number(pct(f.hemCon, f.hemCon + f.hemSin).toFixed(3)),
+      pigmentacion: f.pigUnidades ? Number((f.pigSuma / f.pigUnidades).toFixed(3)) : null,
+      pctPododermatitis: Number(pct(f.podoGrado2, f.podoMuestra).toFixed(3)),
+      pctRasgunos: Number(pct(f.rasgGrado2, f.rasgMuestra).toFixed(3)),
     }));
+
+  const quickRanges: { label: string; desde?: string; hasta?: string }[] = [
+    { label: "Hoy", desde: isoDaysAgo(0), hasta: isoDaysAgo(0) },
+    { label: "Últimos 7 días", desde: isoDaysAgo(7), hasta: isoDaysAgo(0) },
+    { label: "Últimos 30 días", desde: isoDaysAgo(30), hasta: isoDaysAgo(0) },
+    { label: "Todo", desde: undefined, hasta: undefined },
+  ];
+  const hayFiltros = Boolean(clienteId || plantelId || desde || hasta);
 
   return (
     <div>
@@ -202,27 +302,76 @@ export default async function DashboardBiPage({
         Selección, merma, hematomas, pigmentación y condiciones de transporte de todas las inspecciones.
       </p>
 
-      <form className="mb-6 flex flex-wrap items-end gap-2 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-        <select name="clienteId" defaultValue={clienteId ?? ""} className="input max-w-xs">
-          <option value="">Todos los clientes</option>
-          {clientes.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nombre}
-            </option>
-          ))}
-        </select>
+      <form className="mb-3 flex flex-wrap items-end gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Cliente</label>
+          <select name="clienteId" defaultValue={clienteId ?? ""} className="input max-w-xs">
+            <option value="">Todos los clientes</option>
+            {clientes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Plantel</label>
+          <select name="plantelId" defaultValue={plantelId ?? ""} className="input max-w-xs">
+            <option value="">Todos los planteles</option>
+            {planteles.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.codigo}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Desde</label>
+          <input type="date" name="desde" defaultValue={desde ?? ""} className="input" />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Hasta</label>
+          <input type="date" name="hasta" defaultValue={hasta ?? ""} className="input" />
+        </div>
         <button
           type="submit"
           className="rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900"
         >
           Filtrar
         </button>
+        {hayFiltros && (
+          <a href="/dashboard-bi" className="rounded-md px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100">
+            Limpiar filtros
+          </a>
+        )}
       </form>
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        {quickRanges.map((r) => {
+          const activo = (r.desde ?? "") === (desde ?? "") && (r.hasta ?? "") === (hasta ?? "");
+          return (
+            <a
+              key={r.label}
+              href={buildHref({ clienteId, plantelId, desde: r.desde, hasta: r.hasta })}
+              className={`rounded-full px-3 py-1 text-xs font-medium ${
+                activo ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {r.label}
+            </a>
+          );
+        })}
+      </div>
 
       <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <KpiCard label="Evaluaciones completas" value={evaluacionesCompletas.toString()} />
         <KpiCard label="Unidades evaluadas" value={totalUnidades.toLocaleString("es-PE")} />
-        <KpiCard label="% Selección" value={`${pctSeleccion.toFixed(2)}%`} />
+        <KpiCard
+          label="% Selección"
+          value={`${pctSeleccion.toFixed(2)}%`}
+          highlight={semaforoMax(pctSeleccion, OBJETIVO_SELECCION)}
+          sub={`Objetivo: ≤ ${OBJETIVO_SELECCION.toFixed(2)}%`}
+        />
         <KpiCard
           label="% Merma"
           value={`${pctMerma.toFixed(2)}%`}
@@ -243,14 +392,21 @@ export default async function DashboardBiPage({
         <KpiCard
           label="Pigmentación promedio (nivel 0-7)"
           value={pigmentacionProm != null ? pigmentacionProm.toFixed(2) : "Sin datos"}
-          sub="Meta: 3.5"
+          highlight={pigmentacionProm != null ? semaforoRango(pigmentacionProm, OBJETIVO_PIGMENTACION.min, OBJETIVO_PIGMENTACION.max) : undefined}
+          sub={`Objetivo: ${OBJETIVO_PIGMENTACION.min} - ${OBJETIVO_PIGMENTACION.max}`}
         />
         <KpiCard
-          label="% Pododermatitis"
+          label="% Pododermatitis (Grado 2)"
           value={`${pctPododermatitis.toFixed(2)}%`}
-          sub="Almohadillas, muestra propia"
+          highlight={semaforoMax(pctPododermatitis, OBJETIVO_PODODERMATITIS)}
+          sub={`Objetivo: ≤ ${OBJETIVO_PODODERMATITIS}% · muestra propia`}
         />
-        <KpiCard label="% Rasguños" value={`${pctRasgunos.toFixed(2)}%`} sub="Muestra propia" />
+        <KpiCard
+          label="% Rasguños (Grado 2)"
+          value={`${pctRasgunos.toFixed(2)}%`}
+          highlight={semaforoMax(pctRasgunos, OBJETIVO_RASGUNOS)}
+          sub={`Objetivo: ≤ ${OBJETIVO_RASGUNOS}% · muestra propia`}
+        />
         <KpiCard label="Planteles evaluados" value={ranking.length.toString()} />
         <KpiCard
           label="Evaluaciones solo lesión/pigmentación"
@@ -260,11 +416,20 @@ export default async function DashboardBiPage({
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ChartCard title="Tendencia en el tiempo">
-          <TendenciaChart data={tendencia} />
+        <ChartCard title="Tendencia en el tiempo · Selección, merma y hematomas">
+          <TendenciaChart data={tendencia} objetivoSeleccion={OBJETIVO_SELECCION} />
         </ChartCard>
         <ChartCard title="Ranking de planteles por % de merma (mejor desempeño arriba)">
           <RankingChart data={rankingChartData} />
+        </ChartCard>
+      </div>
+
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <ChartCard title="Tendencia en el tiempo · Pigmentación promedio">
+          <PigmentacionChart data={tendencia} objetivo={OBJETIVO_PIGMENTACION} />
+        </ChartCard>
+        <ChartCard title="Tendencia en el tiempo · Pododermatitis y rasguños (Grado 2)">
+          <LesionChart data={tendencia} objetivoPodo={OBJETIVO_PODODERMATITIS} objetivoRasg={OBJETIVO_RASGUNOS} />
         </ChartCard>
       </div>
 
