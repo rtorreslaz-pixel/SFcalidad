@@ -61,12 +61,17 @@ export default async function DashboardBiPage({
     prisma.cliente.findMany({ orderBy: { nombre: "asc" } }),
   ]);
 
-  const evaluacionesCompletas = inspecciones.length;
-  const totalUnidades = inspecciones.reduce((acc, i) => acc + i.cantidad, 0);
+  // Las evaluaciones "solo lesión/pigmentación" no traen censo de selección/merma:
+  // se excluyen de esos ratios para no diluirlos con su tamaño de muestra.
+  const inspeccionesCompletas = inspecciones.filter((i) => !i.soloLesionPigmentacion);
+  const inspeccionesParciales = inspecciones.filter((i) => i.soloLesionPigmentacion);
+
+  const evaluacionesCompletas = inspeccionesCompletas.length;
+  const totalUnidades = inspeccionesCompletas.reduce((acc, i) => acc + i.cantidad, 0);
 
   let totalSeleccionUnid = 0;
   let totalMermaUnid = 0;
-  for (const insp of inspecciones) {
+  for (const insp of inspeccionesCompletas) {
     for (const d of insp.defectos) {
       if (NOMBRES_MERMA_PASO7.includes(d.tipoDefecto.nombre)) {
         totalMermaUnid += d.unidades;
@@ -113,7 +118,7 @@ export default async function DashboardBiPage({
     hemSin: number;
   };
   const plantelMap = new Map<string, PlantelAgg>();
-  for (const insp of inspecciones) {
+  for (const insp of inspeccionesCompletas) {
     const codigo = insp.plantel?.codigo ?? "Sin plantel";
     const entry =
       plantelMap.get(codigo) ?? { codigo, evaluaciones: 0, cantidad: 0, seleccionUnid: 0, mermaUnid: 0, hemCon: 0, hemSin: 0 };
@@ -146,7 +151,7 @@ export default async function DashboardBiPage({
   // Tendencia en el tiempo (por fecha)
   type FechaAgg = { fecha: string; cantidad: number; seleccionUnid: number; mermaUnid: number; hemCon: number; hemSin: number };
   const fechaMap = new Map<string, FechaAgg>();
-  for (const insp of inspecciones) {
+  for (const insp of inspeccionesCompletas) {
     const fecha = insp.fecha ?? insp.jornada?.fecha ?? null;
     if (!fecha) continue;
     const key = fecha.toISOString().slice(0, 10);
@@ -209,7 +214,7 @@ export default async function DashboardBiPage({
         />
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label="Temp. promedio camión"
           value={tempCamionProm != null ? `${tempCamionProm.toFixed(1)} °C` : "Sin datos"}
@@ -220,6 +225,11 @@ export default async function DashboardBiPage({
           sub="Meta: 3.5"
         />
         <KpiCard label="Planteles evaluados" value={ranking.length.toString()} />
+        <KpiCard
+          label="Evaluaciones solo lesión/pigmentación"
+          value={inspeccionesParciales.length.toString()}
+          sub="No suman a % Selección ni % Merma"
+        />
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">

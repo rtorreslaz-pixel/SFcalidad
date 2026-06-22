@@ -189,6 +189,10 @@ model Inspeccion {
   estado     EstadoInspeccion @default(BORRADOR)
   pasoActual Int              @default(1)
 
+  // true cuando el registro solo trae datos de pododermatitis/rasguños o pigmentación
+  // (sin censo de selección/merma); se excluye de esos ratios para no diluirlos.
+  soloLesionPigmentacion Boolean @default(false)
+
   defectos           DefectoRegistro[]
   fotos              Foto[]
   evaluacionesLesion EvaluacionLesion[]
