@@ -174,7 +174,6 @@ export default async function DashboardBiPage({
   const pctRasgunos = pct(rasgunosGrado2, rasgunosMuestra);
 
   const pctSeleccion = pct(totalSeleccionUnid, totalUnidades);
-  const pctMerma = pct(totalMermaUnid, totalUnidades);
   const pctHematomas = pct(totalHemCon, totalHemCon + totalHemSin);
 
   // Ranking por plantel
@@ -363,7 +362,7 @@ export default async function DashboardBiPage({
         })}
       </div>
 
-      <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Evaluaciones completas" value={evaluacionesCompletas.toString()} />
         <KpiCard label="Unidades evaluadas" value={totalUnidades.toLocaleString("es-PE")} />
         <KpiCard
@@ -371,11 +370,6 @@ export default async function DashboardBiPage({
           value={`${pctSeleccion.toFixed(2)}%`}
           highlight={semaforoMax(pctSeleccion, OBJETIVO_SELECCION)}
           sub={`Objetivo: ≤ ${OBJETIVO_SELECCION.toFixed(2)}%`}
-        />
-        <KpiCard
-          label="% Merma"
-          value={`${pctMerma.toFixed(2)}%`}
-          highlight={semaforo(pctMerma, UMBRAL_MERMA)}
         />
         <KpiCard
           label="% Hematomas"
