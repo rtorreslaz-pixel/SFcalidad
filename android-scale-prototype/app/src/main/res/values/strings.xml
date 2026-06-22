@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Báscula Ranger BT</string>
+
+    <string name="status_idle">Listo. Selecciona la balanza emparejada y presiona Conectar.</string>
+    <string name="no_bluetooth_adapter">Este dispositivo no tiene Bluetooth.</string>
+    <string name="permission_denied">Se necesita el permiso de Bluetooth para continuar.</string>
+    <string name="no_paired_devices">No hay dispositivos emparejados. Empareja la balanza desde Ajustes Bluetooth primero.</string>
+    <string name="devices_found">%1$d dispositivo(s) emparejado(s) encontrados.</string>
+    <string name="select_device_first">Selecciona primero un dispositivo de la lista.</string>
+    <string name="connected">Conectado. Esperando datos de la balanza…</string>
+    <string name="disconnected">Desconectado.</string>
+    <string name="error_format">Error: %1$s</string>
+    <string name="weight_format">%1$.3f %2$s</string>
+    <string name="weight_placeholder">-- kg</string>
+    <string name="log_copied">Registro copiado al portapapeles.</string>
+
+    <string name="label_devices">Dispositivo emparejado</string>
+    <string name="action_refresh">Actualizar lista</string>
+    <string name="action_bt_settings">Ajustes Bluetooth</string>
+    <string name="action_connect">Conectar</string>
+    <string name="action_disconnect">Desconectar</string>
+    <string name="action_copy_log">Copiar registro</string>
+    <string name="action_clear_log">Limpiar</string>
+    <string name="label_show_hex">Mostrar también en hexadecimal</string>
+    <string name="label_log">Datos crudos recibidos</string>
+</resources>
