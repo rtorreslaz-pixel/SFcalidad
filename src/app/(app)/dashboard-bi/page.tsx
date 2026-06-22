@@ -53,6 +53,7 @@ export default async function DashboardBiPage({
       include: {
         plantel: true,
         defectos: { include: { tipoDefecto: true } },
+        jornada: { select: { fecha: true } },
       },
       orderBy: { fecha: "asc" },
     }),
@@ -145,8 +146,9 @@ export default async function DashboardBiPage({
   type FechaAgg = { fecha: string; cantidad: number; seleccionUnid: number; mermaUnid: number; hemCon: number; hemSin: number };
   const fechaMap = new Map<string, FechaAgg>();
   for (const insp of inspecciones) {
-    if (!insp.fecha) continue;
-    const key = insp.fecha.toISOString().slice(0, 10);
+    const fecha = insp.fecha ?? insp.jornada?.fecha ?? null;
+    if (!fecha) continue;
+    const key = fecha.toISOString().slice(0, 10);
     const entry = fechaMap.get(key) ?? { fecha: key, cantidad: 0, seleccionUnid: 0, mermaUnid: 0, hemCon: 0, hemSin: 0 };
     entry.cantidad += insp.cantidad;
     entry.hemCon += insp.hematomasCon ?? 0;
