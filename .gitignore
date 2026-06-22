@@ -51,3 +51,6 @@ next-env.d.ts
 
 # Claude Code internal
 /.claude
+
+# throwaway local scripts
+/tmp-*.ts
