@@ -17,31 +17,33 @@ export default async function InspeccionesPage({
 
   const params = await searchParams;
 
-  const where: Prisma.InspeccionWhereInput = {};
+  // Las inspecciones creadas desde el flujo de jornadas no guardan su propio
+  // clienteId/verificadorId (sólo viven en la jornada), así que los filtros
+  // deben matchear contra ambas fuentes.
+  const andConds: Prisma.InspeccionWhereInput[] = [];
 
   if (params.verificadorId) {
-    where.verificadorId = params.verificadorId;
+    andConds.push({
+      OR: [{ verificadorId: params.verificadorId }, { jornada: { verificadorId: params.verificadorId } }],
+    });
   }
 
-  if (params.clienteId) where.clienteId = params.clienteId;
-
-  if (params.desde || params.hasta) {
-    where.fecha = {};
-    if (params.desde) where.fecha.gte = new Date(params.desde);
-    if (params.hasta) where.fecha.lte = new Date(params.hasta + "T23:59:59");
+  if (params.clienteId) {
+    andConds.push({ OR: [{ clienteId: params.clienteId }, { jornada: { clienteId: params.clienteId } }] });
   }
 
-  const [inspecciones, clientes, verificadores] = await Promise.all([
+  const where: Prisma.InspeccionWhereInput = andConds.length ? { AND: andConds } : {};
+
+  const [inspeccionesRaw, clientes, verificadores] = await Promise.all([
     prisma.inspeccion.findMany({
       where,
-      orderBy: { fecha: "desc" },
-      take: 100,
       include: {
         cliente: true,
         plantel: true,
         verificador: { select: { nombre: true } },
         defectos: true,
         _count: { select: { fotos: true } },
+        jornada: { select: { fecha: true, cliente: { select: { nombre: true } }, verificador: { select: { nombre: true } } } },
       },
     }),
     prisma.cliente.findMany({ orderBy: { nombre: "asc" } }),
@@ -49,6 +51,28 @@ export default async function InspeccionesPage({
       ? prisma.user.findMany({ where: { activo: true }, orderBy: { nombre: "asc" } })
       : Promise.resolve([]),
   ]);
+
+  // La fecha "efectiva" puede venir del campo legacy `fecha` o de `jornada.fecha`,
+  // así que el filtro de rango y el orden se resuelven en memoria.
+  const desdeDate = params.desde ? new Date(params.desde) : null;
+  const hastaDate = params.hasta ? new Date(`${params.hasta}T23:59:59`) : null;
+
+  const enriquecidas = inspeccionesRaw
+    .map((insp) => ({
+      insp,
+      fecha: insp.fecha ?? insp.jornada?.fecha ?? null,
+      clienteNombre: insp.cliente?.nombre ?? insp.jornada?.cliente?.nombre ?? null,
+      verificadorNombre: insp.verificador?.nombre ?? insp.jornada?.verificador?.nombre ?? null,
+    }))
+    .filter(({ fecha }) => {
+      if (desdeDate && (!fecha || fecha < desdeDate)) return false;
+      if (hastaDate && (!fecha || fecha > hastaDate)) return false;
+      return true;
+    });
+
+  enriquecidas.sort((a, b) => (b.fecha?.getTime() ?? 0) - (a.fecha?.getTime() ?? 0));
+
+  const inspecciones = enriquecidas.slice(0, 100);
 
   return (
     <div>
@@ -115,7 +139,7 @@ export default async function InspeccionesPage({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {inspecciones.map((insp) => {
+            {inspecciones.map(({ insp, fecha, clienteNombre, verificadorNombre }) => {
               const totalUnidades = insp.defectos.reduce((acc, d) => acc + d.unidades, 0);
               const porcentaje = calcularPorcentajeSeleccion(totalUnidades, insp.cantidad);
               const excede = porcentaje > insp.metaPorcentaje;
@@ -123,10 +147,10 @@ export default async function InspeccionesPage({
                 <tr key={insp.id} className="hover:bg-slate-50">
                   <td className="px-3 py-2">
                     <Link href={`/inspecciones/${insp.id}`} className="text-emerald-700 hover:underline">
-                      {insp.fecha ? insp.fecha.toLocaleDateString("es-PE") : "-"}
+                      {fecha ? fecha.toLocaleDateString("es-PE") : "-"}
                     </Link>
                   </td>
-                  <td className="px-3 py-2">{insp.cliente?.nombre ?? "-"}</td>
+                  <td className="px-3 py-2">{clienteNombre ?? "-"}</td>
                   <td className="px-3 py-2">
                     {insp.plantel?.codigo ?? "-"} {insp.galpon ? `· ${insp.galpon}` : ""}
                   </td>
@@ -140,7 +164,7 @@ export default async function InspeccionesPage({
                       {porcentaje.toFixed(3)}%
                     </span>
                   </td>
-                  <td className="px-3 py-2">{insp.verificador?.nombre ?? "-"}</td>
+                  <td className="px-3 py-2">{verificadorNombre ?? "-"}</td>
                   <td className="px-3 py-2">{insp._count.fotos}</td>
                 </tr>
               );
