@@ -11,6 +11,7 @@ export default function NavLinks({ role }: { role: Role }) {
     role === "SUPERVISOR"
       ? [
           { href: "/dashboard", label: "Dashboard" },
+          { href: "/dashboard-bi", label: "Indicadores BI" },
           { href: "/jornadas", label: "Jornadas" },
           { href: "/inspecciones", label: "Inspecciones" },
           { href: "/admin", label: "Catálogos" },
@@ -19,7 +20,10 @@ export default function NavLinks({ role }: { role: Role }) {
         ? [
             { href: "/jornadas", label: "Mis jornadas" },
           ]
-        : [{ href: "/dashboard", label: "Dashboard" }];
+        : [
+            { href: "/dashboard", label: "Dashboard" },
+            { href: "/dashboard-bi", label: "Indicadores BI" },
+          ];
 
   return (
     <div className="flex gap-1 overflow-x-auto pb-2 text-sm">
