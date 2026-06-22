@@ -64,6 +64,10 @@ class MainActivity : AppCompatActivity() {
         binding.buttonCopyLog.setOnClickListener { copyLogToClipboard() }
         binding.buttonClearLog.setOnClickListener { binding.textLog.text = "" }
 
+        binding.spinnerProtocol.adapter = ArrayAdapter(
+            this, android.R.layout.simple_spinner_dropdown_item, ScaleProtocols.all.map { it.displayName }
+        )
+
         ensurePermissionThenRefresh()
     }
 
@@ -165,7 +169,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateWeightFromLine(line: String) {
-        val parsed = WeightParser.parse(line) ?: return
+        val protocolIndex = binding.spinnerProtocol.selectedItemPosition
+        val protocol = ScaleProtocols.all.getOrNull(protocolIndex) ?: ScaleProtocols.default
+        val parsed = protocol.parse(line) ?: return
         binding.textWeight.text = getString(
             R.string.weight_format, parsed.value, parsed.unit ?: ""
         )

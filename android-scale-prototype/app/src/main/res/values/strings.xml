@@ -15,6 +15,7 @@
     <string name="log_copied">Registro copiado al portapapeles.</string>
 
     <string name="label_devices">Dispositivo emparejado</string>
+    <string name="label_protocol">Protocolo / marca de báscula</string>
     <string name="action_refresh">Actualizar lista</string>
     <string name="action_bt_settings">Ajustes Bluetooth</string>
     <string name="action_connect">Conectar</string>
