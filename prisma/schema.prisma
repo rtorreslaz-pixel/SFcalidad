@@ -167,9 +167,10 @@ model Inspeccion {
   complex       String?
   observaciones String?
 
-  tempPlataforma Float?
-  tempCamion     Float?
-  tempAves       Float?
+  tempPlataforma      Float?
+  tempPlataformaVacia Float?
+  tempCamion          Float?
+  tempAves            Float?
 
   hematomasCon Int?
   hematomasSin Int?
