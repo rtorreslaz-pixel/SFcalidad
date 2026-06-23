@@ -33,6 +33,7 @@ adb shell am start -n com.rommel.scaleprototype/.MainActivity
   la báscula en el log de la pantalla.
 - Spinner "Protocolo / marca de báscula": decodifica el peso usando el protocolo
   elegido (ver siguiente sección — así se soportan varias marcas sin tocar la conexión).
+  Por defecto viene seleccionado el protocolo real de la Ranger 3000 (ver abajo).
 - Casilla "Mostrar también en hexadecimal": útil si el texto se ve raro (caracteres no
   imprimibles, codificación distinta, etc).
 - Botón "Copiar registro": copia todo el log crudo al portapapeles para compartirlo y
@@ -48,8 +49,22 @@ El proyecto está dividido a propósito en dos capas independientes:
   mecanismo, porque el Bluetooth ahí solo reemplaza el cable RS232. Esta capa no cambia
   al cambiar de marca.
 - **Decodificación (`ScaleProtocol.kt` + implementaciones)**: cada marca/formato de texto
-  tiene su propia clase que implementa la interfaz `ScaleProtocol`. Hoy solo existe
-  `GenericRegexProtocol` (heurística: toma el primer número con signo de la línea).
+  tiene su propia clase que implementa la interfaz `ScaleProtocol`. Hoy existen dos:
+  - `OhausRangerProtocol` (seleccionado por defecto): implementa el formato real de salida
+    RS232/continua de la Ranger 3000, tomado del manual oficial de Ohaus (sección "Output
+    Format"). Cada línea trae, separados por un espacio: el peso (campo de 9 caracteres,
+    justificado a la derecha, con el signo pegado al primer dígito si es negativo), la
+    unidad (campo de 5 caracteres, justificado a la izquierda: `kg`, `g`, `lb`, `oz` o
+    `lb:oz`), opcionalmente `?` si el peso todavía no está estable, y opcionalmente `NET` o
+    `G` si la línea corresponde a peso neto o bruto. El terminador de línea depende del menú
+    `FEED` de la báscula (normalmente CR/LF). El kit Bluetooth de la Ranger no cambia nada de
+    esto: solo reemplaza el cable RS232 por el socket SPP, la trama que llega es idéntica
+    (el manual de la Ranger no menciona el kit BT porque es un accesorio transparente a nivel
+    de protocolo).
+  - `GenericRegexProtocol`: heurística genérica (toma el primer número con signo de la
+    línea), útil como respaldo si en campo aparece una báscula de otra marca con formato
+    desconocido, mientras se le agrega su protocolo específico.
+
   Para agregar una báscula nueva con un formato distinto:
   1. Crear una clase `MiBasculaProtocol : ScaleProtocol` con su propio `parse()`.
   2. Agregarla a la lista en `ScaleProtocols.kt`.

@@ -7,6 +7,7 @@ package com.rommel.scaleprototype
  */
 object ScaleProtocols {
     val all: List<ScaleProtocol> = listOf(
+        OhausRangerProtocol(),
         GenericRegexProtocol()
     )
 
