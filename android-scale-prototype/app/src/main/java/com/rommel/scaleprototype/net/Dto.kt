@@ -39,3 +39,12 @@ data class RegistrosBatchResponse(val ingested: Int, val ids: List<String>)
 
 @Serializable
 data class ApiErrorResponse(val error: String)
+
+@Serializable
+data class LiveWeightRequest(
+    val pesoGramos: Double,
+    val plantelCodigo: String? = null,
+    val galpon: String? = null,
+    val corral: String? = null,
+    val categoria: String? = null,
+)

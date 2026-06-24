@@ -42,6 +42,12 @@ class ApiClient(private val baseUrl: String, context: Context) {
         execute(request) { json.decodeFromString(RegistrosBatchResponse.serializer(), it) }
     }
 
+    suspend fun postLiveWeight(liveWeight: LiveWeightRequest) = withContext(Dispatchers.IO) {
+        val body = json.encodeToString(liveWeight).toRequestBody(JSON_MEDIA_TYPE)
+        val request = Request.Builder().url(baseUrl + "api/mobile/live-weight").post(body).build()
+        execute(request) { }
+    }
+
     private inline fun <T> execute(request: Request, parse: (String) -> T): T {
         client.newCall(request).execute().use { response ->
             val responseBody = response.body?.string().orEmpty()

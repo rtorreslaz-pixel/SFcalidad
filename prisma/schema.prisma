@@ -43,6 +43,7 @@ model User {
 
   inspecciones           Inspeccion[]
   registrosPesoPreventa  RegistroPesoPreventa[]
+  liveWeightReading      LiveWeightReading?
 }
 
 model Cliente {
@@ -170,4 +171,21 @@ model RegistroPesoPreventa {
 
   @@index([plantelId, galpon, corral, categoria])
   @@index([verificadorId, fechaHora])
+}
+
+// Última lectura de la báscula por verificador, sobrescrita en cada lectura
+// (no es historial -- el historial real son los RegistroPesoPreventa). Alimenta
+// el panel "Peso en vivo" del dashboard.
+model LiveWeightReading {
+  verificadorId String @id
+  verificador   User   @relation(fields: [verificadorId], references: [id])
+
+  pesoGramos Float
+
+  plantelCodigo String?
+  galpon        String?
+  corral        String?
+  categoria     CategoriaAve?
+
+  updatedAt DateTime @updatedAt
 }

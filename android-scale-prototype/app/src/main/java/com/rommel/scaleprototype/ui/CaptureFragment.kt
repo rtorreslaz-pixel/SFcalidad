@@ -24,6 +24,8 @@ import com.rommel.scaleprototype.ScaleProtocols
 import com.rommel.scaleprototype.data.AppDatabase
 import com.rommel.scaleprototype.data.RegistroPeso
 import com.rommel.scaleprototype.databinding.FragmentCaptureBinding
+import com.rommel.scaleprototype.net.ApiClient
+import com.rommel.scaleprototype.net.LiveWeightRequest
 import com.rommel.scaleprototype.sync.SyncScheduler
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -33,6 +35,7 @@ class CaptureFragment : Fragment() {
     private var binding: FragmentCaptureBinding? = null
     private var scaleClient: ScaleBluetoothClient? = null
     private var latestWeightGramos: Double? = null
+    private var lastLiveWeightSentAtMillis = 0L
 
     private lateinit var plantelId: String
     private lateinit var plantelCodigo: String
@@ -159,6 +162,28 @@ class CaptureFragment : Fragment() {
         val protocol = ScaleProtocols.all.getOrNull(protocolIndex) ?: ScaleProtocols.default
         val parsed = protocol.parse(line) ?: return
         setWeight(parsed.value)
+        maybeSendLiveWeight(parsed.value)
+    }
+
+    // Best-effort: a diferencia de los registros (Room + WorkManager), una lectura en vivo
+    // vieja no sirve de nada, así que sin internet simplemente se omite en vez de encolarse.
+    private fun maybeSendLiveWeight(valueKg: Double) {
+        val now = System.currentTimeMillis()
+        if (now - lastLiveWeightSentAtMillis < LIVE_WEIGHT_THROTTLE_MS) return
+        lastLiveWeightSentAtMillis = now
+        viewLifecycleOwner.lifecycleScope.launch {
+            runCatching {
+                ApiClient.getInstance(requireContext()).postLiveWeight(
+                    LiveWeightRequest(
+                        pesoGramos = valueKg * 1000.0,
+                        plantelCodigo = plantelCodigo,
+                        galpon = galpon,
+                        corral = corral,
+                        categoria = categoria,
+                    )
+                )
+            }
+        }
     }
 
     private fun setWeight(valueKg: Double?) {
@@ -204,5 +229,6 @@ class CaptureFragment : Fragment() {
         const val SCALE_PREFS_NAME = "scale_connection_prefs"
         const val KEY_LAST_DEVICE_ADDRESS = "last_device_address"
         const val KEY_LAST_PROTOCOL_INDEX = "last_protocol_index"
+        private const val LIVE_WEIGHT_THROTTLE_MS = 1500L
     }
 }

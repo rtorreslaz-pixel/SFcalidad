@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import PreventaCharts from "./charts";
 import AutoRefresh from "./auto-refresh";
+import LiveWeights from "./live-weights";
 import type { Prisma } from "@/generated/prisma/client";
 import type { CategoriaAve } from "@/generated/prisma/enums";
 
@@ -84,6 +85,10 @@ export default async function PreventaDashboardPage() {
           : "Tus muestreos de peso registrados."}{" "}
         Se actualiza automáticamente cada 20 segundos.
       </p>
+
+      <div className="mb-6">
+        <LiveWeights />
+      </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <KpiCard label="Aves pesadas hoy" value={avesHoy.toLocaleString("es-PE")} />
