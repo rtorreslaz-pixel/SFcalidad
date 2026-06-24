@@ -19,12 +19,11 @@ android {
 
     buildTypes {
         debug {
-            // 10.0.2.2 es el alias del emulador de Android hacia el localhost del host.
-            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://rommeltest-production.up.railway.app/\"")
         }
         release {
             isMinifyEnabled = false
-            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://rommeltest-production.up.railway.app/\"")
         }
     }
 
