@@ -1,0 +1,94 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "2f7a0e0bd142150773bf23bbdec54a05",
+    "entities": [
+      {
+        "tableName": "registro_peso",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `plantelId` TEXT NOT NULL, `plantelCodigo` TEXT NOT NULL, `galpon` TEXT NOT NULL, `corral` TEXT NOT NULL, `categoria` TEXT NOT NULL, `numeroAve` INTEGER NOT NULL, `pesoGramos` REAL NOT NULL, `fechaHoraEpochMillis` INTEGER NOT NULL, `synced` INTEGER NOT NULL, `createdAtEpochMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plantelId",
+            "columnName": "plantelId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plantelCodigo",
+            "columnName": "plantelCodigo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "galpon",
+            "columnName": "galpon",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "corral",
+            "columnName": "corral",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoria",
+            "columnName": "categoria",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numeroAve",
+            "columnName": "numeroAve",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pesoGramos",
+            "columnName": "pesoGramos",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaHoraEpochMillis",
+            "columnName": "fechaHoraEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "synced",
+            "columnName": "synced",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "createdAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2f7a0e0bd142150773bf23bbdec54a05')"
+    ]
+  }
+}

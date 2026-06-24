@@ -9,6 +9,7 @@ export default function NavLinks({ role }: { role: Role }) {
 
   const links = [
     { href: "/dashboard", label: "Dashboard" },
+    { href: "/dashboard/preventa", label: "Peso en planta" },
     { href: "/inspecciones", label: "Inspecciones" },
     { href: "/inspecciones/nueva", label: "Nueva inspección" },
     ...(role === "SUPERVISOR"

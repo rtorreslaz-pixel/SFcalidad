@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import type { Role } from "@/generated/prisma/enums";
@@ -43,6 +44,26 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
+    select: { id: true, nombre: true, email: true, role: true, activo: true },
+  });
+
+  if (!user || !user.activo) return null;
+
+  return { id: user.id, nombre: user.nombre, email: user.email, role: user.role };
+}
+
+export function generateApiToken() {
+  return randomBytes(32).toString("base64url");
+}
+
+export async function requireMobileUser(request: Request): Promise<SessionUser | null> {
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  const token = authHeader.slice("Bearer ".length).trim();
+  if (!token) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { apiToken: token },
     select: { id: true, nombre: true, email: true, role: true, activo: true },
   });
 

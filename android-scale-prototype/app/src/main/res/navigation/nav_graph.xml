@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.rommel.scaleprototype.ui.LoginFragment"
+        android:label="@string/title_login">
+        <action
+            android:id="@+id/action_login_to_captureSetup"
+            app:destination="@id/captureSetupFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/captureSetupFragment"
+        android:name="com.rommel.scaleprototype.ui.CaptureSetupFragment"
+        android:label="@string/title_capture_setup">
+        <action
+            android:id="@+id/action_captureSetup_to_capture"
+            app:destination="@id/captureFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/captureFragment"
+        android:name="com.rommel.scaleprototype.ui.CaptureFragment"
+        android:label="@string/title_capture">
+        <action
+            android:id="@+id/action_capture_to_captureSetup"
+            app:destination="@id/captureSetupFragment"
+            app:popUpTo="@id/captureSetupFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_capture_to_diagnostic"
+            app:destination="@id/bluetoothDiagnosticFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/bluetoothDiagnosticFragment"
+        android:name="com.rommel.scaleprototype.ui.BluetoothDiagnosticFragment"
+        android:label="@string/title_diagnostic" />
+
+</navigation>

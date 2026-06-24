@@ -20,6 +20,17 @@ enum Sexo {
   MIXTO
 }
 
+enum CategoriaAve {
+  MACHO
+  HEMBRA
+  MEDIANO
+}
+
+enum TipoMuestreo {
+  PREVENTA
+  CALIDAD // reservado para una fase futura, no usado todavía
+}
+
 model User {
   id           String   @id @default(cuid())
   nombre       String
@@ -27,9 +38,11 @@ model User {
   passwordHash String
   role         Role     @default(VERIFICADOR)
   activo       Boolean  @default(true)
+  apiToken     String?  @unique
   createdAt    DateTime @default(now())
 
-  inspecciones Inspeccion[]
+  inspecciones           Inspeccion[]
+  registrosPesoPreventa  RegistroPesoPreventa[]
 }
 
 model Cliente {
@@ -52,7 +65,8 @@ model Plantel {
   clienteId String
   cliente   Cliente @relation(fields: [clienteId], references: [id])
 
-  inspecciones Inspeccion[]
+  inspecciones          Inspeccion[]
+  registrosPesoPreventa RegistroPesoPreventa[]
 }
 
 model TipoDefecto {
@@ -127,4 +141,33 @@ model Foto {
   longitud    Float?
 
   createdAt DateTime @default(now())
+}
+
+model RegistroPesoPreventa {
+  // Id generado por el cliente Android (UUID v4) ANTES de sincronizar, para que
+  // reintentos de red produzcan upserts idempotentes en vez de duplicados.
+  // NO cambiar a @default(cuid()) -- ver POST /api/mobile/registros.
+  id String @id
+
+  plantelId String
+  plantel   Plantel @relation(fields: [plantelId], references: [id])
+
+  galpon    String
+  corral    String
+  categoria CategoriaAve
+
+  numeroAve  Int
+  pesoGramos Float
+  fechaHora  DateTime // momento de captura en campo (hora del celular), no de sync
+
+  tipoMuestreo TipoMuestreo @default(PREVENTA)
+
+  verificadorId String
+  verificador   User @relation(fields: [verificadorId], references: [id])
+
+  syncedAt  DateTime @default(now()) // momento en que el servidor lo recibió
+  createdAt DateTime @default(now())
+
+  @@index([plantelId, galpon, corral, categoria])
+  @@index([verificadorId, fechaHora])
 }
