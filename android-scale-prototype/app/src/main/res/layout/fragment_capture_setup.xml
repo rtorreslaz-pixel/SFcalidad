@@ -31,23 +31,23 @@
             android:layout_marginBottom="12dp" />
 
         <EditText
+            android:id="@+id/editCampania"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/label_campania"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
             android:id="@+id/editGalpon"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/label_galpon"
             android:layout_marginBottom="12dp" />
 
-        <EditText
-            android:id="@+id/editCorral"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/label_corral"
-            android:layout_marginBottom="16dp" />
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/label_categoria"
+            android:text="@string/label_sexo"
             android:textStyle="bold"
             android:textSize="12sp"
             android:layout_marginBottom="4dp" />
@@ -81,6 +81,13 @@
                 android:layout_weight="1"
                 android:text="@string/categoria_mediano" />
         </RadioGroup>
+
+        <EditText
+            android:id="@+id/editCorral"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/label_corral"
+            android:layout_marginBottom="16dp" />
 
         <Button
             android:id="@+id/buttonStartCapture"

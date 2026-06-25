@@ -35,6 +35,7 @@ class RegistroPesoDaoTest {
     private fun registro(
         id: String,
         plantelId: String = "plantel-1",
+        campania: String = "2026-Q1",
         galpon: String = "1",
         corral: String = "A",
         categoria: String = "MACHO",
@@ -44,6 +45,7 @@ class RegistroPesoDaoTest {
         id = id,
         plantelId = plantelId,
         plantelCodigo = "P006",
+        campania = campania,
         galpon = galpon,
         corral = corral,
         categoria = categoria,
@@ -56,18 +58,19 @@ class RegistroPesoDaoTest {
 
     @Test
     fun `getMaxNumeroAve returns null when no registros exist for the combination`() = runBlocking {
-        val max = dao.getMaxNumeroAve("plantel-1", "1", "A", "MACHO")
+        val max = dao.getMaxNumeroAve("plantel-1", "2026-Q1", "1", "A", "MACHO")
         assertNull(max)
     }
 
     @Test
-    fun `getMaxNumeroAve returns the highest numeroAve scoped to plantel galpon corral and categoria`() = runBlocking {
+    fun `getMaxNumeroAve returns the highest numeroAve scoped to plantel campania galpon corral and categoria`() = runBlocking {
         dao.insert(registro(id = "a", numeroAve = 1))
         dao.insert(registro(id = "b", numeroAve = 5))
         dao.insert(registro(id = "c", numeroAve = 3))
         dao.insert(registro(id = "d", corral = "B", numeroAve = 99))
+        dao.insert(registro(id = "e", campania = "2026-Q2", numeroAve = 50))
 
-        val max = dao.getMaxNumeroAve("plantel-1", "1", "A", "MACHO")
+        val max = dao.getMaxNumeroAve("plantel-1", "2026-Q1", "1", "A", "MACHO")
         assertEquals(5, max)
     }
 

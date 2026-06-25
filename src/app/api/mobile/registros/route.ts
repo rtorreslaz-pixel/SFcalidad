@@ -6,6 +6,7 @@ import { CategoriaAve } from "@/generated/prisma/enums";
 type RegistroInput = {
   id: string;
   plantelId: string;
+  campania?: string | null;
   galpon: string;
   corral: string;
   categoria: string;
@@ -20,6 +21,7 @@ function isValidRegistro(r: unknown): r is RegistroInput {
   return (
     typeof v.id === "string" &&
     typeof v.plantelId === "string" &&
+    (v.campania === undefined || v.campania === null || typeof v.campania === "string") &&
     typeof v.galpon === "string" &&
     typeof v.corral === "string" &&
     typeof v.categoria === "string" &&
@@ -61,6 +63,7 @@ export async function POST(request: NextRequest) {
         create: {
           id: r.id,
           plantelId: r.plantelId,
+          campania: r.campania ?? null,
           galpon: r.galpon,
           corral: r.corral,
           categoria: r.categoria as CategoriaAve,

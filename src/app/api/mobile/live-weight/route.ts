@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
   const data = {
     pesoGramos,
     plantelCodigo: asOptionalString(body?.plantelCodigo),
+    campania: asOptionalString(body?.campania),
     galpon: asOptionalString(body?.galpon),
     corral: asOptionalString(body?.corral),
     categoria,

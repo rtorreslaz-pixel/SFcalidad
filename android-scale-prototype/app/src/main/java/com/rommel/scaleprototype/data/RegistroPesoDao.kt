@@ -22,9 +22,18 @@ interface RegistroPesoDao {
 
     // El "siguiente número de ave" siempre se calcula desde lo persistido (nunca un
     // contador en memoria), para que un crash a mitad de corral no duplique números.
+    // Escopado también por campania: el mismo corral físico se reutiliza entre campañas,
+    // y cada campaña debe re-empezar su conteo de aves.
     @Query(
         "SELECT MAX(numeroAve) FROM registro_peso " +
-            "WHERE plantelId = :plantelId AND galpon = :galpon AND corral = :corral AND categoria = :categoria"
+            "WHERE plantelId = :plantelId AND campania = :campania AND galpon = :galpon " +
+            "AND corral = :corral AND categoria = :categoria"
     )
-    suspend fun getMaxNumeroAve(plantelId: String, galpon: String, corral: String, categoria: String): Int?
+    suspend fun getMaxNumeroAve(
+        plantelId: String,
+        campania: String,
+        galpon: String,
+        corral: String,
+        categoria: String,
+    ): Int?
 }

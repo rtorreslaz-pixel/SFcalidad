@@ -8,6 +8,7 @@ data class RegistroPeso(
     @PrimaryKey val id: String,
     val plantelId: String,
     val plantelCodigo: String,
+    val campania: String,
     val galpon: String,
     val corral: String,
     val categoria: String,

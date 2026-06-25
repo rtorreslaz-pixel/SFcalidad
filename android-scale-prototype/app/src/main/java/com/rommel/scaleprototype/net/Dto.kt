@@ -23,6 +23,7 @@ data class CatalogosResponse(val planteles: List<PlantelDto>)
 data class RegistroDto(
     val id: String,
     val plantelId: String,
+    val campania: String? = null,
     val galpon: String,
     val corral: String,
     val categoria: String,
@@ -44,6 +45,7 @@ data class ApiErrorResponse(val error: String)
 data class LiveWeightRequest(
     val pesoGramos: Double,
     val plantelCodigo: String? = null,
+    val campania: String? = null,
     val galpon: String? = null,
     val corral: String? = null,
     val categoria: String? = null,

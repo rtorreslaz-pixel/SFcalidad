@@ -21,6 +21,7 @@ export async function GET() {
       verificador: l.verificador.nombre,
       pesoGramos: l.pesoGramos,
       plantelCodigo: l.plantelCodigo,
+      campania: l.campania,
       galpon: l.galpon,
       corral: l.corral,
       categoria: l.categoria,

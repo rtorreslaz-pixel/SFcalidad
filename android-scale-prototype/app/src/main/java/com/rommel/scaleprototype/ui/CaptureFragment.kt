@@ -39,6 +39,7 @@ class CaptureFragment : Fragment() {
 
     private lateinit var plantelId: String
     private lateinit var plantelCodigo: String
+    private lateinit var campania: String
     private lateinit var galpon: String
     private lateinit var corral: String
     private lateinit var categoria: String
@@ -62,12 +63,13 @@ class CaptureFragment : Fragment() {
         val args = requireArguments()
         plantelId = args.getString(CaptureSetupFragment.ARG_PLANTEL_ID)!!
         plantelCodigo = args.getString(CaptureSetupFragment.ARG_PLANTEL_CODIGO)!!
+        campania = args.getString(CaptureSetupFragment.ARG_CAMPANIA)!!
         galpon = args.getString(CaptureSetupFragment.ARG_GALPON)!!
         corral = args.getString(CaptureSetupFragment.ARG_CORRAL)!!
         categoria = args.getString(CaptureSetupFragment.ARG_CATEGORIA)!!
 
         binding?.textSelectionHeader?.text =
-            getString(R.string.capture_header_format, plantelCodigo, galpon, corral, categoria)
+            getString(R.string.capture_header_format, plantelCodigo, campania, galpon, categoria, corral)
 
         binding?.textChangeSelection?.setOnClickListener {
             findNavController().navigate(R.id.action_capture_to_captureSetup)
@@ -177,6 +179,7 @@ class CaptureFragment : Fragment() {
                     LiveWeightRequest(
                         pesoGramos = valueKg * 1000.0,
                         plantelCodigo = plantelCodigo,
+                        campania = campania,
                         galpon = galpon,
                         corral = corral,
                         categoria = categoria,
@@ -205,12 +208,13 @@ class CaptureFragment : Fragment() {
         val dao = AppDatabase.getInstance(requireContext()).registroPesoDao()
         viewLifecycleOwner.lifecycleScope.launch {
             val nowMillis = System.currentTimeMillis()
-            val numeroAve = (dao.getMaxNumeroAve(plantelId, galpon, corral, categoria) ?: 0) + 1
+            val numeroAve = (dao.getMaxNumeroAve(plantelId, campania, galpon, corral, categoria) ?: 0) + 1
             dao.insert(
                 RegistroPeso(
                     id = UUID.randomUUID().toString(),
                     plantelId = plantelId,
                     plantelCodigo = plantelCodigo,
+                    campania = campania,
                     galpon = galpon,
                     corral = corral,
                     categoria = categoria,

@@ -47,7 +47,7 @@ class CaptureSetupFragment : Fragment() {
                     planteles.map { "${it.codigo} — ${it.cliente}" },
                 )
             } catch (e: Exception) {
-                showError(getString(R.string.error_load_planteles))
+                showError(getString(R.string.error_load_planteles, e.message ?: e.javaClass.simpleName))
             } finally {
                 setLoading(false)
             }
@@ -57,10 +57,11 @@ class CaptureSetupFragment : Fragment() {
     private fun onStartCaptureClicked() {
         val b = binding ?: return
         val plantel = planteles.getOrNull(b.spinnerPlantel.selectedItemPosition)
+        val campania = b.editCampania.text.toString().trim()
         val galpon = b.editGalpon.text.toString().trim()
         val corral = b.editCorral.text.toString().trim()
 
-        if (plantel == null || galpon.isEmpty() || corral.isEmpty()) {
+        if (plantel == null || campania.isEmpty() || galpon.isEmpty() || corral.isEmpty()) {
             showError(getString(R.string.error_setup_fields_required))
             return
         }
@@ -76,6 +77,7 @@ class CaptureSetupFragment : Fragment() {
             bundleOf(
                 ARG_PLANTEL_ID to plantel.id,
                 ARG_PLANTEL_CODIGO to plantel.codigo,
+                ARG_CAMPANIA to campania,
                 ARG_GALPON to galpon,
                 ARG_CORRAL to corral,
                 ARG_CATEGORIA to categoria,
@@ -101,6 +103,7 @@ class CaptureSetupFragment : Fragment() {
     companion object {
         const val ARG_PLANTEL_ID = "plantelId"
         const val ARG_PLANTEL_CODIGO = "plantelCodigo"
+        const val ARG_CAMPANIA = "campania"
         const val ARG_GALPON = "galpon"
         const val ARG_CORRAL = "corral"
         const val ARG_CATEGORIA = "categoria"

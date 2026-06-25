@@ -153,6 +153,7 @@ model RegistroPesoPreventa {
   plantelId String
   plantel   Plantel @relation(fields: [plantelId], references: [id])
 
+  campania  String?
   galpon    String
   corral    String
   categoria CategoriaAve
@@ -183,6 +184,7 @@ model LiveWeightReading {
   pesoGramos Float
 
   plantelCodigo String?
+  campania      String?
   galpon        String?
   corral        String?
   categoria     CategoriaAve?

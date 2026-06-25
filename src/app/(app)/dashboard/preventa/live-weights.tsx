@@ -6,6 +6,7 @@ type LiveLectura = {
   verificador: string;
   pesoGramos: number;
   plantelCodigo: string | null;
+  campania: string | null;
   galpon: string | null;
   corral: string | null;
   categoria: string | null;
@@ -57,7 +58,13 @@ export default function LiveWeights() {
           {visibles.map((l) => {
             const ageMs = now - new Date(l.updatedAt).getTime();
             const enVivo = ageMs < LIVE_WITHIN_MS;
-            const ubicacion = [l.plantelCodigo, l.galpon && `G${l.galpon}`, l.corral, l.categoria]
+            const ubicacion = [
+              l.plantelCodigo,
+              l.campania,
+              l.galpon && `G${l.galpon}`,
+              l.categoria,
+              l.corral,
+            ]
               .filter(Boolean)
               .join(" · ");
             return (

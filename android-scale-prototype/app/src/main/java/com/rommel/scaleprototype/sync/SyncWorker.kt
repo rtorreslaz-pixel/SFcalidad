@@ -46,6 +46,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         private fun RegistroPeso.toDto() = RegistroDto(
             id = id,
             plantelId = plantelId,
+            campania = campania,
             galpon = galpon,
             corral = corral,
             categoria = categoria,
