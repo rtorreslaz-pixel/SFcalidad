@@ -62,6 +62,7 @@ export default async function InspeccionDetallePage({
           <Info label="Cliente" value={insp.cliente?.nombre ?? "-"} />
           <Info label="Plantel" value={insp.plantel?.codigo ?? "-"} />
           <Info label="Galpón" value={insp.galpon ?? "-"} />
+          <Info label="Corral" value={insp.corral ?? "-"} />
           <Info label="Sexo" value={insp.sexo ?? "-"} />
           <Info label="Cantidad de aves" value={insp.cantidad.toString()} />
           <Info label="Jabas" value={insp.jabas?.toString() ?? "-"} />

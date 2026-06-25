@@ -31,6 +31,7 @@ export default async function JornadaDetallePage({
           estado: true,
           pasoActual: true,
           galpon: true,
+          corral: true,
           plantel: { select: { codigo: true } },
         },
       },
@@ -89,7 +90,7 @@ export default async function JornadaDetallePage({
                     {insp.sexo ?? "Sin sexo"}
                   </span>
                   <span className="ml-2 text-sm text-slate-600">
-                    {insp.plantel?.codigo ? `${insp.plantel.codigo}${insp.galpon ? ` · ${insp.galpon}` : ""}` : "Sin plantel"}
+                    {insp.plantel?.codigo ? `${insp.plantel.codigo}${insp.galpon ? ` · ${insp.galpon}${insp.corral ?? ""}` : ""}` : "Sin plantel"}
                   </span>
                 </div>
                 <div className="text-right">

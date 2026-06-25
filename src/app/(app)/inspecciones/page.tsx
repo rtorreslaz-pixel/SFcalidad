@@ -152,7 +152,7 @@ export default async function InspeccionesPage({
                   </td>
                   <td className="px-3 py-2">{clienteNombre ?? "-"}</td>
                   <td className="px-3 py-2">
-                    {insp.plantel?.codigo ?? "-"} {insp.galpon ? `· ${insp.galpon}` : ""}
+                    {insp.plantel?.codigo ?? "-"} {insp.galpon ? `· ${insp.galpon}${insp.corral ?? ""}` : ""}
                   </td>
                   <td className="px-3 py-2">{insp.cantidad}</td>
                   <td className="px-3 py-2">
