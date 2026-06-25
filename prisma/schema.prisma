@@ -156,6 +156,7 @@ model Inspeccion {
   plantel   Plantel? @relation(fields: [plantelId], references: [id])
 
   galpon   String?
+  corral   String?
   sexo     SexoAve?
   jabas    Int?
   cantidad Int      @default(0)

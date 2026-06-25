@@ -25,7 +25,9 @@ type Inspeccion = {
   estado: string;
   sexo: SexoAve | null;
   plantelId: string | null;
+  campania: string | null;
   galpon: string | null;
+  corral: string | null;
   jabas: number | null;
   cantidad: number;
   promVivo: number | null;
@@ -77,6 +79,24 @@ const PASO_LABELS = [
   "Selección",
   "Merma y cierre",
 ];
+
+const SEXO_ABREV: Record<SexoAve, string> = { MACHO: "M", HEMBRA: "H" };
+
+// Identificador compuesto Plantel-Campaña-Galpón-Sexo-Corral usado para mapear
+// esta evaluación contra las bases externas de selección.
+function buildComplexEntity(parts: {
+  plantelCodigo: string | null;
+  campania: string;
+  galpon: string;
+  sexo: SexoAve | null;
+  corral: string;
+}): string {
+  const { plantelCodigo, campania, galpon, sexo, corral } = parts;
+  const sexoAbrev = sexo ? SEXO_ABREV[sexo] : "";
+  const piezas = [plantelCodigo ?? "", campania, galpon, sexoAbrev, corral];
+  if (piezas.every((p) => !p)) return "";
+  return piezas.join("-");
+}
 
 function BigInput({ label, type = "number", value, onChange, placeholder, optional }: {
   label: string; type?: string; value: string; onChange: (v: string) => void; placeholder?: string; optional?: boolean;
@@ -157,13 +177,32 @@ export default function WizardClient({
     const p = planteles.find((p) => p.id === initial.plantelId);
     return p ? `${p.codigo}${p.subZona ? ` · ${p.subZona}` : ""}` : "";
   });
+  const [campania, setCampania] = useState(initial.campania ?? "");
   const [galpon, setGalpon] = useState(initial.galpon ?? "");
+  const [corral, setCorral] = useState(initial.corral ?? "");
   const [jabas, setJabas] = useState(String(initial.jabas ?? ""));
   const [cantidad, setCantidad] = useState(String(initial.cantidad || ""));
   const [promVivo, setPromVivo] = useState(String(initial.promVivo ?? ""));
   const [promBeneficiado, setPromBeneficiado] = useState(String(initial.promBeneficiado ?? ""));
   const [nroGuia, setNroGuia] = useState(initial.nroGuia ?? "");
   const [complex, setComplex] = useState(initial.complex ?? "");
+
+  // Recalcula el Complex Entity (Plantel-Campaña-Galpón-Sexo-Corral) a partir del
+  // estado actual más los campos que estén cambiando en este mismo evento.
+  const recomputeComplex = useCallback(
+    (overrides: { plantelId?: string; campania?: string; galpon?: string; sexo?: SexoAve | null; corral?: string }) => {
+      const plantelIdNext = overrides.plantelId ?? plantelId;
+      const plantelCodigo = planteles.find((p) => p.id === plantelIdNext)?.codigo ?? null;
+      return buildComplexEntity({
+        plantelCodigo,
+        campania: overrides.campania ?? campania,
+        galpon: overrides.galpon ?? galpon,
+        sexo: overrides.sexo ?? sexo,
+        corral: overrides.corral ?? corral,
+      });
+    },
+    [plantelId, campania, galpon, sexo, corral, planteles]
+  );
 
   // Step 2 state
   const [tempPlataforma, setTempPlataforma] = useState(String(initial.tempPlataforma ?? ""));
@@ -329,6 +368,43 @@ export default function WizardClient({
       case 1:
         return (
           <div className="space-y-4">
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium text-slate-700">Plantel</span>
+              <input
+                type="text"
+                list="planteles-list"
+                value={plantelQuery}
+                onChange={(e) => {
+                  setPlantelQuery(e.target.value);
+                  const match = planteles.find((p) => plantelLabel(p) === e.target.value);
+                  const id = match ? match.id : "";
+                  setPlantelId(id);
+                  const nextComplex = recomputeComplex({ plantelId: id });
+                  setComplex(nextComplex);
+                  scheduleGuardado({ plantelId: id || null, complex: nextComplex || null });
+                }}
+                placeholder="Busca por código..."
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+              />
+              <datalist id="planteles-list">
+                {planteles.map((p) => <option key={p.id} value={plantelLabel(p)} />)}
+              </datalist>
+            </label>
+
+            <BigInput label="Campaña" type="text" value={campania} onChange={(v) => {
+              setCampania(v);
+              const nextComplex = recomputeComplex({ campania: v });
+              setComplex(nextComplex);
+              scheduleGuardado({ campania: v || null, complex: nextComplex || null });
+            }} placeholder="Ej. 2401" optional />
+
+            <BigInput label="Galpón" type="text" value={galpon} onChange={(v) => {
+              setGalpon(v);
+              const nextComplex = recomputeComplex({ galpon: v });
+              setComplex(nextComplex);
+              scheduleGuardado({ galpon: v || null, complex: nextComplex || null });
+            }} placeholder="Ej. 11" />
+
             {/* Sexo selector — big buttons */}
             <div>
               <p className="mb-2 text-sm font-medium text-slate-700">Sexo <span className="text-red-500">*</span></p>
@@ -337,7 +413,12 @@ export default function WizardClient({
                   <button
                     key={s}
                     type="button"
-                    onClick={() => { setSexo(s); scheduleGuardado({ sexo: s }); }}
+                    onClick={() => {
+                      setSexo(s);
+                      const nextComplex = recomputeComplex({ sexo: s });
+                      setComplex(nextComplex);
+                      scheduleGuardado({ sexo: s, complex: nextComplex || null });
+                    }}
                     className={`rounded-xl py-4 text-sm font-semibold transition ${
                       sexo === s
                         ? s === "MACHO" ? "bg-blue-600 text-white" : "bg-pink-600 text-white"
@@ -350,34 +431,24 @@ export default function WizardClient({
               </div>
             </div>
 
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-slate-700">Plantel</span>
-              <input
-                type="text"
-                list="planteles-list"
-                value={plantelQuery}
-                onChange={(e) => {
-                  setPlantelQuery(e.target.value);
-                  const match = planteles.find((p) => plantelLabel(p) === e.target.value);
-                  const id = match ? match.id : "";
-                  setPlantelId(id);
-                  scheduleGuardado({ plantelId: id || null });
-                }}
-                placeholder="Busca por código..."
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
-              />
-              <datalist id="planteles-list">
-                {planteles.map((p) => <option key={p.id} value={plantelLabel(p)} />)}
-              </datalist>
-            </label>
+            <BigInput label="Corral" type="text" value={corral} onChange={(v) => {
+              setCorral(v);
+              const nextComplex = recomputeComplex({ corral: v });
+              setComplex(nextComplex);
+              scheduleGuardado({ corral: v || null, complex: nextComplex || null });
+            }} placeholder="Ej. A" optional />
 
-            <BigInput label="Galpón" type="text" value={galpon} onChange={(v) => { setGalpon(v); scheduleGuardado({ galpon: v || null }); }} placeholder="Ej. 11A" />
             <BigInput label="Jabas" value={jabas} onChange={(v) => { setJabas(v); scheduleGuardado({ jabas: v ? Number(v) : null }); }} />
             <BigInput label="Unidades (cantidad de aves)" value={cantidad} onChange={(v) => { setCantidad(v); scheduleGuardado({ cantidad: Number(v) || 0 }); }} />
             <BigInput label="Promedio vivo (kg)" value={promVivo} onChange={(v) => { setPromVivo(v); scheduleGuardado({ promVivo: v ? Number(v) : null }); }} optional />
             <BigInput label="Promedio beneficiado (kg)" value={promBeneficiado} onChange={(v) => { setPromBeneficiado(v); scheduleGuardado({ promBeneficiado: v ? Number(v) : null }); }} optional />
             <BigInput label="N° de Guía" type="text" value={nroGuia} onChange={(v) => { setNroGuia(v); scheduleGuardado({ nroGuia: v || null }); }} optional />
-            <BigInput label="Complex" type="text" value={complex} onChange={(v) => { setComplex(v); scheduleGuardado({ complex: v || null }); }} optional />
+
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <span className="mb-1 block text-sm font-medium text-slate-700">Complex Entity</span>
+              <p className="font-mono text-base text-slate-600">{complex || "—"}</p>
+              <p className="mt-1 text-xs text-slate-400">Se genera automáticamente: Plantel-Campaña-Galpón-Sexo-Corral.</p>
+            </div>
           </div>
         );
 
