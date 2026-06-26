@@ -12,7 +12,9 @@ data class LoginResponseUser(val id: String, val nombre: String, val email: Stri
 data class LoginResponse(val token: String, val user: LoginResponseUser)
 
 @Serializable
-data class PlantelDto(val id: String, val codigo: String, val nombre: String, val cliente: String? = null)
+// nombre es nullable porque Plantel.nombre lo es en el schema -- hay planteles
+// que solo tienen codigo asignado todavia.
+data class PlantelDto(val id: String, val codigo: String, val nombre: String? = null, val cliente: String? = null)
 
 @Serializable
 data class CatalogosResponse(val planteles: List<PlantelDto>)
