@@ -56,7 +56,17 @@ export default async function JornadaDetallePage({
           </h1>
           <p className="text-sm text-slate-500">{jornada.cliente.nombre} · {jornada.verificador.nombre}</p>
         </div>
-        {user.role === "SUPERVISOR" && <DeleteJornadaButton jornadaId={jornadaId} />}
+        <div className="flex items-center gap-2">
+          {jornada.inspecciones.some((i) => i.estado === "COMPLETA") && (
+            <Link
+              href={`/jornadas/${jornadaId}/reporte`}
+              className="rounded-md border border-emerald-300 px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+            >
+              📄 Reporte
+            </Link>
+          )}
+          {user.role === "SUPERVISOR" && <DeleteJornadaButton jornadaId={jornadaId} />}
+        </div>
       </div>
 
       {/* Saldo día anterior */}
