@@ -3,6 +3,7 @@ package com.rommel.scaleprototype.sync
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.rommel.scaleprototype.auth.AuthRepository
 import com.rommel.scaleprototype.data.AppDatabase
 import com.rommel.scaleprototype.data.RegistroPeso
 import com.rommel.scaleprototype.net.ApiClient
@@ -29,7 +30,17 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             }
             Result.success()
         } catch (e: ApiException) {
-            if (e.code in 500..599) Result.retry() else Result.failure()
+            when {
+                // Token revocado o rotado desde el admin: no tiene sentido reintentar con el
+                // mismo token. Se borra la sesión local para que la pantalla de captura mande
+                // al verificador de vuelta al login en su próximo onResume.
+                e.code == 401 -> {
+                    AuthRepository(applicationContext).logout()
+                    Result.failure()
+                }
+                e.code in 500..599 -> Result.retry()
+                else -> Result.failure()
+            }
         } catch (e: IOException) {
             Result.retry()
         }

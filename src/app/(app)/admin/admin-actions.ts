@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { getCurrentUser, hashPassword } from "@/lib/auth";
+import { getCurrentUser, hashPassword, generateApiToken } from "@/lib/auth";
 
 async function requireSupervisor() {
   const user = await getCurrentUser();
@@ -88,6 +88,22 @@ export async function toggleUsuarioActivoAction(userId: string) {
   const target = await prisma.user.findUnique({ where: { id: userId } });
   if (!target) return;
   await prisma.user.update({ where: { id: userId }, data: { activo: !target.activo } });
+  revalidatePath("/admin/usuarios");
+}
+
+export async function revokeApiTokenAction(formData: FormData) {
+  await requireSupervisor();
+  const userId = String(formData.get("userId") ?? "");
+  if (!userId) return;
+  await prisma.user.update({ where: { id: userId }, data: { apiToken: null } });
+  revalidatePath("/admin/usuarios");
+}
+
+export async function rotateApiTokenAction(formData: FormData) {
+  await requireSupervisor();
+  const userId = String(formData.get("userId") ?? "");
+  if (!userId) return;
+  await prisma.user.update({ where: { id: userId }, data: { apiToken: generateApiToken() } });
   revalidatePath("/admin/usuarios");
 }
 

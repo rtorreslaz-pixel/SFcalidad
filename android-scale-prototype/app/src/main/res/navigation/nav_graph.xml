@@ -22,6 +22,11 @@
         <action
             android:id="@+id/action_captureSetup_to_capture"
             app:destination="@id/captureFragment" />
+        <action
+            android:id="@+id/action_captureSetup_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -36,6 +41,11 @@
         <action
             android:id="@+id/action_capture_to_diagnostic"
             app:destination="@id/bluetoothDiagnosticFragment" />
+        <action
+            android:id="@+id/action_capture_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment

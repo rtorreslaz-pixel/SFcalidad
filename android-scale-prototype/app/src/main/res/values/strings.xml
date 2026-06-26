@@ -68,4 +68,6 @@
     <string name="grado_grave">Grave (G2)</string>
 
     <string name="title_diagnostic">Ajustes de báscula</string>
+
+    <string name="session_revoked_message">Tu sesión fue cerrada por el administrador. Vuelve a iniciar sesión.</string>
 </resources>

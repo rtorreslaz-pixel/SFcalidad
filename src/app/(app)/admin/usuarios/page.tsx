@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { ROLE_LABELS } from "@/lib/auth";
 import UsuarioForm from "./usuario-form";
 import ToggleActivoButton from "./toggle-activo-button";
+import ApiTokenActions from "./api-token-actions";
 
 export default async function UsuariosPage() {
   const usuarios = await prisma.user.findMany({
@@ -21,6 +22,7 @@ export default async function UsuariosPage() {
                 <th className="px-3 py-2 font-medium">Rol</th>
                 <th className="px-3 py-2 font-medium">Inspecciones</th>
                 <th className="px-3 py-2 font-medium">Estado</th>
+                <th className="px-3 py-2 font-medium">Acceso móvil</th>
                 <th className="px-3 py-2 font-medium"></th>
               </tr>
             </thead>
@@ -39,6 +41,18 @@ export default async function UsuariosPage() {
                     >
                       {u.activo ? "Activo" : "Inactivo"}
                     </span>
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`rounded-md px-2 py-0.5 text-xs font-semibold ${
+                          u.apiToken ? "bg-sky-100 text-sky-700" : "bg-slate-100 text-slate-500"
+                        }`}
+                      >
+                        {u.apiToken ? "Con token" : "Sin token"}
+                      </span>
+                      <ApiTokenActions userId={u.id} hasToken={!!u.apiToken} />
+                    </div>
                   </td>
                   <td className="px-3 py-2">
                     <ToggleActivoButton userId={u.id} activo={u.activo} />

@@ -5,13 +5,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.rommel.scaleprototype.R
+import com.rommel.scaleprototype.auth.AuthRepository
 import com.rommel.scaleprototype.databinding.FragmentCaptureSetupBinding
 import com.rommel.scaleprototype.net.ApiClient
+import com.rommel.scaleprototype.net.ApiException
 import com.rommel.scaleprototype.net.PlantelDto
 import kotlinx.coroutines.launch
 
@@ -46,6 +49,12 @@ class CaptureSetupFragment : Fragment() {
                     android.R.layout.simple_spinner_dropdown_item,
                     planteles.map { if (it.cliente != null) "${it.codigo} — ${it.cliente}" else it.codigo },
                 )
+            } catch (e: ApiException) {
+                if (e.code == 401) {
+                    forceReLogin()
+                } else {
+                    showError(getString(R.string.error_load_planteles, e.message))
+                }
             } catch (e: Exception) {
                 showError(getString(R.string.error_load_planteles, e.message ?: e.javaClass.simpleName))
             } finally {
@@ -93,6 +102,15 @@ class CaptureSetupFragment : Fragment() {
     private fun showError(message: String) {
         binding?.textSetupError?.text = message
         binding?.textSetupError?.visibility = View.VISIBLE
+    }
+
+    // El catálogo respondió 401: el admin revocó o rotó el token desde /admin/usuarios.
+    // No tiene sentido mostrar el error crudo -- se manda directo al login, igual que
+    // CaptureFragment.onResume() hace cuando detecta la sesión muerta en pantalla.
+    private fun forceReLogin() {
+        AuthRepository(requireContext()).logout()
+        Toast.makeText(requireContext(), getString(R.string.session_revoked_message), Toast.LENGTH_LONG).show()
+        findNavController().navigate(R.id.action_captureSetup_to_login)
     }
 
     override fun onDestroyView() {

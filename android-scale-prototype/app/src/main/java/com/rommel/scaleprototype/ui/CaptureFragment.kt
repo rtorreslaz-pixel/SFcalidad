@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -22,6 +23,7 @@ import com.rommel.scaleprototype.R
 import com.rommel.scaleprototype.ScaleBluetoothClient
 import com.rommel.scaleprototype.ScaleEvent
 import com.rommel.scaleprototype.ScaleProtocols
+import com.rommel.scaleprototype.auth.AuthRepository
 import com.rommel.scaleprototype.data.AppDatabase
 import com.rommel.scaleprototype.data.RegistroPeso
 import com.rommel.scaleprototype.databinding.FragmentCaptureBinding
@@ -91,6 +93,17 @@ class CaptureFragment : Fragment() {
 
         observePendingCount()
         ensurePermissionThenConnect()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // El SyncWorker borra la sesión local si el servidor responde 401 (token revocado o
+        // rotado desde /admin/usuarios). Se revisa aquí -- no solo al entrar -- porque esa
+        // revocación puede ocurrir en cualquier momento mientras esta pantalla está abierta.
+        if (!AuthRepository(requireContext()).isLoggedIn()) {
+            Toast.makeText(requireContext(), getString(R.string.session_revoked_message), Toast.LENGTH_LONG).show()
+            findNavController().navigate(R.id.action_capture_to_login)
+        }
     }
 
     override fun onDestroyView() {
