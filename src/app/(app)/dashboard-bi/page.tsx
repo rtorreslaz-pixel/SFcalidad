@@ -71,6 +71,7 @@ export default async function DashboardBiPage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role === "VERIFICADOR") redirect("/jornadas");
+  if (user.role === "COMERCIAL") redirect("/dashboard/preventa");
 
   const { clienteId, plantelId, desde, hasta } = await searchParams;
 

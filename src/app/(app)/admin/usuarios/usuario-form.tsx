@@ -21,6 +21,7 @@ export default function UsuarioForm() {
         <option value="VERIFICADOR">Verificador</option>
         <option value="SUPERVISOR">Supervisor</option>
         <option value="JEFE">Jefe</option>
+        <option value="COMERCIAL">Comercial</option>
       </select>
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
       {state?.success && <p className="text-sm text-emerald-600">{state.success}</p>}

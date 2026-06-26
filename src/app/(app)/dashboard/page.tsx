@@ -9,6 +9,7 @@ export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role === "VERIFICADOR") redirect("/jornadas");
+  if (user.role === "COMERCIAL") redirect("/dashboard/preventa");
 
   const where: Prisma.InspeccionWhereInput = {};
 

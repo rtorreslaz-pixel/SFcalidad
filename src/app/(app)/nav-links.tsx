@@ -22,10 +22,12 @@ export default function NavLinks({ role }: { role: Role }) {
             { href: "/jornadas", label: "Mis jornadas" },
             { href: "/dashboard/preventa", label: "Peso en planta" },
           ]
-        : [
-            { href: "/dashboard", label: "Dashboard" },
-            { href: "/dashboard-bi", label: "Indicadores BI" },
-          ];
+        : role === "COMERCIAL"
+          ? [{ href: "/dashboard/preventa", label: "Peso en planta" }]
+          : [
+              { href: "/dashboard", label: "Dashboard" },
+              { href: "/dashboard-bi", label: "Indicadores BI" },
+            ];
 
   return (
     <div className="flex gap-1 overflow-x-auto pb-2 text-sm">

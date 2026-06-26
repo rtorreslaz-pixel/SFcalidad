@@ -13,6 +13,7 @@ enum Role {
   VERIFICADOR
   SUPERVISOR
   JEFE
+  COMERCIAL
 }
 
 enum SexoAve {

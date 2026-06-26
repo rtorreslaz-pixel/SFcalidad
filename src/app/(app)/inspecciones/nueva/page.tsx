@@ -7,6 +7,7 @@ export default async function NuevaInspeccionPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role === "JEFE") redirect("/dashboard");
+  if (user.role === "COMERCIAL") redirect("/dashboard/preventa");
 
   const [clientes, planteles, tiposDefecto, verificadores] = await Promise.all([
     prisma.cliente.findMany({ orderBy: { nombre: "asc" } }),

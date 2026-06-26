@@ -66,7 +66,7 @@ export async function createUsuarioAction(
   const nombre = String(formData.get("nombre") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
-  const role = String(formData.get("role") ?? "VERIFICADOR") as "VERIFICADOR" | "SUPERVISOR" | "JEFE";
+  const role = String(formData.get("role") ?? "VERIFICADOR") as "VERIFICADOR" | "SUPERVISOR" | "JEFE" | "COMERCIAL";
 
   if (!nombre || !email || !password) return { error: "Completa todos los campos." };
   if (password.length < 6) return { error: "La contraseña debe tener al menos 6 caracteres." };

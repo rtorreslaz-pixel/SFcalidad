@@ -77,13 +77,15 @@ export default async function PreventaDashboardPage() {
 
   return (
     <div>
-      <AutoRefresh />
-      <h1 className="mb-1 text-xl font-bold text-slate-900">Peso en planta — Preventa</h1>
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <h1 className="text-xl font-bold text-slate-900">Peso en planta — Preventa</h1>
+        <AutoRefresh />
+      </div>
       <p className="mb-6 text-sm text-slate-500">
-        {user.role === "SUPERVISOR"
-          ? "Consolidado en tiempo real de todos los verificadores."
-          : "Tus muestreos de peso registrados."}{" "}
-        Se actualiza automáticamente cada 20 segundos.
+        {user.role === "VERIFICADOR"
+          ? "Tus muestreos de peso registrados."
+          : "Consolidado en tiempo real de todos los verificadores."}{" "}
+        Se actualiza automáticamente cada 20 segundos, o toca “Sincronizar ahora”.
       </p>
 
       <div className="mb-6">

@@ -75,8 +75,10 @@ export async function requireMobileUser(request: Request): Promise<SessionUser |
 // Verificador: solo registra inspecciones nuevas.
 // Jefe: solo visualiza el dashboard.
 // Supervisor: acceso completo.
+// Comercial: solo visualiza el peso de preventa (no entra a calidad ni a catálogos).
 export function homeRouteForRole(role: Role): string {
   if (role === "VERIFICADOR") return "/jornadas";
+  if (role === "COMERCIAL") return "/dashboard/preventa";
   return "/dashboard";
 }
 
@@ -84,4 +86,5 @@ export const ROLE_LABELS: Record<Role, string> = {
   SUPERVISOR: "Supervisor",
   VERIFICADOR: "Verificador",
   JEFE: "Jefe",
+  COMERCIAL: "Comercial",
 };

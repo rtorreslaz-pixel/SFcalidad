@@ -11,6 +11,7 @@ export default async function EvaluacionWizardPage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role === "JEFE") redirect("/dashboard");
+  if (user.role === "COMERCIAL") redirect("/dashboard/preventa");
 
   const { jornadaId, evalId } = await params;
 
