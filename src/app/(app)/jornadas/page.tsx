@@ -22,14 +22,22 @@ export default async function JornadasPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between gap-2">
         <h1 className="text-xl font-bold text-slate-900">Mis jornadas</h1>
-        <Link
-          href="/jornadas/nueva"
-          className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 active:bg-emerald-800"
-        >
-          + Nueva jornada
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/jornadas/reportes"
+            className="rounded-xl border border-emerald-300 px-4 py-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+          >
+            📋 Reportes del día
+          </Link>
+          <Link
+            href="/jornadas/nueva"
+            className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 active:bg-emerald-800"
+          >
+            + Nueva jornada
+          </Link>
+        </div>
       </div>
 
       {jornadas.length === 0 ? (
