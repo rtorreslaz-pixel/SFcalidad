@@ -191,6 +191,10 @@ const VERIFICADORES = [
   { nombre: "Verificador 4", email: "verificador4@avicola.com" },
   { nombre: "Verificador 5", email: "verificador5@avicola.com" },
   { nombre: "Verificador 6", email: "verificador6@avicola.com" },
+  { nombre: "Verificador 7", email: "verificador7@avicola.com" },
+  { nombre: "Verificador 8", email: "verificador8@avicola.com" },
+  { nombre: "Verificador 9", email: "verificador9@avicola.com" },
+  { nombre: "Verificador 10", email: "verificador10@avicola.com" },
 ];
 
 const DEFAULT_PASSWORD = "demo1234";
