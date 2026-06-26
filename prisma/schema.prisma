@@ -304,6 +304,18 @@ model RegistroPesoPreventa {
 
   tipoMuestreo TipoMuestreo @default(PREVENTA)
 
+  // Criterios de calidad evaluados opcionalmente sobre la misma ave pesada, en la misma
+  // pantalla de captura (no todas las aves se evalúan -- el chequeo de calidad toma más
+  // tiempo que pesar sola, así que el verificador lo activa solo para una sub-muestra).
+  // Mismos criterios que Inspeccion.{hematomasCon/Sin, defectos, evaluacionesLesion,
+  // pigNivel*} pero a nivel de ave individual en granja, para poder comparar contra el
+  // censo de calidad de cliente lote por lote.
+  tieneHematoma         Boolean?
+  tieneDefectoSeleccion Boolean?
+  gradoPododermatitis   Int? // 0 sin lesión, 1 leve, 2 grave (grave = Grado 2, igual que EvaluacionLesion.grave)
+  gradoRasguno          Int? // 0 sin lesión, 1 leve, 2 grave
+  pigmentacion          Int? // 0-7
+
   verificadorId String
   verificador   User @relation(fields: [verificadorId], references: [id])
 

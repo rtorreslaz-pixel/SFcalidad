@@ -15,6 +15,12 @@ data class RegistroPeso(
     val numeroAve: Int,
     val pesoGramos: Double,
     val fechaHoraEpochMillis: Long,
+    // Calidad evaluada opcionalmente sobre esta misma ave (null = no evaluada en esta ave).
+    val tieneHematoma: Boolean? = null,
+    val tieneDefectoSeleccion: Boolean? = null,
+    val gradoPododermatitis: Int? = null,
+    val gradoRasguno: Int? = null,
+    val pigmentacion: Int? = null,
     val synced: Boolean = false,
     val createdAtEpochMillis: Long,
 )

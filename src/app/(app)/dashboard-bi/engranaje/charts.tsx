@@ -2,8 +2,8 @@
 
 import {
   ResponsiveContainer,
-  ScatterChart,
-  Scatter,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -11,46 +11,48 @@ import {
   Legend,
 } from "recharts";
 
-export type PuntoEngranaje = {
-  pesoPromedioGramos: number;
-  pctMerma: number;
-  categoria: string;
-  etiqueta: string;
+export type PuntoComparativo = {
+  metrica: string;
+  granja: number | null;
+  cliente: number | null;
 };
 
-const COLOR_POR_CATEGORIA: Record<string, string> = {
-  MACHO: "#2563eb",
-  HEMBRA: "#db2777",
-  MEDIANO: "#7c3aed",
-};
-
-export function EngranajeScatterChart({ data }: { data: PuntoEngranaje[] }) {
-  if (data.length === 0) return <EmptyState />;
-  const categorias = Array.from(new Set(data.map((d) => d.categoria)));
+export function ComparativoCalidadChart({ data }: { data: PuntoComparativo[] }) {
+  const hayDatos = data.some((d) => d.granja != null || d.cliente != null);
+  if (!hayDatos) return <EmptyState />;
   return (
-    <ResponsiveContainer width="100%" height={320}>
-      <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
+    <ResponsiveContainer width="100%" height={280}>
+      <BarChart data={data} margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis type="number" dataKey="pesoPromedioGramos" name="Peso promedio" unit=" g" tick={{ fontSize: 11 }} />
-        <YAxis type="number" dataKey="pctMerma" name="% Merma" unit="%" tick={{ fontSize: 11 }} />
-        <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<EngranajeTooltip />} />
+        <XAxis dataKey="metrica" tick={{ fontSize: 11 }} />
+        <YAxis unit="%" tick={{ fontSize: 11 }} />
+        <Tooltip content={<ComparativoTooltip />} />
         <Legend />
-        {categorias.map((cat) => (
-          <Scatter key={cat} name={cat} data={data.filter((d) => d.categoria === cat)} fill={COLOR_POR_CATEGORIA[cat] ?? "#64748b"} />
-        ))}
-      </ScatterChart>
+        <Bar dataKey="granja" name="Granja" fill="#0d9488" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="cliente" name="Cliente" fill="#2563eb" radius={[4, 4, 0, 0]} />
+      </BarChart>
     </ResponsiveContainer>
   );
 }
 
-function EngranajeTooltip({ active, payload }: { active?: boolean; payload?: { payload: PuntoEngranaje }[] }) {
+function ComparativoTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: { name: string; value: number; color: string }[];
+  label?: string;
+}) {
   if (!active || !payload?.length) return null;
-  const punto = payload[0].payload;
   return (
     <div className="rounded-md bg-white p-2 text-xs shadow ring-1 ring-slate-200">
-      <p className="font-semibold text-slate-900">{punto.etiqueta}</p>
-      <p>Peso promedio: {punto.pesoPromedioGramos} g</p>
-      <p>% Merma: {punto.pctMerma}%</p>
+      <p className="font-semibold text-slate-900">{label}</p>
+      {payload.map((p) => (
+        <p key={p.name} style={{ color: p.color }}>
+          {p.name}: {p.value.toFixed(2)}%
+        </p>
+      ))}
     </div>
   );
 }
@@ -58,7 +60,7 @@ function EngranajeTooltip({ active, payload }: { active?: boolean; payload?: { p
 function EmptyState() {
   return (
     <div className="flex h-[220px] items-center justify-center text-sm text-slate-400">
-      Aún no hay lotes con peso y calidad cruzados para graficar.
+      Aún no hay lotes cruzados con calidad evaluada en granja y en cliente para comparar.
     </div>
   );
 }

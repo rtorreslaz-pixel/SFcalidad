@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.migration.Migration
 
-@Database(entities = [RegistroPeso::class], version = 2, exportSchema = true)
+@Database(entities = [RegistroPeso::class], version = 3, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun registroPesoDao(): RegistroPesoDao
@@ -24,6 +24,18 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // Columnas de calidad por ave, todas nullable -- filas existentes quedan sin
+        // evaluar (NULL), igual que cualquier ave nueva donde no se activa "Evaluar calidad".
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE registro_peso ADD COLUMN tieneHematoma INTEGER")
+                db.execSQL("ALTER TABLE registro_peso ADD COLUMN tieneDefectoSeleccion INTEGER")
+                db.execSQL("ALTER TABLE registro_peso ADD COLUMN gradoPododermatitis INTEGER")
+                db.execSQL("ALTER TABLE registro_peso ADD COLUMN gradoRasguno INTEGER")
+                db.execSQL("ALTER TABLE registro_peso ADD COLUMN pigmentacion INTEGER")
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -32,7 +44,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "scale-prototype.db",
                     // Sin fallbackToDestructiveMigration(): un futuro cambio de esquema
                     // debe ir por una Migration real, no borrar la cola de un verificador.
-                ).addMigrations(MIGRATION_1_2).build().also { instance = it }
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build().also { instance = it }
             }
         }
     }

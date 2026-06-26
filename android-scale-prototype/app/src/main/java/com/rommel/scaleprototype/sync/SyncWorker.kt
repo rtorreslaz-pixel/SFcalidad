@@ -53,6 +53,11 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             numeroAve = numeroAve,
             pesoGramos = pesoGramos,
             fechaHora = isoFormat.format(Date(fechaHoraEpochMillis)),
+            tieneHematoma = tieneHematoma,
+            tieneDefectoSeleccion = tieneDefectoSeleccion,
+            gradoPododermatitis = gradoPododermatitis,
+            gradoRasguno = gradoRasguno,
+            pigmentacion = pigmentacion,
         )
     }
 }

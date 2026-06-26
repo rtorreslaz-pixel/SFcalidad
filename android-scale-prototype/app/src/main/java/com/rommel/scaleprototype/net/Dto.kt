@@ -30,6 +30,12 @@ data class RegistroDto(
     val numeroAve: Int,
     val pesoGramos: Double,
     val fechaHora: String,
+    // Calidad evaluada opcionalmente sobre esta misma ave -- null si no se evaluó.
+    val tieneHematoma: Boolean? = null,
+    val tieneDefectoSeleccion: Boolean? = null,
+    val gradoPododermatitis: Int? = null,
+    val gradoRasguno: Int? = null,
+    val pigmentacion: Int? = null,
 )
 
 @Serializable

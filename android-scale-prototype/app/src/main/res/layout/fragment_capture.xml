@@ -54,6 +54,143 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp" />
 
+    <Switch
+        android:id="@+id/switchEvaluarCalidad"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/switch_evaluar_calidad"
+        android:textSize="13sp"
+        android:layout_marginBottom="4dp" />
+
+    <LinearLayout
+        android:id="@+id/layoutCalidad"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginBottom="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Switch
+                android:id="@+id/switchHematoma"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="12sp"
+                android:text="@string/label_hematoma" />
+
+            <Switch
+                android:id="@+id/switchDefectoSeleccion"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="12sp"
+                android:text="@string/label_defecto_seleccion" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_pododermatitis"
+            android:textSize="11sp"
+            android:layout_marginTop="4dp" />
+
+        <RadioGroup
+            android:id="@+id/radioGroupPododermatitis"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radioPodoSano"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="11sp"
+                android:checked="true"
+                android:text="@string/grado_sano" />
+
+            <RadioButton
+                android:id="@+id/radioPodoLeve"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="11sp"
+                android:text="@string/grado_leve" />
+
+            <RadioButton
+                android:id="@+id/radioPodoGrave"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="11sp"
+                android:text="@string/grado_grave" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_rasguno"
+            android:textSize="11sp"
+            android:layout_marginTop="4dp" />
+
+        <RadioGroup
+            android:id="@+id/radioGroupRasguno"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radioRasgSano"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="11sp"
+                android:checked="true"
+                android:text="@string/grado_sano" />
+
+            <RadioButton
+                android:id="@+id/radioRasgLeve"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="11sp"
+                android:text="@string/grado_leve" />
+
+            <RadioButton
+                android:id="@+id/radioRasgGrave"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="11sp"
+                android:text="@string/grado_grave" />
+        </RadioGroup>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_pigmentacion"
+                android:textSize="11sp"
+                android:layout_marginEnd="8dp" />
+
+            <Spinner
+                android:id="@+id/spinnerPigmentacion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </LinearLayout>
+
     <Button
         android:id="@+id/buttonRegisterAve"
         android:layout_width="match_parent"

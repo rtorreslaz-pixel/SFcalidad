@@ -14,7 +14,16 @@ type RegistroInput = {
   numeroAve: number;
   pesoGramos: number;
   fechaHora: string;
+  tieneHematoma?: boolean | null;
+  tieneDefectoSeleccion?: boolean | null;
+  gradoPododermatitis?: number | null;
+  gradoRasguno?: number | null;
+  pigmentacion?: number | null;
 };
+
+function isValidGrado(v: unknown): v is number | null | undefined {
+  return v === undefined || v === null || (typeof v === "number" && [0, 1, 2].includes(v));
+}
 
 function isValidRegistro(r: unknown): r is RegistroInput {
   if (typeof r !== "object" || r === null) return false;
@@ -30,7 +39,16 @@ function isValidRegistro(r: unknown): r is RegistroInput {
     typeof v.numeroAve === "number" &&
     typeof v.pesoGramos === "number" &&
     typeof v.fechaHora === "string" &&
-    !Number.isNaN(Date.parse(v.fechaHora))
+    !Number.isNaN(Date.parse(v.fechaHora)) &&
+    (v.tieneHematoma === undefined || v.tieneHematoma === null || typeof v.tieneHematoma === "boolean") &&
+    (v.tieneDefectoSeleccion === undefined ||
+      v.tieneDefectoSeleccion === null ||
+      typeof v.tieneDefectoSeleccion === "boolean") &&
+    isValidGrado(v.gradoPododermatitis) &&
+    isValidGrado(v.gradoRasguno) &&
+    (v.pigmentacion === undefined ||
+      v.pigmentacion === null ||
+      (typeof v.pigmentacion === "number" && v.pigmentacion >= 0 && v.pigmentacion <= 7))
   );
 }
 
@@ -72,6 +90,11 @@ export async function POST(request: NextRequest) {
           numeroAve: r.numeroAve,
           pesoGramos: r.pesoGramos,
           fechaHora: new Date(r.fechaHora),
+          tieneHematoma: r.tieneHematoma ?? null,
+          tieneDefectoSeleccion: r.tieneDefectoSeleccion ?? null,
+          gradoPododermatitis: r.gradoPododermatitis ?? null,
+          gradoRasguno: r.gradoRasguno ?? null,
+          pigmentacion: r.pigmentacion ?? null,
           verificadorId: user.id,
           complex: buildComplexEntity({
             plantelCodigo: codigoByPlantelId.get(r.plantelId) ?? null,

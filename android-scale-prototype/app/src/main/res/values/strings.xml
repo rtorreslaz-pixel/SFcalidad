@@ -57,5 +57,15 @@
     <string name="status_connecting">Conectando a la báscula guardada…</string>
     <string name="last_registered_format">Ave #%1$d registrada — %2$.1f g</string>
 
+    <string name="switch_evaluar_calidad">Evaluar calidad de esta ave</string>
+    <string name="label_hematoma">Hematoma</string>
+    <string name="label_defecto_seleccion">Defecto de selección</string>
+    <string name="label_pododermatitis">Pododermatitis</string>
+    <string name="label_rasguno">Rasguños</string>
+    <string name="label_pigmentacion">Pigmentación (0–7)</string>
+    <string name="grado_sano">Sin lesión</string>
+    <string name="grado_leve">Leve</string>
+    <string name="grado_grave">Grave (G2)</string>
+
     <string name="title_diagnostic">Ajustes de báscula</string>
 </resources>

@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -78,6 +79,15 @@ class CaptureFragment : Fragment() {
             findNavController().navigate(R.id.action_capture_to_diagnostic)
         }
         binding?.buttonRegisterAve?.setOnClickListener { onRegisterAveClicked() }
+
+        binding?.spinnerPigmentacion?.adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            (0..7).toList(),
+        )
+        binding?.switchEvaluarCalidad?.setOnCheckedChangeListener { _, checked ->
+            binding?.layoutCalidad?.visibility = if (checked) View.VISIBLE else View.GONE
+        }
 
         observePendingCount()
         ensurePermissionThenConnect()
@@ -206,6 +216,17 @@ class CaptureFragment : Fragment() {
     private fun onRegisterAveClicked() {
         val pesoGramos = latestWeightGramos ?: return
         val dao = AppDatabase.getInstance(requireContext()).registroPesoDao()
+        val evaluarCalidad = binding?.switchEvaluarCalidad?.isChecked == true
+        val tieneHematoma = if (evaluarCalidad) binding?.switchHematoma?.isChecked else null
+        val tieneDefectoSeleccion = if (evaluarCalidad) binding?.switchDefectoSeleccion?.isChecked else null
+        val gradoPododermatitis = if (evaluarCalidad) gradoFromRadioGroup(
+            binding?.radioGroupPododermatitis?.checkedRadioButtonId, R.id.radioPodoLeve, R.id.radioPodoGrave
+        ) else null
+        val gradoRasguno = if (evaluarCalidad) gradoFromRadioGroup(
+            binding?.radioGroupRasguno?.checkedRadioButtonId, R.id.radioRasgLeve, R.id.radioRasgGrave
+        ) else null
+        val pigmentacion = if (evaluarCalidad) binding?.spinnerPigmentacion?.selectedItemPosition else null
+
         viewLifecycleOwner.lifecycleScope.launch {
             val nowMillis = System.currentTimeMillis()
             val numeroAve = (dao.getMaxNumeroAve(plantelId, campania, galpon, corral, categoria) ?: 0) + 1
@@ -221,12 +242,24 @@ class CaptureFragment : Fragment() {
                     numeroAve = numeroAve,
                     pesoGramos = pesoGramos,
                     fechaHoraEpochMillis = nowMillis,
+                    tieneHematoma = tieneHematoma,
+                    tieneDefectoSeleccion = tieneDefectoSeleccion,
+                    gradoPododermatitis = gradoPododermatitis,
+                    gradoRasguno = gradoRasguno,
+                    pigmentacion = pigmentacion,
                     createdAtEpochMillis = nowMillis,
                 )
             )
             SyncScheduler.scheduleSyncNow(requireContext())
             binding?.textLastRegistered?.text = getString(R.string.last_registered_format, numeroAve, pesoGramos)
         }
+    }
+
+    // 0 sin lesión, 1 leve, 2 grave -- mismo mapeo que EvaluacionLesion.{sinLesion,leve,grave}.
+    private fun gradoFromRadioGroup(checkedId: Int?, leveId: Int, graveId: Int): Int = when (checkedId) {
+        leveId -> 1
+        graveId -> 2
+        else -> 0
     }
 
     companion object {
