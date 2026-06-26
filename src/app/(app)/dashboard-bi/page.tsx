@@ -66,17 +66,18 @@ function isoDaysAgo(dias: number) {
 export default async function DashboardBiPage({
   searchParams,
 }: {
-  searchParams: Promise<{ clienteId?: string; plantelId?: string; desde?: string; hasta?: string }>;
+  searchParams: Promise<{ clienteId?: string; plantelId?: string; desde?: string; hasta?: string; complexEntity?: string }>;
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role === "VERIFICADOR") redirect("/jornadas");
 
-  const { clienteId, plantelId, desde, hasta } = await searchParams;
+  const { clienteId, plantelId, desde, hasta, complexEntity } = await searchParams;
 
   const where: Prisma.InspeccionWhereInput = {
     ...(clienteId ? { clienteId } : {}),
     ...(plantelId ? { plantelId } : {}),
+    ...(complexEntity ? { complex: { contains: complexEntity } } : {}),
   };
 
   const [inspeccionesSinFecha, clientes, planteles] = await Promise.all([
@@ -217,6 +218,47 @@ export default async function DashboardBiPage({
     color: SEMAFORO_HEX[semaforo(p.pctMerma, UMBRAL_MERMA)],
   }));
 
+  // Ranking por zona de plantel
+  type ZonaAgg = {
+    zona: string;
+    evaluaciones: number;
+    cantidad: number;
+    seleccionUnid: number;
+    mermaUnid: number;
+    hemCon: number;
+    hemSin: number;
+  };
+  const zonaMap = new Map<string, ZonaAgg>();
+  for (const insp of inspeccionesCompletas) {
+    const zona = insp.plantel?.zona ?? "Sin zona";
+    const entry =
+      zonaMap.get(zona) ?? { zona, evaluaciones: 0, cantidad: 0, seleccionUnid: 0, mermaUnid: 0, hemCon: 0, hemSin: 0 };
+    entry.evaluaciones += 1;
+    entry.cantidad += insp.cantidad;
+    entry.hemCon += insp.hematomasCon ?? 0;
+    entry.hemSin += insp.hematomasSin ?? 0;
+    for (const d of insp.defectos) {
+      if (NOMBRES_MERMA_PASO7.includes(d.tipoDefecto.nombre)) entry.mermaUnid += d.unidades;
+      else entry.seleccionUnid += d.unidades;
+    }
+    zonaMap.set(zona, entry);
+  }
+  const rankingZonas = Array.from(zonaMap.values())
+    .map((z) => ({
+      zona: z.zona,
+      evaluaciones: z.evaluaciones,
+      pctSeleccion: pct(z.seleccionUnid, z.cantidad),
+      pctMerma: pct(z.mermaUnid, z.cantidad),
+      pctHematomas: pct(z.hemCon, z.hemCon + z.hemSin),
+    }))
+    .sort((a, b) => a.pctMerma - b.pctMerma);
+
+  const rankingZonasChartData = rankingZonas.map((z) => ({
+    codigo: z.zona,
+    pctMerma: Number(z.pctMerma.toFixed(2)),
+    color: SEMAFORO_HEX[semaforo(z.pctMerma, UMBRAL_MERMA)],
+  }));
+
   // Tendencia en el tiempo (por fecha). Selección/merma usan solo evaluaciones completas
   // (censo); hematomas, pigmentación y lesión usan todas las inspecciones, igual que sus KPIs.
   type FechaAgg = {
@@ -292,7 +334,7 @@ export default async function DashboardBiPage({
     { label: "Últimos 30 días", desde: isoDaysAgo(30), hasta: isoDaysAgo(0) },
     { label: "Todo", desde: undefined, hasta: undefined },
   ];
-  const hayFiltros = Boolean(clienteId || plantelId || desde || hasta);
+  const hayFiltros = Boolean(clienteId || plantelId || desde || hasta || complexEntity);
 
   return (
     <div>
@@ -332,6 +374,16 @@ export default async function DashboardBiPage({
           <label className="mb-1 block text-xs font-medium text-slate-500">Hasta</label>
           <input type="date" name="hasta" defaultValue={hasta ?? ""} className="input" />
         </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Complex Entity</label>
+          <input
+            type="text"
+            name="complexEntity"
+            placeholder="Ej: P289-2401-11-M-A"
+            defaultValue={complexEntity ?? ""}
+            className="input max-w-xs"
+          />
+        </div>
         <button
           type="submit"
           className="rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900"
@@ -351,7 +403,7 @@ export default async function DashboardBiPage({
           return (
             <a
               key={r.label}
-              href={buildHref({ clienteId, plantelId, desde: r.desde, hasta: r.hasta })}
+              href={buildHref({ clienteId, plantelId, desde: r.desde, hasta: r.hasta, complexEntity })}
               className={`rounded-full px-3 py-1 text-xs font-medium ${
                 activo ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
@@ -418,6 +470,12 @@ export default async function DashboardBiPage({
         </ChartCard>
       </div>
 
+      <div className="mb-6 grid grid-cols-1 gap-6">
+        <ChartCard title="Ranking de zonas por % de merma (mejor desempeño arriba)" full>
+          <RankingChart data={rankingZonasChartData} />
+        </ChartCard>
+      </div>
+
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ChartCard title="Tendencia en el tiempo · Pigmentación promedio">
           <PigmentacionChart data={tendencia} objetivo={OBJETIVO_PIGMENTACION} />
@@ -460,6 +518,50 @@ export default async function DashboardBiPage({
                 </tr>
               ))}
               {ranking.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-3 py-6 text-center text-slate-400">
+                    Aún no hay inspecciones registradas.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </ChartCard>
+
+      <ChartCard title="Detalle por zona" full>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 text-left text-slate-500">
+              <tr>
+                <th className="px-3 py-2 font-medium">Zona</th>
+                <th className="px-3 py-2 font-medium">Evaluaciones</th>
+                <th className="px-3 py-2 font-medium">% Selección</th>
+                <th className="px-3 py-2 font-medium">% Merma</th>
+                <th className="px-3 py-2 font-medium">% Hematomas</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {rankingZonas.map((z) => (
+                <tr key={z.zona} className="hover:bg-slate-50">
+                  <td className="px-3 py-2 font-medium text-slate-900">{z.zona}</td>
+                  <td className="px-3 py-2">{z.evaluaciones}</td>
+                  <td className="px-3 py-2">{z.pctSeleccion.toFixed(2)}%</td>
+                  <td className="px-3 py-2">
+                    <span className={`rounded-md px-2 py-0.5 font-semibold ${SEMAFORO_BADGE[semaforo(z.pctMerma, UMBRAL_MERMA)]}`}>
+                      {z.pctMerma.toFixed(2)}%
+                    </span>
+                  </td>
+                  <td className="px-3 py-2">
+                    <span
+                      className={`rounded-md px-2 py-0.5 font-semibold ${SEMAFORO_BADGE[semaforo(z.pctHematomas, UMBRAL_HEMATOMAS)]}`}
+                    >
+                      {z.pctHematomas.toFixed(2)}%
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {rankingZonas.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-3 py-6 text-center text-slate-400">
                     Aún no hay inspecciones registradas.
