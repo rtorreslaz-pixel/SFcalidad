@@ -1,0 +1,156 @@
+"use client";
+
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ReferenceLine,
+} from "recharts";
+
+type TendenciaPunto = {
+  fecha: string;
+  pctSeleccion: number;
+  pctMerma: number;
+  pctHematomas: number;
+  pigmentacion: number | null;
+  pctPododermatitis: number;
+  pctRasgunos: number;
+};
+type RankingPunto = { codigo: string; pctMerma: number; color: string };
+
+export function TendenciaChart({
+  data,
+  objetivoSeleccion,
+}: {
+  data: TendenciaPunto[];
+  objetivoSeleccion: number;
+}) {
+  if (data.length === 0) return <EmptyState />;
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="fecha" tick={{ fontSize: 11 }} />
+        <YAxis tick={{ fontSize: 11 }} unit="%" />
+        <Tooltip formatter={(value) => `${value}%`} />
+        <Legend />
+        <ReferenceLine
+          y={objetivoSeleccion}
+          stroke="#059669"
+          strokeDasharray="4 4"
+          label={{ value: `Objetivo ${objetivoSeleccion}%`, fontSize: 10, position: "insideTopLeft" }}
+        />
+        <Line type="monotone" dataKey="pctSeleccion" name="% Selección" stroke="#059669" strokeWidth={2} />
+        <Line type="monotone" dataKey="pctMerma" name="% Merma" stroke="#dc2626" strokeWidth={2} />
+        <Line type="monotone" dataKey="pctHematomas" name="% Hematomas" stroke="#d97706" strokeWidth={2} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function PigmentacionChart({
+  data,
+  objetivo,
+}: {
+  data: TendenciaPunto[];
+  objetivo: { min: number; max: number };
+}) {
+  const puntos = data.filter((d) => d.pigmentacion != null);
+  if (puntos.length === 0) return <EmptyState />;
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={puntos}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="fecha" tick={{ fontSize: 11 }} />
+        <YAxis tick={{ fontSize: 11 }} domain={[0, 7]} />
+        <Tooltip formatter={(value) => Number(value).toFixed(2)} />
+        <Legend />
+        <ReferenceLine
+          y={objetivo.min}
+          stroke="#059669"
+          strokeDasharray="4 4"
+          label={{ value: `Mín ${objetivo.min}`, fontSize: 10, position: "insideBottomLeft" }}
+        />
+        <ReferenceLine
+          y={objetivo.max}
+          stroke="#059669"
+          strokeDasharray="4 4"
+          label={{ value: `Máx ${objetivo.max}`, fontSize: 10, position: "insideTopLeft" }}
+        />
+        <Line type="monotone" dataKey="pigmentacion" name="Pigmentación (0-7)" stroke="#7c3aed" strokeWidth={2} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function LesionChart({
+  data,
+  objetivoPodo,
+  objetivoRasg,
+}: {
+  data: TendenciaPunto[];
+  objetivoPodo: number;
+  objetivoRasg: number;
+}) {
+  if (data.length === 0) return <EmptyState />;
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="fecha" tick={{ fontSize: 11 }} />
+        <YAxis tick={{ fontSize: 11 }} unit="%" />
+        <Tooltip formatter={(value) => `${value}%`} />
+        <Legend />
+        <ReferenceLine
+          y={objetivoPodo}
+          stroke="#dc2626"
+          strokeDasharray="4 4"
+          label={{ value: `Objetivo Pododermatitis ${objetivoPodo}%`, fontSize: 10, position: "insideTopLeft" }}
+        />
+        <ReferenceLine
+          y={objetivoRasg}
+          stroke="#d97706"
+          strokeDasharray="4 4"
+          label={{ value: `Objetivo Rasguños ${objetivoRasg}%`, fontSize: 10, position: "insideBottomLeft" }}
+        />
+        <Line type="monotone" dataKey="pctPododermatitis" name="% Pododermatitis (G2)" stroke="#dc2626" strokeWidth={2} />
+        <Line type="monotone" dataKey="pctRasgunos" name="% Rasguños (G2)" stroke="#d97706" strokeWidth={2} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function RankingChart({ data }: { data: RankingPunto[] }) {
+  if (data.length === 0) return <EmptyState />;
+  return (
+    <ResponsiveContainer width="100%" height={Math.max(220, data.length * 36)}>
+      <BarChart data={data} layout="vertical" margin={{ left: 16 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis type="number" tick={{ fontSize: 11 }} unit="%" />
+        <YAxis type="category" dataKey="codigo" tick={{ fontSize: 11 }} width={90} />
+        <Tooltip formatter={(value) => `${Number(value).toFixed(2)}%`} />
+        <Bar dataKey="pctMerma" name="% Merma">
+          {data.map((d, i) => (
+            <Cell key={i} fill={d.color} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="flex h-[220px] items-center justify-center text-sm text-slate-400">
+      Aún no hay datos suficientes para mostrar este gráfico.
+    </div>
+  );
+}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireMobileUser } from "@/lib/auth";
 import { CategoriaAve } from "@/generated/prisma/enums";
+import { buildComplexEntity } from "@/lib/complex-entity";
 
 type RegistroInput = {
   id: string;
@@ -49,11 +50,12 @@ export async function POST(request: NextRequest) {
   const plantelIds = [...new Set(registros.map((r) => r.plantelId))];
   const planteles = await prisma.plantel.findMany({
     where: { id: { in: plantelIds } },
-    select: { id: true },
+    select: { id: true, codigo: true },
   });
   if (planteles.length !== plantelIds.length) {
     return NextResponse.json({ error: "Uno o más plantelId no existen" }, { status: 400 });
   }
+  const codigoByPlantelId = new Map(planteles.map((p) => [p.id, p.codigo]));
 
   const ids = await prisma.$transaction(
     registros.map((r) =>
@@ -71,6 +73,13 @@ export async function POST(request: NextRequest) {
           pesoGramos: r.pesoGramos,
           fechaHora: new Date(r.fechaHora),
           verificadorId: user.id,
+          complex: buildComplexEntity({
+            plantelCodigo: codigoByPlantelId.get(r.plantelId) ?? null,
+            campania: r.campania ?? null,
+            galpon: r.galpon,
+            categoria: r.categoria as CategoriaAve,
+            corral: r.corral,
+          }),
         },
         select: { id: true },
       })

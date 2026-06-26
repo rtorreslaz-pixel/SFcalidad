@@ -48,3 +48,9 @@ next-env.d.ts
 
 # uploaded photos
 /uploads
+
+# Claude Code internal
+/.claude
+
+# throwaway local scripts
+/tmp-*.ts

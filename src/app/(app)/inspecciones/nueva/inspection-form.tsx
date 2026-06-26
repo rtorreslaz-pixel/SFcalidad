@@ -18,7 +18,6 @@ type Plantel = {
 type Cliente = {
   id: string;
   nombre: string;
-  planteles: Plantel[];
 };
 
 type TipoDefecto = {
@@ -26,6 +25,7 @@ type TipoDefecto = {
   nombre: string;
   categoria: string | null;
   orden: number;
+  principal: boolean;
 };
 
 type Verificador = {
@@ -39,6 +39,19 @@ type CurrentUser = {
   nombre: string;
   role: string;
 };
+
+type DefectoValores = Record<string, { unidades: number; kg: number }>;
+type LesionValores = Record<string, { sinLesion: number; leve: number; grave: number }>;
+
+const CATEGORIAS_LESION = [
+  { value: "ALMOHADILLAS", label: "Almohadillas", graveLabel: "Grave" },
+  { value: "RASGUNOS", label: "Rasguños", graveLabel: "Severo" },
+] as const;
+
+const SEXOS_LESION = [
+  { value: "MACHO", label: "Macho" },
+  { value: "HEMBRA", label: "Hembra" },
+] as const;
 
 function Field({
   label,
@@ -59,13 +72,153 @@ function Field({
   );
 }
 
+function DefectoFila({
+  tipo,
+  defectos,
+  updateDefecto,
+  onRemove,
+}: {
+  tipo: TipoDefecto;
+  defectos: DefectoValores;
+  updateDefecto: (id: string, field: "unidades" | "kg", value: number) => void;
+  onRemove?: () => void;
+}) {
+  return (
+    <tr>
+      <td className="px-3 py-2">{tipo.nombre}</td>
+      <td className="px-3 py-1.5">
+        <input
+          type="number"
+          min={0}
+          name={`defecto_${tipo.id}_unidades`}
+          value={defectos[tipo.id]?.unidades || ""}
+          onChange={(e) => updateDefecto(tipo.id, "unidades", Number(e.target.value) || 0)}
+          className="input"
+        />
+      </td>
+      <td className="px-3 py-1.5">
+        <input
+          type="number"
+          min={0}
+          step="0.01"
+          name={`defecto_${tipo.id}_kg`}
+          value={defectos[tipo.id]?.kg || ""}
+          onChange={(e) => updateDefecto(tipo.id, "kg", Number(e.target.value) || 0)}
+          className="input"
+        />
+      </td>
+      {onRemove && (
+        <td className="w-10 px-2 py-1.5 text-center">
+          <button
+            type="button"
+            onClick={onRemove}
+            aria-label={`Quitar ${tipo.nombre}`}
+            className="text-slate-400 hover:text-red-600"
+          >
+            ✕
+          </button>
+        </td>
+      )}
+    </tr>
+  );
+}
+
+function DefectoTabla({
+  titulo,
+  tipos,
+  defectos,
+  updateDefecto,
+  onRemove,
+}: {
+  titulo?: string;
+  tipos: TipoDefecto[];
+  defectos: DefectoValores;
+  updateDefecto: (id: string, field: "unidades" | "kg", value: number) => void;
+  onRemove?: (id: string) => void;
+}) {
+  if (tipos.length === 0) return null;
+  return (
+    <div>
+      {titulo && (
+        <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">{titulo}</h3>
+      )}
+      <div className="overflow-x-auto rounded-md border border-slate-200">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50 text-left text-slate-500">
+            <tr>
+              <th className="px-3 py-2 font-medium">Defecto</th>
+              <th className="w-28 px-3 py-2 font-medium">Unidades</th>
+              <th className="w-28 px-3 py-2 font-medium">Kg</th>
+              {onRemove && <th className="w-10 px-2 py-2" />}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {tipos.map((tipo) => (
+              <DefectoFila
+                key={tipo.id}
+                tipo={tipo}
+                defectos={defectos}
+                updateDefecto={updateDefecto}
+                onRemove={onRemove ? () => onRemove(tipo.id) : undefined}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function ContadorLesion({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-md border border-slate-200 px-2 py-1.5">
+      <span className="text-xs font-medium text-slate-600">{label}</span>
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(0, value - 1))}
+          className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200"
+          aria-label={`Restar ${label}`}
+        >
+          −
+        </button>
+        <input
+          type="number"
+          min={0}
+          value={value || ""}
+          onChange={(e) => onChange(Math.max(0, Number(e.target.value) || 0))}
+          className="input w-14 text-center"
+        />
+        <button
+          type="button"
+          onClick={() => onChange(value + 1)}
+          className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200"
+          aria-label={`Sumar ${label}`}
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function InspectionForm({
   clientes,
+  planteles,
   tiposDefecto,
   verificadores,
   currentUser,
 }: {
   clientes: Cliente[];
+  planteles: Plantel[];
   tiposDefecto: TipoDefecto[];
   verificadores: Verificador[];
   currentUser: CurrentUser;
@@ -77,7 +230,9 @@ export default function InspectionForm({
   const [clienteId, setClienteId] = useState("");
   const [cantidad, setCantidad] = useState<number>(0);
   const [meta, setMeta] = useState<number>(META_SELECCION_DEFAULT);
-  const [defectos, setDefectos] = useState<Record<string, { unidades: number; kg: number }>>({});
+  const [defectos, setDefectos] = useState<DefectoValores>({});
+  const [extraIds, setExtraIds] = useState<string[]>([]);
+  const [lesiones, setLesiones] = useState<LesionValores>({});
 
   const MAX_FOTOS = 5;
   const [fotos, setFotos] = useState<File[]>([]);
@@ -127,29 +282,42 @@ export default function InspectionForm({
     setFotos((prev) => prev.filter((_, i) => i !== index));
   }
 
-  const allPlanteles = useMemo(
-    () =>
-      clientes.flatMap((c) =>
-        c.planteles.map((p) => ({ ...p, clienteId: c.id, clienteNombre: c.nombre }))
-      ),
-    [clientes]
-  );
-
-  const plantelLabel = (p: { codigo: string; subZona: string | null; clienteNombre: string }) =>
-    `${p.codigo}${p.subZona ? ` · ${p.subZona}` : ""} — ${p.clienteNombre}`;
+  const plantelLabel = (p: { codigo: string; subZona: string | null; zona: string | null }) =>
+    `${p.codigo}${p.subZona ? ` · ${p.subZona}` : ""}${p.zona ? ` (${p.zona})` : ""}`;
 
   const [plantelId, setPlantelId] = useState("");
   const [plantelQuery, setPlantelQuery] = useState("");
 
-  const categorias = useMemo(() => {
-    const grupos = new Map<string, TipoDefecto[]>();
-    for (const tipo of tiposDefecto) {
-      const cat = tipo.categoria ?? "Otros";
-      if (!grupos.has(cat)) grupos.set(cat, []);
-      grupos.get(cat)!.push(tipo);
-    }
-    return Array.from(grupos.entries());
-  }, [tiposDefecto]);
+  const principales = useMemo(
+    () => tiposDefecto.filter((t) => t.principal).sort((a, b) => a.orden - b.orden),
+    [tiposDefecto]
+  );
+  const mutiladosAlas = useMemo(
+    () => tiposDefecto.filter((t) => t.categoria === "Alas").sort((a, b) => a.orden - b.orden),
+    [tiposDefecto]
+  );
+  const mutiladosPierna = useMemo(
+    () => tiposDefecto.filter((t) => t.categoria === "Pierna").sort((a, b) => a.orden - b.orden),
+    [tiposDefecto]
+  );
+  const catalogoAdicional = useMemo(
+    () =>
+      tiposDefecto
+        .filter((t) => !t.principal && t.categoria !== "Alas" && t.categoria !== "Pierna")
+        .sort((a, b) => a.orden - b.orden),
+    [tiposDefecto]
+  );
+  const extraTipos = useMemo(
+    () =>
+      extraIds
+        .map((id) => tiposDefecto.find((t) => t.id === id))
+        .filter((t): t is TipoDefecto => !!t),
+    [extraIds, tiposDefecto]
+  );
+  const disponiblesParaAgregar = useMemo(
+    () => catalogoAdicional.filter((t) => !extraIds.includes(t.id)),
+    [catalogoAdicional, extraIds]
+  );
 
   const totalUnidades = useMemo(
     () => Object.values(defectos).reduce((acc, d) => acc + (d.unidades || 0), 0),
@@ -166,6 +334,27 @@ export default function InspectionForm({
     setDefectos((prev) => ({
       ...prev,
       [id]: { unidades: prev[id]?.unidades ?? 0, kg: prev[id]?.kg ?? 0, [field]: value },
+    }));
+  }
+
+  function removeExtraDefecto(id: string) {
+    setExtraIds((prev) => prev.filter((x) => x !== id));
+    setDefectos((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  }
+
+  function updateLesion(key: string, field: "sinLesion" | "leve" | "grave", value: number) {
+    setLesiones((prev) => ({
+      ...prev,
+      [key]: {
+        sinLesion: prev[key]?.sinLesion ?? 0,
+        leve: prev[key]?.leve ?? 0,
+        grave: prev[key]?.grave ?? 0,
+        [field]: Math.max(0, value),
+      },
     }));
   }
 
@@ -195,12 +384,12 @@ export default function InspectionForm({
               onChange={(e) => {
                 const query = e.target.value;
                 setPlantelQuery(query);
-                const match = allPlanteles.find((p) => plantelLabel(p) === query);
+                const match = planteles.find((p) => plantelLabel(p) === query);
                 setPlantelId(match ? match.id : "");
               }}
             />
             <datalist id="planteles-list">
-              {allPlanteles.map((p) => (
+              {planteles.map((p) => (
                 <option key={p.id} value={plantelLabel(p)} />
               ))}
             </datalist>
@@ -249,12 +438,14 @@ export default function InspectionForm({
             />
           </Field>
 
-          <Field label="Peso vivo (kg)">
-            <input type="number" step="0.01" name="pesoVivo" className="input" />
-          </Field>
-
-          <Field label="Peso beneficio (kg)">
-            <input type="number" step="0.01" name="pesoBeneficio" className="input" />
+          <Field label="Jabas">
+            <input
+              type="number"
+              name="jabas"
+              min={0}
+              placeholder="Envases (7-10 aves c/u)"
+              className="input"
+            />
           </Field>
 
           <Field label="Campaña / Nro. Guía">
@@ -303,51 +494,101 @@ export default function InspectionForm({
         </div>
 
         <div className="space-y-5">
-          {categorias.map(([categoria, tipos]) => (
-            <div key={categoria}>
-              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
-                {categoria}
-              </h3>
-              <div className="overflow-x-auto rounded-md border border-slate-200">
-                <table className="w-full text-sm">
-                  <thead className="bg-slate-50 text-left text-slate-500">
-                    <tr>
-                      <th className="px-3 py-2 font-medium">Defecto</th>
-                      <th className="w-28 px-3 py-2 font-medium">Unidades</th>
-                      <th className="w-28 px-3 py-2 font-medium">Kg</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {tipos.map((tipo) => (
-                      <tr key={tipo.id}>
-                        <td className="px-3 py-2">{tipo.nombre}</td>
-                        <td className="px-3 py-1.5">
-                          <input
-                            type="number"
-                            min={0}
-                            name={`defecto_${tipo.id}_unidades`}
-                            value={defectos[tipo.id]?.unidades || ""}
-                            onChange={(e) =>
-                              updateDefecto(tipo.id, "unidades", Number(e.target.value) || 0)
-                            }
-                            className="input"
-                          />
-                        </td>
-                        <td className="px-3 py-1.5">
-                          <input
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            name={`defecto_${tipo.id}_kg`}
-                            value={defectos[tipo.id]?.kg || ""}
-                            onChange={(e) => updateDefecto(tipo.id, "kg", Number(e.target.value) || 0)}
-                            className="input"
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          <DefectoTabla
+            titulo="Defectos principales"
+            tipos={principales}
+            defectos={defectos}
+            updateDefecto={updateDefecto}
+          />
+
+          <div>
+            <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
+              Mutilados (Alas / Pierna)
+            </h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <DefectoTabla tipos={mutiladosAlas} defectos={defectos} updateDefecto={updateDefecto} />
+              <DefectoTabla tipos={mutiladosPierna} defectos={defectos} updateDefecto={updateDefecto} />
+            </div>
+          </div>
+
+          {extraTipos.length > 0 && (
+            <DefectoTabla
+              titulo="Defectos adicionales"
+              tipos={extraTipos}
+              defectos={defectos}
+              updateDefecto={updateDefecto}
+              onRemove={removeExtraDefecto}
+            />
+          )}
+
+          {disponiblesParaAgregar.length > 0 && (
+            <label className="block max-w-xs">
+              <span className="mb-1 block text-sm font-medium text-slate-700">+ Agregar defecto del catálogo</span>
+              <select
+                value=""
+                onChange={(e) => {
+                  if (e.target.value) setExtraIds((prev) => [...prev, e.target.value]);
+                }}
+                className="input"
+              >
+                <option value="">Selecciona...</option>
+                {disponiblesParaAgregar.map((tipo) => (
+                  <option key={tipo.id} value={tipo.id}>
+                    {tipo.nombre}
+                    {tipo.categoria ? ` (${tipo.categoria})` : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
+      </section>
+
+      {/* Almohadillas y Rasguños */}
+      <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-6">
+        <h2 className="mb-1 font-semibold text-slate-900">Almohadillas y Rasguños</h2>
+        <p className="mb-4 text-sm text-slate-500">
+          Conteo por sexo. La muestra se calcula automáticamente como la suma de Sin lesión, Leve y{" "}
+          {CATEGORIAS_LESION.map((c) => c.graveLabel.toLowerCase()).join("/")}.
+        </p>
+        <div className="space-y-5">
+          {CATEGORIAS_LESION.map((cat) => (
+            <div key={cat.value}>
+              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">{cat.label}</h3>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {SEXOS_LESION.map((sexo) => {
+                  const key = `${cat.value}_${sexo.value}`;
+                  const valores = lesiones[key] ?? { sinLesion: 0, leve: 0, grave: 0 };
+                  const muestra = valores.sinLesion + valores.leve + valores.grave;
+                  return (
+                    <div key={key} className="rounded-md border border-slate-200 p-3">
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-sm font-medium text-slate-700">{sexo.label}</span>
+                        <span className="text-xs text-slate-500">Muestra: {muestra}</span>
+                      </div>
+                      <div className="space-y-2">
+                        <ContadorLesion
+                          label="Sin lesión"
+                          value={valores.sinLesion}
+                          onChange={(v) => updateLesion(key, "sinLesion", v)}
+                        />
+                        <ContadorLesion
+                          label="Leve"
+                          value={valores.leve}
+                          onChange={(v) => updateLesion(key, "leve", v)}
+                        />
+                        <ContadorLesion
+                          label={cat.graveLabel}
+                          value={valores.grave}
+                          onChange={(v) => updateLesion(key, "grave", v)}
+                        />
+                      </div>
+                      <input type="hidden" name={`lesion_${key}_sinLesion`} value={valores.sinLesion} />
+                      <input type="hidden" name={`lesion_${key}_leve`} value={valores.leve} />
+                      <input type="hidden" name={`lesion_${key}_grave`} value={valores.grave} />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))}

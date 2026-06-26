@@ -12,12 +12,35 @@ datasource db {
 enum Role {
   VERIFICADOR
   SUPERVISOR
+  JEFE
 }
 
-enum Sexo {
+enum SexoAve {
   MACHO
   HEMBRA
-  MIXTO
+}
+
+enum CategoriaLesion {
+  ALMOHADILLAS
+  RASGUNOS
+}
+
+enum EstadoInspeccion {
+  BORRADOR
+  COMPLETA
+}
+
+enum GradoHematoma {
+  GRADO1
+  GRADO2
+  GRADO3
+}
+
+enum UbicacionHematoma {
+  ALA
+  ESPINAZO
+  PECHUGA
+  PIERNA
 }
 
 enum CategoriaAve {
@@ -41,9 +64,10 @@ model User {
   apiToken     String?  @unique
   createdAt    DateTime @default(now())
 
-  inspecciones           Inspeccion[]
-  registrosPesoPreventa  RegistroPesoPreventa[]
-  liveWeightReading      LiveWeightReading?
+  jornadas              Jornada[]
+  inspecciones          Inspeccion[]
+  registrosPesoPreventa RegistroPesoPreventa[]
+  liveWeightReading     LiveWeightReading?
 }
 
 model Cliente {
@@ -51,6 +75,7 @@ model Cliente {
   nombre String @unique
 
   planteles    Plantel[]
+  jornadas     Jornada[]
   inspecciones Inspeccion[]
 }
 
@@ -63,53 +88,132 @@ model Plantel {
   tipoPlantel    String?
   zonaEvaluacion String?
 
-  clienteId String
-  cliente   Cliente @relation(fields: [clienteId], references: [id])
+  clienteId String?
+  cliente   Cliente? @relation(fields: [clienteId], references: [id])
 
   inspecciones          Inspeccion[]
   registrosPesoPreventa RegistroPesoPreventa[]
 }
 
 model TipoDefecto {
-  id        String @id @default(cuid())
-  nombre    String @unique
+  id        String  @id @default(cuid())
+  nombre    String  @unique
   categoria String?
-  orden     Int    @default(0)
+  orden     Int     @default(0)
+  principal Boolean @default(false)
 
   registros DefectoRegistro[]
 }
 
+model Jornada {
+  id     String   @id @default(cuid())
+  fecha  DateTime
+  anio   Int
+  mes    Int
+  semana Int
+
+  clienteId     String
+  cliente       Cliente @relation(fields: [clienteId], references: [id])
+  verificadorId String
+  verificador   User    @relation(fields: [verificadorId], references: [id])
+
+  saldos       SaldoDiaAnterior[]
+  inspecciones Inspeccion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SaldoDiaAnterior {
+  id        String  @id @default(cuid())
+  jornadaId String
+  jornada   Jornada @relation(fields: [jornadaId], references: [id], onDelete: Cascade)
+
+  sexo SexoAve
+
+  // Saldo total que dejó el cliente
+  unidades Int?
+  jabas    Int?
+  kg       Float?
+
+  // De ese saldo, lo que el cliente considera selección
+  unidadesSeleccion Int?
+  jabasSeleccion    Int?
+  kgSeleccion       Float?
+
+  // Lo que quedó sin vender tras el beneficiado del saldo
+  unidadesRemanente Int?
+  jabasRemanente    Int?
+  kgRemanente       Float?
+
+  @@unique([jornadaId, sexo])
+}
+
 model Inspeccion {
-  id       String   @id @default(cuid())
-  fecha    DateTime
-  anio     Int
-  mes      Int
-  semana   Int
+  id String @id @default(cuid())
 
-  campania String?
-  nroGuia  String?
+  jornadaId String?
+  jornada   Jornada? @relation(fields: [jornadaId], references: [id])
 
-  clienteId String
-  cliente   Cliente @relation(fields: [clienteId], references: [id])
+  // Legacy fields kept for existing rows
+  fecha          DateTime?
+  anio           Int?
+  mes            Int?
+  semana         Int?
+  campania       String?
+  clienteId      String?
+  cliente        Cliente?  @relation(fields: [clienteId], references: [id])
+  verificadorId  String?
+  verificador    User?     @relation(fields: [verificadorId], references: [id])
+  metaPorcentaje Float     @default(0.6)
 
   plantelId String?
   plantel   Plantel? @relation(fields: [plantelId], references: [id])
 
-  galpon String?
-  sexo   Sexo?
+  galpon   String?
+  corral   String?
+  sexo     SexoAve?
+  jabas    Int?
+  cantidad Int      @default(0)
 
-  cantidad      Int
-  pesoVivo      Float?
-  pesoBeneficio Float?
-  metaPorcentaje Float @default(0.6)
+  promVivo        Float?
+  promBeneficiado Float?
 
+  nroGuia       String?
+  complex       String?
   observaciones String?
 
-  verificadorId String
-  verificador   User   @relation(fields: [verificadorId], references: [id])
+  tempPlataforma      Float?
+  tempPlataformaVacia Float?
+  tempCamion          Float?
+  tempAves            Float?
 
-  defectos DefectoRegistro[]
-  fotos    Foto[]
+  hematomasCon Int?
+  hematomasSin Int?
+
+  pigNivel0 Int @default(0)
+  pigNivel1 Int @default(0)
+  pigNivel2 Int @default(0)
+  pigNivel3 Int @default(0)
+  pigNivel4 Int @default(0)
+  pigNivel5 Int @default(0)
+  pigNivel6 Int @default(0)
+  pigNivel7 Int @default(0)
+
+  mermaAlaKg    Float?
+  mermaPiernaKg Float?
+
+  estado     EstadoInspeccion @default(BORRADOR)
+  pasoActual Int              @default(1)
+
+  // true cuando el registro solo trae datos de pododermatitis/rasguños o pigmentación
+  // (sin censo de selección/merma); se excluye de esos ratios para no diluirlos.
+  soloLesionPigmentacion Boolean @default(false)
+
+  defectos           DefectoRegistro[]
+  fotos              Foto[]
+  evaluacionesLesion EvaluacionLesion[]
+  hematomaDetalles   HematomaDetalle[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -144,6 +248,37 @@ model Foto {
   createdAt DateTime @default(now())
 }
 
+model HematomaDetalle {
+  id String @id @default(cuid())
+
+  inspeccionId String
+  inspeccion   Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+
+  grado     GradoHematoma
+  ubicacion UbicacionHematoma
+
+  cantidad Int @default(0)
+
+  @@unique([inspeccionId, grado, ubicacion])
+}
+
+model EvaluacionLesion {
+  id String @id @default(cuid())
+
+  inspeccionId String
+  inspeccion   Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+
+  categoria CategoriaLesion
+  sexo      SexoAve
+
+  muestra   Int @default(0)
+  sinLesion Int @default(0)
+  leve      Int @default(0)
+  grave     Int @default(0)
+
+  @@unique([inspeccionId, categoria, sexo])
+}
+
 model RegistroPesoPreventa {
   // Id generado por el cliente Android (UUID v4) ANTES de sincronizar, para que
   // reintentos de red produzcan upserts idempotentes en vez de duplicados.
@@ -161,6 +296,10 @@ model RegistroPesoPreventa {
   numeroAve  Int
   pesoGramos Float
   fechaHora  DateTime // momento de captura en campo (hora del celular), no de sync
+
+  // Plantel-Campaña-Galpón-Categoría-Corral, mismo formato que Inspeccion.complex,
+  // para cruzar peso de preventa contra evaluaciones de calidad del mismo lote.
+  complex String?
 
   tipoMuestreo TipoMuestreo @default(PREVENTA)
 
@@ -188,6 +327,7 @@ model LiveWeightReading {
   galpon        String?
   corral        String?
   categoria     CategoriaAve?
+  complex       String?
 
   updatedAt DateTime @updatedAt
 }

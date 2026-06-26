@@ -44,7 +44,7 @@ class CaptureSetupFragment : Fragment() {
                 binding?.spinnerPlantel?.adapter = ArrayAdapter(
                     requireContext(),
                     android.R.layout.simple_spinner_dropdown_item,
-                    planteles.map { "${it.codigo} — ${it.cliente}" },
+                    planteles.map { if (it.cliente != null) "${it.codigo} — ${it.cliente}" else it.codigo },
                 )
             } catch (e: Exception) {
                 showError(getString(R.string.error_load_planteles, e.message ?: e.javaClass.simpleName))

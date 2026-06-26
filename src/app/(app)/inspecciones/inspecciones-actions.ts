@@ -23,8 +23,7 @@ export async function createInspectionAction(
   const galpon = String(formData.get("galpon") ?? "").trim() || null;
   const sexo = String(formData.get("sexo") ?? "") || null;
   const cantidad = Number(formData.get("cantidad") ?? 0);
-  const pesoVivo = formData.get("pesoVivo") ? Number(formData.get("pesoVivo")) : null;
-  const pesoBeneficio = formData.get("pesoBeneficio") ? Number(formData.get("pesoBeneficio")) : null;
+  const jabas = formData.get("jabas") ? Number(formData.get("jabas")) : null;
   const campania = String(formData.get("campania") ?? "").trim() || null;
   const nroGuia = String(formData.get("nroGuia") ?? "").trim() || null;
   const observaciones = String(formData.get("observaciones") ?? "").trim() || null;
@@ -56,6 +55,17 @@ export async function createInspectionAction(
     })
     .filter((d) => d.unidades > 0 || d.kg > 0);
 
+  const lesionesData = (["ALMOHADILLAS", "RASGUNOS"] as const).flatMap((categoria) =>
+    (["MACHO", "HEMBRA"] as const)
+      .map((sexo) => {
+        const sinLesion = Number(formData.get(`lesion_${categoria}_${sexo}_sinLesion`) ?? 0) || 0;
+        const leve = Number(formData.get(`lesion_${categoria}_${sexo}_leve`) ?? 0) || 0;
+        const grave = Number(formData.get(`lesion_${categoria}_${sexo}_grave`) ?? 0) || 0;
+        return { categoria, sexo, sinLesion, leve, grave, muestra: sinLesion + leve + grave };
+      })
+      .filter((l) => l.muestra > 0)
+  );
+
   const inspeccion = await prisma.inspeccion.create({
     data: {
       fecha,
@@ -67,15 +77,17 @@ export async function createInspectionAction(
       clienteId,
       plantelId,
       galpon,
-      sexo: sexo as "MACHO" | "HEMBRA" | "MIXTO" | null,
+      sexo: (sexo === "MACHO" || sexo === "HEMBRA") ? sexo : null,
+      jabas,
       cantidad,
-      pesoVivo,
-      pesoBeneficio,
       metaPorcentaje,
       observaciones,
       verificadorId,
       defectos: {
         create: defectosData,
+      },
+      evaluacionesLesion: {
+        create: lesionesData,
       },
     },
   });

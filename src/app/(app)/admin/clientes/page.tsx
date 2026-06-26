@@ -4,7 +4,7 @@ import ClienteForm from "./cliente-form";
 export default async function ClientesPage() {
   const clientes = await prisma.cliente.findMany({
     orderBy: { nombre: "asc" },
-    include: { _count: { select: { planteles: true, inspecciones: true } } },
+    include: { _count: { select: { inspecciones: true } } },
   });
 
   return (
@@ -15,7 +15,6 @@ export default async function ClientesPage() {
             <thead className="bg-slate-50 text-left text-slate-500">
               <tr>
                 <th className="px-3 py-2 font-medium">Cliente</th>
-                <th className="px-3 py-2 font-medium">Planteles</th>
                 <th className="px-3 py-2 font-medium">Inspecciones</th>
               </tr>
             </thead>
@@ -23,7 +22,6 @@ export default async function ClientesPage() {
               {clientes.map((c) => (
                 <tr key={c.id}>
                   <td className="px-3 py-2 font-medium text-slate-800">{c.nombre}</td>
-                  <td className="px-3 py-2">{c._count.planteles}</td>
                   <td className="px-3 py-2">{c._count.inspecciones}</td>
                 </tr>
               ))}

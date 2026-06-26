@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       id: p.id,
       codigo: p.codigo,
       nombre: p.nombre,
-      cliente: p.cliente.nombre,
+      cliente: p.cliente?.nombre ?? null,
     })),
   });
 }

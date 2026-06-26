@@ -7,23 +7,32 @@ import type { Role } from "@/generated/prisma/enums";
 export default function NavLinks({ role }: { role: Role }) {
   const pathname = usePathname();
 
-  const links = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/dashboard/preventa", label: "Peso en planta" },
-    { href: "/inspecciones", label: "Inspecciones" },
-    { href: "/inspecciones/nueva", label: "Nueva inspección" },
-    ...(role === "SUPERVISOR"
-      ? [{ href: "/admin", label: "Catálogos" }]
-      : []),
-  ];
+  const links =
+    role === "SUPERVISOR"
+      ? [
+          { href: "/dashboard", label: "Dashboard" },
+          { href: "/dashboard-bi", label: "Indicadores BI" },
+          { href: "/dashboard/preventa", label: "Peso en planta" },
+          { href: "/jornadas", label: "Jornadas" },
+          { href: "/inspecciones", label: "Inspecciones" },
+          { href: "/admin", label: "Catálogos" },
+        ]
+      : role === "VERIFICADOR"
+        ? [
+            { href: "/jornadas", label: "Mis jornadas" },
+            { href: "/dashboard/preventa", label: "Peso en planta" },
+          ]
+        : [
+            { href: "/dashboard", label: "Dashboard" },
+            { href: "/dashboard-bi", label: "Indicadores BI" },
+          ];
 
   return (
     <div className="flex gap-1 overflow-x-auto pb-2 text-sm">
       {links.map((link) => {
         const active =
           pathname === link.href ||
-          (link.href !== "/dashboard" && pathname.startsWith(link.href) && link.href !== "/inspecciones/nueva") ||
-          (link.href === "/inspecciones/nueva" && pathname === "/inspecciones/nueva");
+          (link.href !== "/dashboard" && pathname.startsWith(link.href));
         return (
           <Link
             key={link.href}

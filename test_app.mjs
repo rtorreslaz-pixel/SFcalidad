@@ -32,13 +32,11 @@ const plantelLabels = await page.locator('#planteles-list option').evaluateAll((
   opts.map((o) => o.getAttribute("value"))
 );
 console.log("plantel options:", plantelLabels.length);
-const plantelLabel = plantelLabels.find((v) => v && v.includes("AKIM"));
+const plantelLabel = plantelLabels.find((v) => v && v.includes("P006"));
 await page.fill('input[list="planteles-list"]', plantelLabel);
 await page.fill('input[name="galpon"]', "11A");
 await page.selectOption('select[name="sexo"]', "MACHO");
 await page.fill('input[name="cantidad"]', "1800");
-await page.fill('input[name="pesoVivo"]', "2.7");
-await page.fill('input[name="pesoBeneficio"]', "2.4");
 
 // Fill a couple of defect inputs
 const defectInputs = await page.locator('input[name$="_unidades"]').all();
@@ -46,6 +44,14 @@ console.log("defect inputs:", defectInputs.length);
 await defectInputs[0].fill("3");
 const kgInputs = await page.locator('input[name$="_kg"]').all();
 await kgInputs[0].fill("4.5");
+
+// Jabas
+await page.fill('input[name="jabas"]', "20");
+
+// Almohadillas y Rasguños counters
+await page.getByLabel("Sumar Sin lesión").first().click();
+await page.getByLabel("Sumar Sin lesión").first().click();
+await page.getByLabel("Sumar Leve").first().click();
 
 await page.fill('textarea[name="observaciones"]', "Inspección de prueba automatizada.");
 await shot("04-form-filled");
@@ -82,17 +88,45 @@ await page.waitForURL("**/login");
 await page.fill('input[name="email"]', "verificador1@avicola.com");
 await page.fill('input[name="password"]', "demo1234");
 await page.click('button[type="submit"]');
-await page.waitForURL("**/dashboard");
-await shot("12-verificador-dashboard");
+await page.waitForURL("**/inspecciones/nueva");
+await shot("12-verificador-nueva-inspeccion");
+
+// Verificador should be redirected away from dashboard and inspecciones list
+await page.goto("http://localhost:3000/dashboard");
+await page.waitForURL("**/inspecciones/nueva");
+console.log("verificador dashboard url:", page.url());
 
 await page.goto("http://localhost:3000/inspecciones");
-await shot("13-verificador-inspecciones");
+await page.waitForURL("**/inspecciones/nueva");
+console.log("verificador inspecciones url:", page.url());
+await shot("13-verificador-inspecciones-redirect");
 
 // Try admin access as verificador (should redirect)
 await page.goto("http://localhost:3000/admin");
 await page.waitForTimeout(500);
 console.log("verificador admin url:", page.url());
 await shot("14-verificador-admin-redirect");
+
+// Logout and login as jefe
+await page.goto("http://localhost:3000/inspecciones/nueva");
+await page.click('button:has-text("Salir")');
+await page.waitForURL("**/login");
+
+await page.fill('input[name="email"]', "jefe@avicola.com");
+await page.fill('input[name="password"]', "demo1234");
+await page.click('button[type="submit"]');
+await page.waitForURL("**/dashboard");
+await shot("15-jefe-dashboard");
+
+// Jefe should be redirected away from inspecciones and nueva inspección
+await page.goto("http://localhost:3000/inspecciones");
+await page.waitForURL("**/dashboard");
+console.log("jefe inspecciones url:", page.url());
+
+await page.goto("http://localhost:3000/inspecciones/nueva");
+await page.waitForURL("**/dashboard");
+console.log("jefe nueva inspeccion url:", page.url());
+await shot("16-jefe-nueva-redirect");
 
 console.log("CONSOLE/PAGE ERRORS:", JSON.stringify(errors, null, 2));
 

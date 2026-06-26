@@ -12,7 +12,7 @@ data class LoginResponseUser(val id: String, val nombre: String, val email: Stri
 data class LoginResponse(val token: String, val user: LoginResponseUser)
 
 @Serializable
-data class PlantelDto(val id: String, val codigo: String, val nombre: String, val cliente: String)
+data class PlantelDto(val id: String, val codigo: String, val nombre: String, val cliente: String? = null)
 
 @Serializable
 data class CatalogosResponse(val planteles: List<PlantelDto>)

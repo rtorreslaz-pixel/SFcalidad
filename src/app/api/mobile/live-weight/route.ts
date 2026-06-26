@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireMobileUser } from "@/lib/auth";
 import { CategoriaAve } from "@/generated/prisma/enums";
+import { buildComplexEntity } from "@/lib/complex-entity";
 
 function asOptionalString(v: unknown): string | null {
   return typeof v === "string" && v.length > 0 ? v : null;
@@ -22,13 +23,19 @@ export async function POST(request: NextRequest) {
       ? (body.categoria as CategoriaAve)
       : null;
 
+  const plantelCodigo = asOptionalString(body?.plantelCodigo);
+  const campania = asOptionalString(body?.campania);
+  const galpon = asOptionalString(body?.galpon);
+  const corral = asOptionalString(body?.corral);
+
   const data = {
     pesoGramos,
-    plantelCodigo: asOptionalString(body?.plantelCodigo),
-    campania: asOptionalString(body?.campania),
-    galpon: asOptionalString(body?.galpon),
-    corral: asOptionalString(body?.corral),
+    plantelCodigo,
+    campania,
+    galpon,
+    corral,
     categoria,
+    complex: buildComplexEntity({ plantelCodigo, campania, galpon, categoria, corral }),
   };
 
   await prisma.liveWeightReading.upsert({

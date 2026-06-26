@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { ROLE_LABELS } from "@/lib/auth";
 import UsuarioForm from "./usuario-form";
 import ToggleActivoButton from "./toggle-activo-button";
 
@@ -28,7 +29,7 @@ export default async function UsuariosPage() {
                 <tr key={u.id}>
                   <td className="px-3 py-2 font-medium text-slate-800">{u.nombre}</td>
                   <td className="px-3 py-2">{u.email}</td>
-                  <td className="px-3 py-2">{u.role === "SUPERVISOR" ? "Supervisor" : "Verificador"}</td>
+                  <td className="px-3 py-2">{ROLE_LABELS[u.role]}</td>
                   <td className="px-3 py-2">{u._count.inspecciones}</td>
                   <td className="px-3 py-2">
                     <span

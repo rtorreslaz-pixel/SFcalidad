@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { createSession, verifyPassword } from "@/lib/auth";
+import { createSession, homeRouteForRole, verifyPassword } from "@/lib/auth";
 
 export type LoginResult = { error: string } | undefined;
 
@@ -29,5 +29,5 @@ export async function loginAction(
   }
 
   await createSession(user.id);
-  redirect("/dashboard");
+  redirect(homeRouteForRole(user.role));
 }

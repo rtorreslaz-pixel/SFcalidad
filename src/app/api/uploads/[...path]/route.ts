@@ -3,7 +3,7 @@ import { stat, readFile } from "fs/promises";
 import path from "path";
 import { getCurrentUser } from "@/lib/auth";
 
-const UPLOAD_ROOT = path.join(process.cwd(), "uploads");
+const UPLOAD_ROOT = process.env.UPLOAD_DIR ?? path.join(process.cwd(), "uploads");
 
 const CONTENT_TYPES: Record<string, string> = {
   ".jpg": "image/jpeg",

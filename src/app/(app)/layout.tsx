@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, ROLE_LABELS } from "@/lib/auth";
 import NavLinks from "./nav-links";
 
 export default async function AppLayout({
@@ -22,8 +22,7 @@ export default async function AppLayout({
           </Link>
           <div className="flex items-center gap-3 text-sm">
             <span className="hidden text-slate-500 sm:inline">
-              {user.nombre} ·{" "}
-              {user.role === "SUPERVISOR" ? "Supervisor" : "Verificador"}
+              {user.nombre} · {ROLE_LABELS[user.role]}
             </span>
             <form action="/api/logout" method="POST">
               <button

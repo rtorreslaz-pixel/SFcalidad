@@ -16,6 +16,7 @@ export default async function DefectosPage() {
               <tr>
                 <th className="px-3 py-2 font-medium">Defecto</th>
                 <th className="px-3 py-2 font-medium">Categoría</th>
+                <th className="px-3 py-2 font-medium">Principal</th>
                 <th className="px-3 py-2 font-medium">Veces registrado</th>
               </tr>
             </thead>
@@ -24,6 +25,7 @@ export default async function DefectosPage() {
                 <tr key={t.id}>
                   <td className="px-3 py-2 font-medium text-slate-800">{t.nombre}</td>
                   <td className="px-3 py-2 text-slate-500">{t.categoria}</td>
+                  <td className="px-3 py-2">{t.principal ? "Sí" : "—"}</td>
                   <td className="px-3 py-2">{t._count.registros}</td>
                 </tr>
               ))}
