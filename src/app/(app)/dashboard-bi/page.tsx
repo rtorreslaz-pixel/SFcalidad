@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
+import type { SexoAve } from "@/generated/prisma/enums";
 import { TendenciaChart, RankingChart, PigmentacionChart, LesionChart } from "./charts";
 
 const NOMBRES_MERMA_PASO7 = [
@@ -66,18 +67,32 @@ function isoDaysAgo(dias: number) {
 export default async function DashboardBiPage({
   searchParams,
 }: {
-  searchParams: Promise<{ clienteId?: string; plantelId?: string; desde?: string; hasta?: string; complexEntity?: string }>;
+  searchParams: Promise<{
+    clienteId?: string;
+    plantelId?: string;
+    desde?: string;
+    hasta?: string;
+    complexEntity?: string;
+    campania?: string;
+    galpon?: string;
+    sexo?: string;
+    corral?: string;
+  }>;
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role === "VERIFICADOR") redirect("/jornadas");
 
-  const { clienteId, plantelId, desde, hasta, complexEntity } = await searchParams;
+  const { clienteId, plantelId, desde, hasta, complexEntity, campania, galpon, sexo, corral } = await searchParams;
 
   const where: Prisma.InspeccionWhereInput = {
     ...(clienteId ? { clienteId } : {}),
     ...(plantelId ? { plantelId } : {}),
     ...(complexEntity ? { complex: { contains: complexEntity } } : {}),
+    ...(campania ? { campania: { contains: campania } } : {}),
+    ...(galpon ? { galpon: { contains: galpon } } : {}),
+    ...(sexo ? { sexo: sexo as SexoAve } : {}),
+    ...(corral ? { corral: { contains: corral } } : {}),
   };
 
   const [inspeccionesSinFecha, clientes, planteles] = await Promise.all([
@@ -334,7 +349,9 @@ export default async function DashboardBiPage({
     { label: "Últimos 30 días", desde: isoDaysAgo(30), hasta: isoDaysAgo(0) },
     { label: "Todo", desde: undefined, hasta: undefined },
   ];
-  const hayFiltros = Boolean(clienteId || plantelId || desde || hasta || complexEntity);
+  const hayFiltros = Boolean(
+    clienteId || plantelId || desde || hasta || complexEntity || campania || galpon || sexo || corral
+  );
 
   return (
     <div>
@@ -384,6 +401,26 @@ export default async function DashboardBiPage({
             className="input max-w-xs"
           />
         </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Campaña</label>
+          <input type="text" name="campania" placeholder="Ej: 2401" defaultValue={campania ?? ""} className="input w-24" />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Galpón</label>
+          <input type="text" name="galpon" placeholder="Ej: 11" defaultValue={galpon ?? ""} className="input w-20" />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Sexo</label>
+          <select name="sexo" defaultValue={sexo ?? ""} className="input w-32">
+            <option value="">Todos</option>
+            <option value="MACHO">Macho</option>
+            <option value="HEMBRA">Hembra</option>
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Corral</label>
+          <input type="text" name="corral" placeholder="Ej: A" defaultValue={corral ?? ""} className="input w-20" />
+        </div>
         <button
           type="submit"
           className="rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900"
@@ -403,7 +440,17 @@ export default async function DashboardBiPage({
           return (
             <a
               key={r.label}
-              href={buildHref({ clienteId, plantelId, desde: r.desde, hasta: r.hasta, complexEntity })}
+              href={buildHref({
+                clienteId,
+                plantelId,
+                desde: r.desde,
+                hasta: r.hasta,
+                complexEntity,
+                campania,
+                galpon,
+                sexo,
+                corral,
+              })}
               className={`rounded-full px-3 py-1 text-xs font-medium ${
                 activo ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
