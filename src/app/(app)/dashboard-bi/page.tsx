@@ -513,13 +513,17 @@ export default async function DashboardBiPage({
           <TendenciaChart data={tendencia} objetivoSeleccion={OBJETIVO_SELECCION} />
         </ChartCard>
         <ChartCard title="Ranking de planteles por % de merma (mejor desempeño arriba)">
-          <RankingChart data={rankingChartData} />
+          <div className="max-h-[60vh] overflow-y-auto">
+            <RankingChart data={rankingChartData} />
+          </div>
         </ChartCard>
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6">
         <ChartCard title="Ranking de zonas por % de merma (mejor desempeño arriba)" full>
-          <RankingChart data={rankingZonasChartData} />
+          <div className="max-h-[60vh] overflow-y-auto">
+            <RankingChart data={rankingZonasChartData} />
+          </div>
         </ChartCard>
       </div>
 
@@ -534,28 +538,28 @@ export default async function DashboardBiPage({
 
       <ChartCard title="Detalle por plantel" full>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead className="bg-slate-50 text-left text-slate-500">
               <tr>
-                <th className="px-3 py-2 font-medium">Plantel</th>
-                <th className="px-3 py-2 font-medium">Evaluaciones</th>
-                <th className="px-3 py-2 font-medium">% Selección</th>
-                <th className="px-3 py-2 font-medium">% Merma</th>
-                <th className="px-3 py-2 font-medium">% Hematomas</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">Plantel</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">Evaluaciones</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">% Selección</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">% Merma</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">% Hematomas</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {ranking.map((p) => (
                 <tr key={p.codigo} className="hover:bg-slate-50">
-                  <td className="px-3 py-2 font-medium text-slate-900">{p.codigo}</td>
-                  <td className="px-3 py-2">{p.evaluaciones}</td>
-                  <td className="px-3 py-2">{p.pctSeleccion.toFixed(2)}%</td>
-                  <td className="px-3 py-2">
+                  <td className="whitespace-nowrap px-3 py-2 font-medium text-slate-900">{p.codigo}</td>
+                  <td className="whitespace-nowrap px-3 py-2">{p.evaluaciones}</td>
+                  <td className="whitespace-nowrap px-3 py-2">{p.pctSeleccion.toFixed(2)}%</td>
+                  <td className="whitespace-nowrap px-3 py-2">
                     <span className={`rounded-md px-2 py-0.5 font-semibold ${SEMAFORO_BADGE[semaforo(p.pctMerma, UMBRAL_MERMA)]}`}>
                       {p.pctMerma.toFixed(2)}%
                     </span>
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="whitespace-nowrap px-3 py-2">
                     <span
                       className={`rounded-md px-2 py-0.5 font-semibold ${SEMAFORO_BADGE[semaforo(p.pctHematomas, UMBRAL_HEMATOMAS)]}`}
                     >
@@ -578,28 +582,28 @@ export default async function DashboardBiPage({
 
       <ChartCard title="Detalle por zona" full>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead className="bg-slate-50 text-left text-slate-500">
               <tr>
-                <th className="px-3 py-2 font-medium">Zona</th>
-                <th className="px-3 py-2 font-medium">Evaluaciones</th>
-                <th className="px-3 py-2 font-medium">% Selección</th>
-                <th className="px-3 py-2 font-medium">% Merma</th>
-                <th className="px-3 py-2 font-medium">% Hematomas</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">Zona</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">Evaluaciones</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">% Selección</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">% Merma</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">% Hematomas</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {rankingZonas.map((z) => (
                 <tr key={z.zona} className="hover:bg-slate-50">
-                  <td className="px-3 py-2 font-medium text-slate-900">{z.zona}</td>
-                  <td className="px-3 py-2">{z.evaluaciones}</td>
-                  <td className="px-3 py-2">{z.pctSeleccion.toFixed(2)}%</td>
-                  <td className="px-3 py-2">
+                  <td className="whitespace-nowrap px-3 py-2 font-medium text-slate-900">{z.zona}</td>
+                  <td className="whitespace-nowrap px-3 py-2">{z.evaluaciones}</td>
+                  <td className="whitespace-nowrap px-3 py-2">{z.pctSeleccion.toFixed(2)}%</td>
+                  <td className="whitespace-nowrap px-3 py-2">
                     <span className={`rounded-md px-2 py-0.5 font-semibold ${SEMAFORO_BADGE[semaforo(z.pctMerma, UMBRAL_MERMA)]}`}>
                       {z.pctMerma.toFixed(2)}%
                     </span>
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="whitespace-nowrap px-3 py-2">
                     <span
                       className={`rounded-md px-2 py-0.5 font-semibold ${SEMAFORO_BADGE[semaforo(z.pctHematomas, UMBRAL_HEMATOMAS)]}`}
                     >
