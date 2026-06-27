@@ -283,8 +283,8 @@ export function FormatoSeleccion({
           </tr>
           <tr>
             <td className={DATA} colSpan={3}>{num(inspeccion.tempCamion)}</td>
-            <td className={DATA} colSpan={3}>{num(inspeccion.tempAves)}</td>
-            <td className={DATA} colSpan={4}>{num(inspeccion.tempPlataforma)}</td>
+            <td className={DATA} colSpan={3}>{num(inspeccion.tempPlataforma)}</td>
+            <td className={DATA} colSpan={4}>{num(inspeccion.tempAves)}</td>
           </tr>
 
           {/* Hematomas */}

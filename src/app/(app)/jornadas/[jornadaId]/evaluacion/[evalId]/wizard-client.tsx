@@ -457,17 +457,17 @@ export default function WizardClient({
           <div className="space-y-4">
             <p className="text-sm text-slate-500">Registra las temperaturas en °C al momento de la descarga.</p>
             <BigInput
-              label="Temperatura plataforma (°C)"
-              value={tempPlataforma}
-              onChange={(v) => { setTempPlataforma(v); scheduleGuardado({ tempPlataforma: v ? Number(v) : null }); }}
-            />
-            <BigInput
-              label="Temperatura camión — parte media (°C)"
+              label="Vehículo con jabas (°C)"
               value={tempCamion}
               onChange={(v) => { setTempCamion(v); scheduleGuardado({ tempCamion: v ? Number(v) : null }); }}
             />
             <BigInput
-              label="Temperatura aves en plataforma (°C)"
+              label="Plataforma sin jabas (°C)"
+              value={tempPlataforma}
+              onChange={(v) => { setTempPlataforma(v); scheduleGuardado({ tempPlataforma: v ? Number(v) : null }); }}
+            />
+            <BigInput
+              label="Plataforma con jabas (°C)"
               value={tempAves}
               onChange={(v) => { setTempAves(v); scheduleGuardado({ tempAves: v ? Number(v) : null }); }}
             />
