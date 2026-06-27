@@ -39,3 +39,19 @@ body {
   color: var(--color-slate-400);
 }
 
+/* Formatos clasificados (réplica digital de los formularios en papel) */
+.formato-hoja {
+  width: 100%;
+  max-width: 760px;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+  .formato-hoja {
+    max-width: 100%;
+  }
+}
+

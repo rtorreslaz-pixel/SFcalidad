@@ -58,12 +58,20 @@ export default async function JornadaDetallePage({
         </div>
         <div className="flex items-center gap-2">
           {jornada.inspecciones.some((i) => i.estado === "COMPLETA") && (
-            <Link
-              href={`/jornadas/${jornadaId}/reporte`}
-              className="rounded-md border border-emerald-300 px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
-            >
-              📄 Reporte
-            </Link>
+            <>
+              <Link
+                href={`/jornadas/${jornadaId}/reporte`}
+                className="rounded-md border border-emerald-300 px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+              >
+                📄 Reporte
+              </Link>
+              <Link
+                href={`/jornadas/${jornadaId}/formatos`}
+                className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                📋 Formatos
+              </Link>
+            </>
           )}
           {user.role === "SUPERVISOR" && <DeleteJornadaButton jornadaId={jornadaId} />}
         </div>
