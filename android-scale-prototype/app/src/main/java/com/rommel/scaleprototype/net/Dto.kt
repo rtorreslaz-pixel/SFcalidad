@@ -58,3 +58,6 @@ data class LiveWeightRequest(
     val corral: String? = null,
     val categoria: String? = null,
 )
+
+@Serializable
+data class NumeroAveMaxResponse(val maxNumeroAve: Int? = null)

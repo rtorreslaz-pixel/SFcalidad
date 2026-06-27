@@ -40,6 +40,11 @@ class CaptureFragment : Fragment() {
     private var latestWeightGramos: Double? = null
     private var lastLiveWeightSentAtMillis = 0L
 
+    // Piso traído del servidor para el corral actual: si la app se reinstaló o se borró su
+    // storage, Room local arranca en 0 pero el servidor ya tiene aves sincronizadas de antes
+    // para esta misma combinación -- sin esto se duplicarían números de ave ya usados.
+    private var serverMaxNumeroAve: Int = 0
+
     private lateinit var plantelId: String
     private lateinit var plantelCodigo: String
     private lateinit var campania: String
@@ -92,7 +97,21 @@ class CaptureFragment : Fragment() {
         }
 
         observePendingCount()
+        fetchServerNumeroAveBaseline()
         ensurePermissionThenConnect()
+    }
+
+    // Best-effort: si falla (sin red al entrar), simplemente se usa solo el máximo local,
+    // que es el comportamiento que ya existía antes de este fix.
+    private fun fetchServerNumeroAveBaseline() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            runCatching {
+                ApiClient.getInstance(requireContext())
+                    .getNumeroAveMax(plantelId, campania, galpon, corral, categoria)
+            }.onSuccess { response ->
+                serverMaxNumeroAve = response.maxNumeroAve ?: 0
+            }
+        }
     }
 
     override fun onResume() {
@@ -242,7 +261,8 @@ class CaptureFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             val nowMillis = System.currentTimeMillis()
-            val numeroAve = (dao.getMaxNumeroAve(plantelId, campania, galpon, corral, categoria) ?: 0) + 1
+            val localMaxNumeroAve = dao.getMaxNumeroAve(plantelId, campania, galpon, corral, categoria) ?: 0
+            val numeroAve = maxOf(localMaxNumeroAve, serverMaxNumeroAve) + 1
             dao.insert(
                 RegistroPeso(
                     id = UUID.randomUUID().toString(),

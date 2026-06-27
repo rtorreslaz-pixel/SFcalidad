@@ -21,4 +21,15 @@ class DtoTest {
         assertEquals("P006", response.planteles[0].codigo)
         assertNull(response.planteles[0].nombre)
     }
+
+    // GET /api/mobile/numero-ave-max devuelve maxNumeroAve: null cuando todavia no hay
+    // ningun registro para esa combinacion plantel/campania/galpon/corral/categoria.
+    @Test
+    fun `decodifica numero ave max sin registros previos`() {
+        val payload = """{"maxNumeroAve":null}"""
+
+        val response = json.decodeFromString(NumeroAveMaxResponse.serializer(), payload)
+
+        assertNull(response.maxNumeroAve)
+    }
 }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -46,6 +47,24 @@ class ApiClient(private val baseUrl: String, context: Context) {
         val body = json.encodeToString(liveWeight).toRequestBody(JSON_MEDIA_TYPE)
         val request = Request.Builder().url(baseUrl + "api/mobile/live-weight").post(body).build()
         execute(request) { }
+    }
+
+    suspend fun getNumeroAveMax(
+        plantelId: String,
+        campania: String,
+        galpon: String,
+        corral: String,
+        categoria: String,
+    ): NumeroAveMaxResponse = withContext(Dispatchers.IO) {
+        val url = (baseUrl + "api/mobile/numero-ave-max").toHttpUrl().newBuilder()
+            .addQueryParameter("plantelId", plantelId)
+            .addQueryParameter("campania", campania)
+            .addQueryParameter("galpon", galpon)
+            .addQueryParameter("corral", corral)
+            .addQueryParameter("categoria", categoria)
+            .build()
+        val request = Request.Builder().url(url).get().build()
+        execute(request) { json.decodeFromString(NumeroAveMaxResponse.serializer(), it) }
     }
 
     private inline fun <T> execute(request: Request, parse: (String) -> T): T {
