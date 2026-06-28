@@ -7,6 +7,7 @@ export default async function JornadasPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role === "JEFE") redirect("/dashboard");
+  if (user.role === "COMERCIAL") redirect("/dashboard/preventa");
 
   const jornadas = await prisma.jornada.findMany({
     where: user.role === "VERIFICADOR" ? { verificadorId: user.id } : {},

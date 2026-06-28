@@ -4,12 +4,7 @@ import { prisma } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import type { SexoAve } from "@/generated/prisma/enums";
 import { TendenciaChart, RankingChart, PigmentacionChart, LesionChart } from "./charts";
-
-const NOMBRES_MERMA_PASO7 = [
-  "Alas Grado 1°", "Alas Grado 2°", "Alas Grado 3°", "Alas Rota",
-  "Pierna Grado 1°", "Pierna Grado 2°", "Pierna Grado 3°", "Pierna Rota",
-  "Alas Mutiladas", "Piernas Mutiladas",
-];
+import { esDefectoMerma } from "@/lib/defectos-merma";
 
 const UMBRAL_MERMA = { verde: 2, amarillo: 5 };
 const UMBRAL_HEMATOMAS = { verde: 5, amarillo: 15 };
@@ -82,6 +77,7 @@ export default async function DashboardBiPage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role === "VERIFICADOR") redirect("/jornadas");
+  if (user.role === "COMERCIAL") redirect("/dashboard/preventa");
 
   const { clienteId, plantelId, desde, hasta, complexEntity, campania, galpon, sexo, corral } = await searchParams;
 
@@ -138,7 +134,7 @@ export default async function DashboardBiPage({
   let totalMermaUnid = 0;
   for (const insp of inspeccionesCompletas) {
     for (const d of insp.defectos) {
-      if (NOMBRES_MERMA_PASO7.includes(d.tipoDefecto.nombre)) {
+      if (esDefectoMerma(d.tipoDefecto.nombre)) {
         totalMermaUnid += d.unidades;
       } else {
         totalSeleccionUnid += d.unidades;
@@ -212,7 +208,7 @@ export default async function DashboardBiPage({
     entry.hemCon += insp.hematomasCon ?? 0;
     entry.hemSin += insp.hematomasSin ?? 0;
     for (const d of insp.defectos) {
-      if (NOMBRES_MERMA_PASO7.includes(d.tipoDefecto.nombre)) entry.mermaUnid += d.unidades;
+      if (esDefectoMerma(d.tipoDefecto.nombre)) entry.mermaUnid += d.unidades;
       else entry.seleccionUnid += d.unidades;
     }
     plantelMap.set(codigo, entry);
@@ -303,7 +299,7 @@ export default async function DashboardBiPage({
     const entry = fechaEntry(fecha.toISOString().slice(0, 10));
     entry.cantidad += insp.cantidad;
     for (const d of insp.defectos) {
-      if (NOMBRES_MERMA_PASO7.includes(d.tipoDefecto.nombre)) entry.mermaUnid += d.unidades;
+      if (esDefectoMerma(d.tipoDefecto.nombre)) entry.mermaUnid += d.unidades;
       else entry.seleccionUnid += d.unidades;
     }
   }

@@ -1,0 +1,113 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { requireMobileUser } from "@/lib/auth";
+import { CategoriaAve } from "@/generated/prisma/enums";
+import { buildComplexEntity } from "@/lib/complex-entity";
+
+type RegistroInput = {
+  id: string;
+  plantelId: string;
+  campania?: string | null;
+  galpon: string;
+  corral: string;
+  categoria: string;
+  numeroAve: number;
+  pesoGramos: number;
+  fechaHora: string;
+  tieneHematoma?: boolean | null;
+  tieneDefectoSeleccion?: boolean | null;
+  gradoPododermatitis?: number | null;
+  gradoRasguno?: number | null;
+  pigmentacion?: number | null;
+};
+
+function isValidGrado(v: unknown): v is number | null | undefined {
+  return v === undefined || v === null || (typeof v === "number" && [0, 1, 2].includes(v));
+}
+
+function isValidRegistro(r: unknown): r is RegistroInput {
+  if (typeof r !== "object" || r === null) return false;
+  const v = r as Record<string, unknown>;
+  return (
+    typeof v.id === "string" &&
+    typeof v.plantelId === "string" &&
+    (v.campania === undefined || v.campania === null || typeof v.campania === "string") &&
+    typeof v.galpon === "string" &&
+    typeof v.corral === "string" &&
+    typeof v.categoria === "string" &&
+    Object.values(CategoriaAve).includes(v.categoria as CategoriaAve) &&
+    typeof v.numeroAve === "number" &&
+    typeof v.pesoGramos === "number" &&
+    typeof v.fechaHora === "string" &&
+    !Number.isNaN(Date.parse(v.fechaHora)) &&
+    (v.tieneHematoma === undefined || v.tieneHematoma === null || typeof v.tieneHematoma === "boolean") &&
+    (v.tieneDefectoSeleccion === undefined ||
+      v.tieneDefectoSeleccion === null ||
+      typeof v.tieneDefectoSeleccion === "boolean") &&
+    isValidGrado(v.gradoPododermatitis) &&
+    isValidGrado(v.gradoRasguno) &&
+    (v.pigmentacion === undefined ||
+      v.pigmentacion === null ||
+      (typeof v.pigmentacion === "number" && v.pigmentacion >= 0 && v.pigmentacion <= 7))
+  );
+}
+
+export async function POST(request: NextRequest) {
+  const user = await requireMobileUser(request);
+  if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+  const body = await request.json().catch(() => null);
+  const registros = body?.registros;
+  if (!Array.isArray(registros) || registros.length === 0) {
+    return NextResponse.json({ error: "registros debe ser un arreglo no vacío" }, { status: 400 });
+  }
+  if (!registros.every(isValidRegistro)) {
+    return NextResponse.json({ error: "Uno o más registros tienen campos inválidos" }, { status: 400 });
+  }
+
+  const plantelIds = [...new Set(registros.map((r) => r.plantelId))];
+  const planteles = await prisma.plantel.findMany({
+    where: { id: { in: plantelIds } },
+    select: { id: true, codigo: true },
+  });
+  if (planteles.length !== plantelIds.length) {
+    return NextResponse.json({ error: "Uno o más plantelId no existen" }, { status: 400 });
+  }
+  const codigoByPlantelId = new Map(planteles.map((p) => [p.id, p.codigo]));
+
+  const ids = await prisma.$transaction(
+    registros.map((r) =>
+      prisma.registroPesoPreventa.upsert({
+        where: { id: r.id },
+        update: {},
+        create: {
+          id: r.id,
+          plantelId: r.plantelId,
+          campania: r.campania ?? null,
+          galpon: r.galpon,
+          corral: r.corral,
+          categoria: r.categoria as CategoriaAve,
+          numeroAve: r.numeroAve,
+          pesoGramos: r.pesoGramos,
+          fechaHora: new Date(r.fechaHora),
+          tieneHematoma: r.tieneHematoma ?? null,
+          tieneDefectoSeleccion: r.tieneDefectoSeleccion ?? null,
+          gradoPododermatitis: r.gradoPododermatitis ?? null,
+          gradoRasguno: r.gradoRasguno ?? null,
+          pigmentacion: r.pigmentacion ?? null,
+          verificadorId: user.id,
+          complex: buildComplexEntity({
+            plantelCodigo: codigoByPlantelId.get(r.plantelId) ?? null,
+            campania: r.campania ?? null,
+            galpon: r.galpon,
+            categoria: r.categoria as CategoriaAve,
+            corral: r.corral,
+          }),
+        },
+        select: { id: true },
+      })
+    )
+  );
+
+  return NextResponse.json({ ingested: ids.length, ids: ids.map((r) => r.id) });
+}

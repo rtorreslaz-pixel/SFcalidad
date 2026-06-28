@@ -13,6 +13,7 @@ enum Role {
   VERIFICADOR
   SUPERVISOR
   JEFE
+  COMERCIAL
 }
 
 enum SexoAve {
@@ -43,6 +44,17 @@ enum UbicacionHematoma {
   PIERNA
 }
 
+enum CategoriaAve {
+  MACHO
+  HEMBRA
+  MEDIANO
+}
+
+enum TipoMuestreo {
+  PREVENTA
+  CALIDAD // reservado para una fase futura, no usado todavía
+}
+
 model User {
   id           String   @id @default(cuid())
   nombre       String
@@ -50,10 +62,13 @@ model User {
   passwordHash String
   role         Role     @default(VERIFICADOR)
   activo       Boolean  @default(true)
+  apiToken     String?  @unique
   createdAt    DateTime @default(now())
 
-  jornadas     Jornada[]
-  inspecciones Inspeccion[]
+  jornadas              Jornada[]
+  inspecciones          Inspeccion[]
+  registrosPesoPreventa RegistroPesoPreventa[]
+  liveWeightReading     LiveWeightReading?
 }
 
 model Cliente {
@@ -77,7 +92,8 @@ model Plantel {
   clienteId String?
   cliente   Cliente? @relation(fields: [clienteId], references: [id])
 
-  inspecciones Inspeccion[]
+  inspecciones          Inspeccion[]
+  registrosPesoPreventa RegistroPesoPreventa[]
 }
 
 model TipoDefecto {
@@ -262,4 +278,69 @@ model EvaluacionLesion {
   grave     Int @default(0)
 
   @@unique([inspeccionId, categoria, sexo])
+}
+
+model RegistroPesoPreventa {
+  // Id generado por el cliente Android (UUID v4) ANTES de sincronizar, para que
+  // reintentos de red produzcan upserts idempotentes en vez de duplicados.
+  // NO cambiar a @default(cuid()) -- ver POST /api/mobile/registros.
+  id String @id
+
+  plantelId String
+  plantel   Plantel @relation(fields: [plantelId], references: [id])
+
+  campania  String?
+  galpon    String
+  corral    String
+  categoria CategoriaAve
+
+  numeroAve  Int
+  pesoGramos Float
+  fechaHora  DateTime // momento de captura en campo (hora del celular), no de sync
+
+  // Plantel-Campaña-Galpón-Categoría-Corral, mismo formato que Inspeccion.complex,
+  // para cruzar peso de preventa contra evaluaciones de calidad del mismo lote.
+  complex String?
+
+  tipoMuestreo TipoMuestreo @default(PREVENTA)
+
+  // Criterios de calidad evaluados opcionalmente sobre la misma ave pesada, en la misma
+  // pantalla de captura (no todas las aves se evalúan -- el chequeo de calidad toma más
+  // tiempo que pesar sola, así que el verificador lo activa solo para una sub-muestra).
+  // Mismos criterios que Inspeccion.{hematomasCon/Sin, defectos, evaluacionesLesion,
+  // pigNivel*} pero a nivel de ave individual en granja, para poder comparar contra el
+  // censo de calidad de cliente lote por lote.
+  tieneHematoma         Boolean?
+  tieneDefectoSeleccion Boolean?
+  gradoPododermatitis   Int? // 0 sin lesión, 1 leve, 2 grave (grave = Grado 2, igual que EvaluacionLesion.grave)
+  gradoRasguno          Int? // 0 sin lesión, 1 leve, 2 grave
+  pigmentacion          Int? // 0-7
+
+  verificadorId String
+  verificador   User @relation(fields: [verificadorId], references: [id])
+
+  syncedAt  DateTime @default(now()) // momento en que el servidor lo recibió
+  createdAt DateTime @default(now())
+
+  @@index([plantelId, galpon, corral, categoria])
+  @@index([verificadorId, fechaHora])
+}
+
+// Última lectura de la báscula por verificador, sobrescrita en cada lectura
+// (no es historial -- el historial real son los RegistroPesoPreventa). Alimenta
+// el panel "Peso en vivo" del dashboard.
+model LiveWeightReading {
+  verificadorId String @id
+  verificador   User   @relation(fields: [verificadorId], references: [id])
+
+  pesoGramos Float
+
+  plantelCodigo String?
+  campania      String?
+  galpon        String?
+  corral        String?
+  categoria     CategoriaAve?
+  complex       String?
+
+  updatedAt DateTime @updatedAt
 }
