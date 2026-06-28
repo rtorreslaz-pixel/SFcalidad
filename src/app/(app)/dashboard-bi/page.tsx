@@ -249,7 +249,7 @@ export default async function DashboardBiPage({
     entry.hemCon += insp.hematomasCon ?? 0;
     entry.hemSin += insp.hematomasSin ?? 0;
     for (const d of insp.defectos) {
-      if (NOMBRES_MERMA_PASO7.includes(d.tipoDefecto.nombre)) entry.mermaUnid += d.unidades;
+      if (esDefectoMerma(d.tipoDefecto.nombre)) entry.mermaUnid += d.unidades;
       else entry.seleccionUnid += d.unidades;
     }
     zonaMap.set(zona, entry);
