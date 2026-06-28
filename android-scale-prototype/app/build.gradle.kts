@@ -19,11 +19,11 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "API_BASE_URL", "\"https://rommeltest-production.up.railway.app/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://rommeltest-production-338a.up.railway.app/\"")
         }
         release {
             isMinifyEnabled = false
-            buildConfigField("String", "API_BASE_URL", "\"https://rommeltest-production.up.railway.app/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://rommeltest-production-338a.up.railway.app/\"")
         }
     }
 
