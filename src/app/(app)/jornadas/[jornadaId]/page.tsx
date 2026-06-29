@@ -45,40 +45,52 @@ export default async function JornadaDetallePage({
     redirect("/jornadas");
   }
 
+  const hayCompletas = jornada.inspecciones.some((i) => i.estado === "COMPLETA");
   const PASOS_LABELS = ["Cabecera", "Temperaturas", "Almohadillas y Rasguños", "Hematomas", "Pigmentación", "Selección", "Merma"];
 
   return (
     <div className="mx-auto max-w-lg space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <Link href="/jornadas" className="text-sm font-semibold text-brand hover:underline">← Jornadas</Link>
-          <h1 className="mt-1 text-xl font-extrabold text-slate-900">
-            {jornada.fecha.toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })}
-          </h1>
-          <p className="text-sm text-slate-500">{jornada.cliente.nombre} · {jornada.verificador.nombre}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {jornada.inspecciones.some((i) => i.estado === "COMPLETA") && (
-            <>
-              <Link
-                href={`/jornadas/${jornadaId}/reporte`}
-                className="rounded-md border border-brand/40 px-3 py-1.5 text-sm font-medium text-brand hover:bg-brand/5"
-              >
-                📄 Reporte
-              </Link>
-              <Link
-                href={`/jornadas/${jornadaId}/formatos`}
-                className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-              >
-                📋 Formatos
-              </Link>
-            </>
-          )}
-          {user.role === "SUPERVISOR" && <DeleteJornadaButton jornadaId={jornadaId} />}
+
+      {/* ---- Cabecera ---- */}
+      <div>
+        <Link href="/jornadas" className="text-sm font-semibold text-brand hover:underline">
+          ← Jornadas
+        </Link>
+
+        <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-xl font-extrabold text-slate-900">
+              {jornada.fecha.toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })}
+            </h1>
+            <p className="mt-0.5 text-sm text-slate-500">
+              {jornada.cliente.nombre} · {jornada.verificador.nombre}
+            </p>
+          </div>
+
+          {/* Botones de acción */}
+          <div className="flex flex-wrap items-center gap-2">
+            {hayCompletas && (
+              <>
+                <Link
+                  href={`/jornadas/${jornadaId}/reporte`}
+                  className="rounded-lg border border-brand/40 px-3 py-2 text-sm font-semibold text-brand hover:bg-brand/5"
+                >
+                  📄 Reporte
+                </Link>
+                <Link
+                  href={`/jornadas/${jornadaId}/formatos`}
+                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  📋 Formatos
+                </Link>
+              </>
+            )}
+            {user.role === "SUPERVISOR" && <DeleteJornadaButton jornadaId={jornadaId} />}
+          </div>
         </div>
       </div>
 
-      {/* Saldo día anterior */}
+      {/* ---- Saldo día anterior ---- */}
       <section className="rounded-[16px] bg-white p-4 shadow-sm ring-1 ring-slate-200">
         <h2 className="mb-3 font-semibold text-slate-900">Saldo día anterior</h2>
         <div className="space-y-4">
@@ -88,7 +100,7 @@ export default async function JornadaDetallePage({
         </div>
       </section>
 
-      {/* Evaluaciones (camiones) */}
+      {/* ---- Evaluaciones ---- */}
       <section className="rounded-[16px] bg-white p-4 shadow-sm ring-1 ring-slate-200">
         <h2 className="mb-3 font-semibold text-slate-900">Evaluaciones del día</h2>
 
@@ -109,7 +121,9 @@ export default async function JornadaDetallePage({
                     {insp.sexo ?? "Sin sexo"}
                   </span>
                   <span className="ml-2 text-sm text-slate-600">
-                    {insp.plantel?.codigo ? `${insp.plantel.codigo}${insp.galpon ? ` · ${insp.galpon}${insp.corral ?? ""}` : ""}` : "Sin plantel"}
+                    {insp.plantel?.codigo
+                      ? `${insp.plantel.codigo}${insp.galpon ? ` · ${insp.galpon}${insp.corral ?? ""}` : ""}`
+                      : "Sin plantel"}
                   </span>
                 </div>
                 <div className="text-right">

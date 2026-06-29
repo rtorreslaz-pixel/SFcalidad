@@ -40,7 +40,7 @@ export default function SaldoEditor({ saldo, jornadaId }: { saldo: Saldo; jornad
     }, 800);
   }, [saldo.id, jornadaId]);
 
-  const inputClass = "w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400";
+  const inputClass = "w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand";
 
   return (
     <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
