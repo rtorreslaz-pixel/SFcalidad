@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser, ROLE_LABELS } from "@/lib/auth";
+import { ThemeToggle } from "@/components/theme-toggle";
 import NavLinks from "./nav-links";
 
 export default async function AppLayout({
@@ -15,19 +16,23 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white print:hidden">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link href="/dashboard" className="font-bold text-brand">
-            🐔 Control de Calidad
+      <header className="sticky top-0 z-10 bg-brand print:hidden dark:bg-[#002f86]">
+        <div className="mx-auto flex h-[54px] max-w-6xl items-center justify-between px-4">
+          <Link href="/dashboard" className="flex flex-col leading-none">
+            <span className="text-base font-extrabold text-white">San Fernando</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-white/75">
+              Calidad · Clientes Lima
+            </span>
           </Link>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-slate-500 sm:inline">
+          <div className="flex items-center gap-1 text-sm">
+            <span className="hidden text-white/80 sm:inline">
               {user.nombre} · {ROLE_LABELS[user.role]}
             </span>
+            <ThemeToggle />
             <form action="/api/logout" method="POST">
               <button
                 type="submit"
-                className="rounded-md border border-slate-300 px-3 py-1.5 text-slate-600 hover:bg-slate-50"
+                className="rounded-md border border-white/30 px-3 py-1.5 text-sm text-white/90 hover:bg-white/10"
               >
                 Salir
               </button>

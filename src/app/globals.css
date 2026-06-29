@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Dark mode via .dark class on <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ============================================================
    Design tokens — generados por Claude Design
    Fuentes: Plus Jakarta Sans (UI) + IBM Plex Mono (datos)
@@ -175,6 +178,26 @@
   --color-danger-bg:   var(--danger-soft-bg);
   --color-warn:        var(--warn);
   --color-warn-bg:     var(--warn-soft-bg);
+}
+
+/* ---- Tema oscuro (nocturno) ---- */
+.dark {
+  --background:          #08101a;
+  --foreground:          #dce8f5;
+  --surface:             #101c2c;
+  --color-surface-muted: #182436;
+
+  --text-strong:   #f0f6ff;
+  --text-body:     #dce8f5;
+  --text-muted:    #8ca8c5;
+  --text-faint:    #4d6b88;
+
+  --border-default: #1e3048;
+  --border-strong:  #2a4060;
+
+  --brand-soft-bg:  rgba(11, 78, 162, 0.18);
+  --ok-soft-bg:     rgba(3, 105, 161, 0.18);
+  --danger-soft-bg: rgba(248, 113, 113, 0.16);
 }
 
 /* ---- Base ---- */

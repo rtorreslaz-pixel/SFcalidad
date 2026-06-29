@@ -46,10 +46,10 @@ export default function NavLinks({ role }: { role: Role }) {
           <Link
             key={link.href}
             href={link.href}
-            className={`whitespace-nowrap rounded-md px-3 py-1.5 font-medium transition ${
+            className={`whitespace-nowrap rounded-md px-3 py-1.5 font-medium ${
               active
-                ? "bg-brand text-white"
-                : "text-slate-600 hover:bg-slate-100"
+                ? "bg-white/20 text-white"
+                : "text-white/75 hover:bg-white/10"
             }`}
           >
             {link.label}

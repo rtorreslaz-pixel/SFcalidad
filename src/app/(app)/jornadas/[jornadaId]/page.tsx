@@ -51,8 +51,8 @@ export default async function JornadaDetallePage({
     <div className="mx-auto max-w-lg space-y-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <Link href="/jornadas" className="text-sm text-emerald-700 hover:underline">← Jornadas</Link>
-          <h1 className="mt-1 text-xl font-bold text-slate-900">
+          <Link href="/jornadas" className="text-sm font-semibold text-brand hover:underline">← Jornadas</Link>
+          <h1 className="mt-1 text-xl font-extrabold text-slate-900">
             {jornada.fecha.toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })}
           </h1>
           <p className="text-sm text-slate-500">{jornada.cliente.nombre} · {jornada.verificador.nombre}</p>
@@ -62,7 +62,7 @@ export default async function JornadaDetallePage({
             <>
               <Link
                 href={`/jornadas/${jornadaId}/reporte`}
-                className="rounded-md border border-emerald-300 px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+                className="rounded-md border border-brand/40 px-3 py-1.5 text-sm font-medium text-brand hover:bg-brand/5"
               >
                 📄 Reporte
               </Link>
@@ -79,7 +79,7 @@ export default async function JornadaDetallePage({
       </div>
 
       {/* Saldo día anterior */}
-      <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+      <section className="rounded-[16px] bg-white p-4 shadow-sm ring-1 ring-slate-200">
         <h2 className="mb-3 font-semibold text-slate-900">Saldo día anterior</h2>
         <div className="space-y-4">
           {jornada.saldos.map((saldo) => (
@@ -89,7 +89,7 @@ export default async function JornadaDetallePage({
       </section>
 
       {/* Evaluaciones (camiones) */}
-      <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+      <section className="rounded-[16px] bg-white p-4 shadow-sm ring-1 ring-slate-200">
         <h2 className="mb-3 font-semibold text-slate-900">Evaluaciones del día</h2>
 
         {jornada.inspecciones.length === 0 ? (
@@ -100,7 +100,7 @@ export default async function JornadaDetallePage({
               <Link
                 key={insp.id}
                 href={`/jornadas/${jornadaId}/evaluacion/${insp.id}`}
-                className="flex items-center justify-between rounded-lg border border-slate-200 p-3 hover:border-emerald-300 hover:bg-slate-50"
+                className="flex items-center justify-between rounded-[12px] border border-slate-200 p-3 hover:border-brand/40 hover:bg-brand/5"
               >
                 <div>
                   <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
@@ -114,9 +114,9 @@ export default async function JornadaDetallePage({
                 </div>
                 <div className="text-right">
                   {insp.estado === "COMPLETA" ? (
-                    <span className="text-xs font-semibold text-emerald-600">Completa ✓</span>
+                    <span className="text-xs font-semibold text-ok">Completa ✓</span>
                   ) : (
-                    <span className="text-xs text-amber-600">
+                    <span className="text-xs text-warn">
                       Paso {insp.pasoActual}/7 · {PASOS_LABELS[(insp.pasoActual ?? 1) - 1]}
                     </span>
                   )}
@@ -130,7 +130,7 @@ export default async function JornadaDetallePage({
           <input type="hidden" name="jornadaId" value={jornadaId} />
           <button
             type="submit"
-            className="w-full rounded-xl border-2 border-dashed border-emerald-300 py-3 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 active:bg-emerald-100"
+            className="w-full rounded-[14px] border-2 border-dashed border-brand/40 py-3.5 text-sm font-semibold text-brand hover:bg-brand/5"
           >
             + Nueva evaluación
           </button>
