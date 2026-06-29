@@ -77,19 +77,19 @@ export default async function InspeccionesPage({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-bold text-slate-900">Inspecciones</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <a
             href={`/api/export?${new URLSearchParams(
               Object.entries(params).filter(([, v]) => !!v) as [string, string][]
             ).toString()}`}
-            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             Exportar CSV
           </a>
           <details className="relative">
-            <summary className="cursor-pointer list-none rounded-md border border-emerald-300 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50">
+            <summary className="cursor-pointer list-none rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
               Descargas BI ▾
             </summary>
             <div className="absolute right-0 z-10 mt-1 w-52 rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
@@ -116,14 +116,14 @@ export default async function InspeccionesPage({
           </details>
           <Link
             href="/inspecciones/nueva"
-            className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+            className="rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-hover"
           >
-            + Nueva inspección
+            + Nueva
           </Link>
         </div>
       </div>
 
-      <form className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-4">
+      <form className="mb-4 grid grid-cols-1 gap-2 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2 lg:grid-cols-4">
         <select name="clienteId" defaultValue={params.clienteId ?? ""} className="input">
           <option value="">Todos los clientes</option>
           {clientes.map((c) => (
@@ -142,17 +142,63 @@ export default async function InspeccionesPage({
             ))}
           </select>
         )}
-        <input type="date" name="desde" defaultValue={params.desde ?? ""} className="input" />
-        <input type="date" name="hasta" defaultValue={params.hasta ?? ""} className="input" />
+        <div className="grid grid-cols-2 gap-2">
+          <input type="date" name="desde" defaultValue={params.desde ?? ""} className="input" />
+          <input type="date" name="hasta" defaultValue={params.hasta ?? ""} className="input" />
+        </div>
         <button
           type="submit"
-          className="col-span-2 rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 sm:col-span-1"
+          className="rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900"
         >
           Filtrar
         </button>
       </form>
 
-      <div className="overflow-x-auto rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+      {/* Lista en móvil */}
+      <div className="space-y-2 sm:hidden">
+        {inspecciones.length === 0 && (
+          <div className="rounded-xl bg-white px-4 py-8 text-center text-sm text-slate-400 shadow-sm ring-1 ring-slate-200">
+            No hay inspecciones registradas con estos filtros.
+          </div>
+        )}
+        {inspecciones.map(({ insp, fecha, clienteNombre, verificadorNombre }) => {
+          const totalUnidades = insp.defectos.reduce((acc, d) => acc + d.unidades, 0);
+          const porcentaje = calcularPorcentajeSeleccion(totalUnidades, insp.cantidad);
+          const excede = porcentaje > insp.metaPorcentaje;
+          return (
+            <Link
+              key={insp.id}
+              href={`/inspecciones/${insp.id}`}
+              className="block rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 hover:ring-brand/40"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-semibold text-brand">
+                    {fecha ? fecha.toLocaleDateString("es-PE") : "-"}
+                  </p>
+                  <p className="truncate text-sm text-slate-700">{clienteNombre ?? "-"}</p>
+                  <p className="text-sm text-slate-500">
+                    {insp.plantel?.codigo ?? "-"}{insp.galpon ? ` · ${insp.galpon}${insp.corral ?? ""}` : ""}
+                  </p>
+                </div>
+                <div className="flex-none text-right">
+                  <span className={`rounded-md px-2 py-0.5 text-sm font-semibold ${excede ? "bg-red-100 text-red-700" : "bg-sky-50 text-sky-700"}`}>
+                    {porcentaje.toFixed(2)}%
+                  </span>
+                  <p className="mt-1 text-xs text-slate-400">{insp.cantidad} aves</p>
+                  {insp._count.fotos > 0 && <p className="text-xs text-slate-400">📷 {insp._count.fotos}</p>}
+                </div>
+              </div>
+              {verificadorNombre && (
+                <p className="mt-1 text-xs text-slate-400">{verificadorNombre}</p>
+              )}
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* Tabla en desktop */}
+      <div className="hidden overflow-x-auto rounded-xl bg-white shadow-sm ring-1 ring-slate-200 sm:block">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-slate-500">
             <tr>
@@ -173,7 +219,7 @@ export default async function InspeccionesPage({
               return (
                 <tr key={insp.id} className="hover:bg-slate-50">
                   <td className="px-3 py-2">
-                    <Link href={`/inspecciones/${insp.id}`} className="text-emerald-700 hover:underline">
+                    <Link href={`/inspecciones/${insp.id}`} className="font-medium text-brand hover:underline">
                       {fecha ? fecha.toLocaleDateString("es-PE") : "-"}
                     </Link>
                   </td>
@@ -183,11 +229,7 @@ export default async function InspeccionesPage({
                   </td>
                   <td className="px-3 py-2">{insp.cantidad}</td>
                   <td className="px-3 py-2">
-                    <span
-                      className={`rounded-md px-2 py-0.5 font-semibold ${
-                        excede ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"
-                      }`}
-                    >
+                    <span className={`rounded-md px-2 py-0.5 font-semibold ${excede ? "bg-red-100 text-red-700" : "bg-sky-50 text-sky-700"}`}>
                       {porcentaje.toFixed(3)}%
                     </span>
                   </td>
