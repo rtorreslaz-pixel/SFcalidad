@@ -45,6 +45,8 @@ next-env.d.ts
 # database
 /dev.db
 /dev.db-journal
+prisma/dev.db
+prisma/dev.db-journal
 
 # uploaded photos
 /uploads
