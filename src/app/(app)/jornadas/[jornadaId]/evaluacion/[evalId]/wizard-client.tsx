@@ -35,8 +35,9 @@ type Inspeccion = {
   nroGuia: string | null;
   complex: string | null;
   tempPlataforma: number | null;
+  tempPlataformaVacia: number | null;
   tempCamion: number | null;
-  tempAves: number | null;
+  densidad: number | null;
   hematomasCon: number | null;
   hematomasSin: number | null;
   hematomaDetalles: HematomaDetalle[];
@@ -205,9 +206,10 @@ export default function WizardClient({
   );
 
   // Step 2 state
-  const [tempPlataforma, setTempPlataforma] = useState(String(initial.tempPlataforma ?? ""));
   const [tempCamion, setTempCamion] = useState(String(initial.tempCamion ?? ""));
-  const [tempAves, setTempAves] = useState(String(initial.tempAves ?? ""));
+  const [tempPlataformaVacia, setTempPlataformaVacia] = useState(String(initial.tempPlataformaVacia ?? ""));
+  const [tempPlataforma, setTempPlataforma] = useState(String(initial.tempPlataforma ?? ""));
+  const [densidad, setDensidad] = useState(String(initial.densidad ?? ""));
 
   // Step 3 state (almohadillas + rasguños)
   type LesionKey = "ALMOHADILLAS" | "RASGUNOS";
@@ -463,13 +465,19 @@ export default function WizardClient({
             />
             <BigInput
               label="Plataforma sin jabas (°C)"
+              value={tempPlataformaVacia}
+              onChange={(v) => { setTempPlataformaVacia(v); scheduleGuardado({ tempPlataformaVacia: v ? Number(v) : null }); }}
+            />
+            <BigInput
+              label="Plataforma con jabas (°C)"
               value={tempPlataforma}
               onChange={(v) => { setTempPlataforma(v); scheduleGuardado({ tempPlataforma: v ? Number(v) : null }); }}
             />
             <BigInput
-              label="Plataforma con jabas (°C)"
-              value={tempAves}
-              onChange={(v) => { setTempAves(v); scheduleGuardado({ tempAves: v ? Number(v) : null }); }}
+              label="Densidad (aves/m²)"
+              value={densidad}
+              onChange={(v) => { setDensidad(v); scheduleGuardado({ densidad: v ? Number(v) : null }); }}
+              optional
             />
           </div>
         );

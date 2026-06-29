@@ -179,7 +179,7 @@ const SELECCION_COLS: { label: string; defecto: string }[][] = [
     { label: "MIOPATÍA PECTORAL", defecto: "Mío Pectoral" },
     { label: "MIOPATÍA DORSAL", defecto: "Mío Dorsal" },
     { label: "CELULÍTIS ABDOMINAL", defecto: "Celulitis Abdominal" },
-    { label: "ALIMENTO EN BUCHE", defecto: "Alimento en Buche" },
+    { label: "ALIMENTO EN BUCHE", defecto: "Buchón" },
     { label: "PECHUGA MADERA", defecto: "Pechuga Madera" },
   ],
   [
@@ -188,7 +188,7 @@ const SELECCION_COLS: { label: string; defecto: string }[][] = [
     { label: "GOLPE EN PIERNA", defecto: "Golpes Pierna" },
     { label: "MENOR PESO", defecto: "Menor Peso" },
     { label: "ÚLCERAS", defecto: "Úlceras" },
-    { label: "RASGUÑADOS", defecto: "Rasguñados" },
+    { label: "RASGUÑADOS", defecto: "Rasguños Severos" },
   ],
 ];
 
@@ -283,8 +283,8 @@ export function FormatoSeleccion({
           </tr>
           <tr>
             <td className={DATA} colSpan={3}>{num(inspeccion.tempCamion)}</td>
-            <td className={DATA} colSpan={3}>{num(inspeccion.tempPlataforma)}</td>
-            <td className={DATA} colSpan={4}>{num(inspeccion.tempAves)}</td>
+            <td className={DATA} colSpan={3}>{num(inspeccion.tempPlataformaVacia)}</td>
+            <td className={DATA} colSpan={4}>{num(inspeccion.tempPlataforma)}</td>
           </tr>
 
           {/* Hematomas */}

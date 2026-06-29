@@ -188,6 +188,7 @@ model Inspeccion {
   tempPlataformaVacia Float?
   tempCamion          Float?
   tempAves            Float?
+  densidad            Float?
 
   hematomasCon Int?
   hematomasSin Int?
