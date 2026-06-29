@@ -1,45 +1,212 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Design tokens — generados por Claude Design
+   Fuentes: Plus Jakarta Sans (UI) + IBM Plex Mono (datos)
+   Colores: paleta SF + aliases semánticos
+   ============================================================ */
+
+/* ---- Fuentes (Google Fonts fallback — next/font las inyecta en SSR) ---- */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
 :root {
+  /* ---- Fuentes ---- */
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* ---- Canvas ---- */
   --background: #f5f6f8;
   --foreground: #1a1a1a;
+  --surface: #ffffff;
+
+  /* ---- SF Brand ---- */
+  --sf-blue:       #0b4ea2;
+  --sf-blue-deep:  #002f86;
+  --sf-cyan:       #a6dcea;
+  --sf-red:        #e2231a;
+  --sf-red-dark:   #ff4a3d;
+
+  /* ---- Emerald (solo viz de datos) ---- */
+  --emerald-50:  #ecfdf5;
+  --emerald-100: #d1fae5;
+  --emerald-500: #10b981;
+  --emerald-600: #059669;
+  --emerald-700: #047857;
+  --emerald-800: #065f46;
+
+  /* ---- Teal (segunda serie en gráficos) ---- */
+  --teal-500: #14b8a6;
+  --teal-600: #0d9488;
+
+  /* ---- Slate (neutrales) ---- */
+  --slate-50:  #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+
+  /* ---- Semánticos ---- */
+  --red-50:    #fef2f2;
+  --red-100:   #fee2e2;
+  --red-600:   #dc2626;
+  --red-700:   #b91c1c;
+  --sky-50:    #e0f2fe;
+  --sky-700:   #0369a1;
+  --rose-800:  #9f1239;
+  --green-50:  #f0fdf4;
+  --green-800: #166534;
+  --orange-50: #fff7ed;
+  --orange-800:#92400e;
+
+  /* ---- Aliases semánticos ---- */
+  --color-bg:           var(--background);
+  --color-surface:      var(--surface);
+  --color-surface-muted:var(--slate-50);
+
+  --text-strong:   var(--slate-900);
+  --text-body:     var(--foreground);
+  --text-muted:    var(--slate-500);
+  --text-faint:    var(--slate-400);
+  --text-on-brand: #ffffff;
+  --text-link:     var(--sf-blue);
+
+  --border-default: var(--slate-200);
+  --border-strong:  var(--slate-300);
+  --divider:        var(--slate-100);
+
+  --brand:          var(--sf-blue);
+  --brand-hover:    var(--sf-blue-deep);
+  --brand-soft-bg:  #eff6ff;
+  --brand-soft-text:var(--sf-blue);
+
+  --accent-data-1:  var(--emerald-600);
+  --accent-data-2:  var(--teal-600);
+  --accent-meta:    var(--red-600);
+
+  --danger:         var(--red-600);
+  --danger-soft-bg: var(--red-100);
+  --danger-soft-text:var(--red-700);
+  --ok:             var(--sky-700);
+  --ok-soft-bg:     var(--sky-50);
+  --ok-soft-text:   var(--sky-700);
+  --warn:           var(--orange-800);
+  --warn-soft-bg:   var(--orange-50);
+  --warn-soft-text: var(--orange-800);
+
+  --focus-ring:           var(--sf-blue);
+  --neutral-strong-bg:    var(--sf-blue-deep);
+  --neutral-strong-hover: #001a52;
+
+  /* ---- Tipografía ---- */
+  --text-2xs:   0.6875rem;
+  --text-xs:    0.75rem;
+  --text-sm:    0.875rem;
+  --text-base:  1rem;
+  --text-lg:    1.125rem;
+  --text-xl:    1.25rem;
+  --text-2xl:   1.5rem;
+  --text-3xl:   1.875rem;
+  --text-readout:3.5rem;
+
+  --weight-normal:   400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+  --weight-extrabold:800;
+
+  --leading-tight:  1.15;
+  --leading-snug:   1.3;
+  --leading-normal: 1.5;
+  --tracking-wide:  0.05em;
+
+  /* ---- Espaciado ---- */
+  --space-0:   0;
+  --space-0-5: 0.125rem;
+  --space-1:   0.25rem;
+  --space-1-5: 0.375rem;
+  --space-2:   0.5rem;
+  --space-2-5: 0.625rem;
+  --space-3:   0.75rem;
+  --space-4:   1rem;
+  --space-5:   1.25rem;
+  --space-6:   1.5rem;
+  --space-8:   2rem;
+  --space-10:  2.5rem;
+  --space-12:  3rem;
+  --space-16:  4rem;
+
+  --gutter:       var(--space-4);
+  --card-pad:     var(--space-4);
+  --card-pad-lg:  var(--space-6);
+  --stack-gap:    var(--space-4);
+  --section-gap:  var(--space-6);
+  --inline-gap:   var(--space-2);
+  --field-gap:    var(--space-1);
+  --container-max:72rem;
+  --tap-target:   44px;
 }
 
+/* ---- Mapeo a utilidades Tailwind v4 ---- */
 @theme inline {
+  --font-sans: var(--font-jakarta);
+  --font-mono: var(--font-plex-mono);
+
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-foreground:  var(--foreground);
+  --color-surface:     var(--surface);
+
+  /* Brand SF */
+  --color-brand:       var(--sf-blue);
+  --color-brand-hover: var(--sf-blue-deep);
+  --color-brand-soft:  var(--brand-soft-bg);
+  --color-sf-blue:     var(--sf-blue);
+  --color-sf-deep:     var(--sf-blue-deep);
+  --color-sf-cyan:     var(--sf-cyan);
+
+  /* Semánticos */
+  --color-ok:          var(--ok);
+  --color-ok-bg:       var(--ok-soft-bg);
+  --color-danger:      var(--danger);
+  --color-danger-bg:   var(--danger-soft-bg);
+  --color-warn:        var(--warn);
+  --color-warn-bg:     var(--warn-soft-bg);
 }
 
+/* ---- Base ---- */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
 }
 
+/* ---- Componente .input ---- */
 .input {
   display: block;
   width: 100%;
   border-radius: 0.375rem;
-  border: 1px solid var(--color-slate-300);
+  border: 1px solid var(--slate-300);
   padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--color-emerald-500);
-  box-shadow: 0 0 0 1px var(--color-emerald-500);
+  border-color: var(--sf-blue);
+  box-shadow: 0 0 0 1px var(--sf-blue);
 }
 
 .input:disabled {
-  background-color: var(--color-slate-100);
-  color: var(--color-slate-400);
+  background-color: var(--slate-100);
+  color: var(--slate-400);
 }
 
-/* Formatos clasificados (réplica digital de los formularios en papel) */
+/* ---- Formatos clasificados (réplica de formularios en papel) ---- */
 .formato-hoja {
   width: 100%;
   max-width: 760px;
@@ -54,4 +221,3 @@ body {
     max-width: 100%;
   }
 }
-

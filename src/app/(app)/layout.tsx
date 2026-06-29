@@ -17,7 +17,7 @@ export default async function AppLayout({
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white print:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link href="/dashboard" className="font-bold text-slate-900">
+          <Link href="/dashboard" className="font-bold text-brand">
             🐔 Control de Calidad
           </Link>
           <div className="flex items-center gap-3 text-sm">
