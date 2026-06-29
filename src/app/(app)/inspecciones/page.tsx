@@ -88,6 +88,32 @@ export default async function InspeccionesPage({
           >
             Exportar CSV
           </a>
+          <details className="relative">
+            <summary className="cursor-pointer list-none rounded-md border border-emerald-300 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50">
+              Descargas BI ▾
+            </summary>
+            <div className="absolute right-0 z-10 mt-1 w-52 rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+              {(
+                [
+                  ["Pododermatitis / Rasguños", "pododermatitis"],
+                  ["Hematomas", "hematomas"],
+                  ["Pigmentación", "pigmentacion"],
+                  ["Temperaturas", "temperaturas"],
+                  ["Selección / Merma", "seleccion"],
+                ] as const
+              ).map(([label, endpoint]) => (
+                <a
+                  key={endpoint}
+                  href={`/api/export/${endpoint}?${new URLSearchParams(
+                    Object.entries(params).filter(([, v]) => !!v) as [string, string][]
+                  ).toString()}`}
+                  className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+          </details>
           <Link
             href="/inspecciones/nueva"
             className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
