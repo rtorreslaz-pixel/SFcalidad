@@ -96,7 +96,7 @@ function buildComplexEntity(parts: {
   const sexoAbrev = sexo ? SEXO_ABREV[sexo] : "";
   const piezas = [plantelCodigo ?? "", campania, galpon, sexoAbrev, corral];
   if (piezas.every((p) => !p)) return "";
-  return piezas.join("-");
+  return piezas.join("-").toUpperCase();
 }
 
 // ---- Design components ----
@@ -222,7 +222,7 @@ export default function WizardClient({
   const [plantelId, setPlantelId] = useState(initial.plantelId ?? "");
   const [plantelQuery, setPlantelQuery] = useState(() => {
     const p = planteles.find((p) => p.id === initial.plantelId);
-    return p ? `${p.codigo}${p.subZona ? ` · ${p.subZona}` : ""}` : "";
+    return p ? p.codigo : "";
   });
   const [campania, setCampania] = useState(initial.campania ?? "");
   const [galpon, setGalpon] = useState(initial.galpon ?? "");
@@ -347,11 +347,49 @@ export default function WizardClient({
     });
   }
 
+  async function stampWatermark(file: File): Promise<Blob> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+
+        const now = new Date();
+        const label = now.toLocaleString("es-PE", {
+          day: "2-digit", month: "2-digit", year: "numeric",
+          hour: "2-digit", minute: "2-digit", second: "2-digit",
+        });
+        const fontSize = Math.max(24, Math.round(img.width * 0.035));
+        ctx.font = `bold ${fontSize}px monospace`;
+        const pad = Math.round(fontSize * 0.6);
+        const tw = ctx.measureText(label).width;
+        const bx = img.width - tw - pad * 2;
+        const by = img.height - fontSize - pad * 2;
+        ctx.fillStyle = "rgba(0,0,0,0.45)";
+        ctx.fillRect(bx - pad * 0.5, by - pad * 0.5, tw + pad * 1.5, fontSize + pad);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(label, bx, by + fontSize - 2);
+
+        canvas.toBlob((blob) => resolve(blob!), "image/jpeg", 0.88);
+      };
+      img.src = url;
+    });
+  }
+
   async function handlePhotoCapture(files: FileList | null) {
     if (!files || files.length === 0) return;
+    const selected = Array.from(files).slice(0, 5 - fotos.length);
+    const stamped = await Promise.all(
+      selected.map(async (f, i) => new File([await stampWatermark(f)], `foto_${i}.jpg`, { type: "image/jpeg" }))
+    );
     const fd = new FormData();
     fd.append("evalId", initial.id);
-    Array.from(files).slice(0, 5 - fotos.length).forEach((f) => fd.append("fotos", f));
+    stamped.forEach((f) => fd.append("fotos", f));
     startTransition(async () => {
       const result = await uploadFotoAction(fd);
       if (result?.fotos) setFotos((prev) => [...prev, ...result.fotos]);
@@ -378,7 +416,7 @@ export default function WizardClient({
     setCompleted(true);
   }
 
-  const plantelLabel = (p: Plantel) => `${p.codigo}${p.subZona ? ` · ${p.subZona}` : ""}${p.zona ? ` (${p.zona})` : ""}`;
+  const plantelLabel = (p: Plantel) => p.codigo;
 
   // ---- Step renderers ----
   function renderStep() {
