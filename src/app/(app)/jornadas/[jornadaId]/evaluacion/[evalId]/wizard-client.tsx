@@ -100,14 +100,13 @@ function buildComplexEntity(parts: {
 }
 
 // ---- Design components ----
-function BigInput({ label, type = "number", value, onChange, placeholder, optional }: {
-  label: string; type?: string; value: string; onChange: (v: string) => void; placeholder?: string; optional?: boolean;
+function BigInput({ label, type = "number", value, onChange, placeholder }: {
+  label: string; type?: string; value: string; onChange: (v: string) => void; placeholder?: string;
 }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-sm font-semibold text-slate-500">
         {label}
-        {optional && <span className="ml-1.5 text-xs text-slate-400">(opcional)</span>}
       </span>
       <input
         type={type}
@@ -418,7 +417,7 @@ export default function WizardClient({
               const nextComplex = recomputeComplex({ campania: v });
               setComplex(nextComplex);
               scheduleGuardado({ campania: v || null, complex: nextComplex || null });
-            }} placeholder="Ej. 2401" optional />
+            }} placeholder="Ej. 2401" />
 
             <BigInput label="Galpón" type="text" value={galpon} onChange={(v) => {
               setGalpon(v);
@@ -463,14 +462,14 @@ export default function WizardClient({
               const nextComplex = recomputeComplex({ corral: v });
               setComplex(nextComplex);
               scheduleGuardado({ corral: v || null, complex: nextComplex || null });
-            }} placeholder="Ej. A" optional />
+            }} placeholder="Ej. A" />
 
             <BigInput label="Jabas" value={jabas} onChange={(v) => { setJabas(v); scheduleGuardado({ jabas: v ? Number(v) : null }); }} />
             <BigInput label="Unidades (cantidad de aves)" value={cantidad} onChange={(v) => { setCantidad(v); scheduleGuardado({ cantidad: Number(v) || 0 }); }} />
-            <BigInput label="Densidad (aves/m²)" value={densidad} onChange={(v) => { setDensidad(v); scheduleGuardado({ densidad: v ? Number(v) : null }); }} optional />
-            <BigInput label="Promedio vivo (kg)" value={promVivo} onChange={(v) => { setPromVivo(v); scheduleGuardado({ promVivo: v ? Number(v) : null }); }} optional />
-            <BigInput label="Promedio beneficiado (kg)" value={promBeneficiado} onChange={(v) => { setPromBeneficiado(v); scheduleGuardado({ promBeneficiado: v ? Number(v) : null }); }} optional />
-            <BigInput label="N° de Guía" type="text" value={nroGuia} onChange={(v) => { setNroGuia(v); scheduleGuardado({ nroGuia: v || null }); }} optional />
+            <BigInput label="Densidad" value={densidad} onChange={(v) => { setDensidad(v); scheduleGuardado({ densidad: v ? Number(v) : null }); }} />
+            <BigInput label="Promedio vivo (kg)" value={promVivo} onChange={(v) => { setPromVivo(v); scheduleGuardado({ promVivo: v ? Number(v) : null }); }} />
+            <BigInput label="Promedio beneficiado (kg)" value={promBeneficiado} onChange={(v) => { setPromBeneficiado(v); scheduleGuardado({ promBeneficiado: v ? Number(v) : null }); }} />
+            <BigInput label="N° de Guía" type="text" value={nroGuia} onChange={(v) => { setNroGuia(v); scheduleGuardado({ nroGuia: v || null }); }} />
 
             <div className="rounded-[14px] border border-slate-200 bg-slate-50 px-4 py-[14px]">
               <span className="mb-1 block text-sm font-semibold text-slate-500">Complex Entity</span>
