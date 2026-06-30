@@ -249,8 +249,6 @@ class CaptureFragment : Fragment() {
         val pesoGramos = latestWeightGramos ?: return
         val dao = AppDatabase.getInstance(requireContext()).registroPesoDao()
         val evaluarCalidad = binding?.switchEvaluarCalidad?.isChecked == true
-        val tieneHematoma = if (evaluarCalidad) binding?.switchHematoma?.isChecked else null
-        val tieneDefectoSeleccion = if (evaluarCalidad) binding?.switchDefectoSeleccion?.isChecked else null
         val gradoPododermatitis = if (evaluarCalidad) gradoFromRadioGroup(
             binding?.radioGroupPododermatitis?.checkedRadioButtonId, R.id.radioPodoLeve, R.id.radioPodoGrave
         ) else null
@@ -275,8 +273,8 @@ class CaptureFragment : Fragment() {
                     numeroAve = numeroAve,
                     pesoGramos = pesoGramos,
                     fechaHoraEpochMillis = nowMillis,
-                    tieneHematoma = tieneHematoma,
-                    tieneDefectoSeleccion = tieneDefectoSeleccion,
+                    tieneHematoma = null,
+                    tieneDefectoSeleccion = null,
                     gradoPododermatitis = gradoPododermatitis,
                     gradoRasguno = gradoRasguno,
                     pigmentacion = pigmentacion,

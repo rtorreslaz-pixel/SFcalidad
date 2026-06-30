@@ -50,7 +50,7 @@
     <string name="capture_header_format">%1$s · %2$s · G%3$s · %4$s · %5$s</string>
     <string name="action_change_selection">Cambiar</string>
     <string name="action_open_diagnostic">Ajustes de báscula</string>
-    <string name="action_register_ave">Registrar ave</string>
+    <string name="action_register_ave">Pesar</string>
     <string name="pending_count_format">%1$d pendientes de sincronizar</string>
     <string name="status_no_saved_scale">No hay báscula guardada. Abre Ajustes de báscula para vincular una.</string>
     <string name="status_bluetooth_disabled">Bluetooth desactivado.</string>
