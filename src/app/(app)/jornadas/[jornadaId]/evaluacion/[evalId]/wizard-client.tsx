@@ -467,6 +467,7 @@ export default function WizardClient({
 
             <BigInput label="Jabas" value={jabas} onChange={(v) => { setJabas(v); scheduleGuardado({ jabas: v ? Number(v) : null }); }} />
             <BigInput label="Unidades (cantidad de aves)" value={cantidad} onChange={(v) => { setCantidad(v); scheduleGuardado({ cantidad: Number(v) || 0 }); }} />
+            <BigInput label="Densidad (aves/m²)" value={densidad} onChange={(v) => { setDensidad(v); scheduleGuardado({ densidad: v ? Number(v) : null }); }} optional />
             <BigInput label="Promedio vivo (kg)" value={promVivo} onChange={(v) => { setPromVivo(v); scheduleGuardado({ promVivo: v ? Number(v) : null }); }} optional />
             <BigInput label="Promedio beneficiado (kg)" value={promBeneficiado} onChange={(v) => { setPromBeneficiado(v); scheduleGuardado({ promBeneficiado: v ? Number(v) : null }); }} optional />
             <BigInput label="N° de Guía" type="text" value={nroGuia} onChange={(v) => { setNroGuia(v); scheduleGuardado({ nroGuia: v || null }); }} optional />
@@ -489,9 +490,6 @@ export default function WizardClient({
               onChange={(v) => { setTempPlataformaVacia(v); scheduleGuardado({ tempPlataformaVacia: v ? Number(v) : null }); }} />
             <BigInput label="Plataforma con jabas (°C)" value={tempPlataforma}
               onChange={(v) => { setTempPlataforma(v); scheduleGuardado({ tempPlataforma: v ? Number(v) : null }); }} />
-            <BigInput label="Densidad (aves/m²)" value={densidad}
-              onChange={(v) => { setDensidad(v); scheduleGuardado({ densidad: v ? Number(v) : null }); }}
-              optional />
           </div>
         );
 
