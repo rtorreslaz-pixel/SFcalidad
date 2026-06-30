@@ -92,7 +92,7 @@ export default async function JornadaDetallePage({
 
       {/* ---- Saldo día anterior ---- */}
       <section className="rounded-[16px] bg-white p-4 shadow-sm ring-1 ring-slate-200">
-        <h2 className="mb-3 font-semibold text-slate-900">Saldo día anterior</h2>
+        <h2 className="mb-3 font-semibold text-slate-900">Saldo de Aves</h2>
         <div className="space-y-4">
           {jornada.saldos.map((saldo) => (
             <SaldoEditor key={saldo.id} saldo={saldo} jornadaId={jornadaId} />

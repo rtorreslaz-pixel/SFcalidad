@@ -19,7 +19,7 @@ type Saldo = {
 
 const GRUPOS = [
   { titulo: "Saldo total", unidades: "unidades", jabas: "jabas", kg: "kg" },
-  { titulo: "Considera selección", unidades: "unidadesSeleccion", jabas: "jabasSeleccion", kg: "kgSeleccion" },
+  { titulo: "Saldo Selección", unidades: "unidadesSeleccion", jabas: "jabasSeleccion", kg: "kgSeleccion" },
   { titulo: "Remanente (post-beneficiado)", unidades: "unidadesRemanente", jabas: "jabasRemanente", kg: "kgRemanente" },
 ] as const;
 
