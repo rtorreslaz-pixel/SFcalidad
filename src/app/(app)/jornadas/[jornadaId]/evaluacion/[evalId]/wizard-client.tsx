@@ -619,13 +619,20 @@ export default function WizardClient({
         return (
           <div className="space-y-4">
             <p className="text-sm text-slate-500">Muestra de 50 aves. Toca la celda para registrar cada hematoma; el conteo cuadra automáticamente.</p>
-            <div className="flex gap-3">
-              <div className="flex-1 rounded-[14px] border border-slate-200 bg-slate-50 px-4 py-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-[14px] border border-slate-200 bg-slate-50 px-4 py-3">
                 <p className="text-xs font-semibold text-slate-400">Con hematoma</p>
                 <p className="font-mono text-2xl font-extrabold text-brand">{hemDetalleTotal}</p>
               </div>
-              <div className="flex-1">
-                <Counter label="Sin hematoma" value={hemSin} onChange={(v) => { setHemSin(v); scheduleGuardado({ hematomasSin: v }); }} />
+              <div className="rounded-[14px] border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="mb-1 text-xs font-semibold text-slate-400">Sin hematoma</p>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => { const v = Math.max(0, hemSin - 1); setHemSin(v); scheduleGuardado({ hematomasSin: v }); }}
+                    className="flex h-9 w-9 items-center justify-center rounded-[8px] border border-slate-300 bg-white text-lg font-bold text-slate-700">−</button>
+                  <span className="flex-1 text-center font-mono text-2xl font-extrabold text-slate-900">{hemSin}</span>
+                  <button type="button" onClick={() => { const v = hemSin + 1; setHemSin(v); scheduleGuardado({ hematomasSin: v }); }}
+                    className="flex h-9 w-9 items-center justify-center rounded-[8px] border text-lg font-bold" style={{ background: "#eff6ff", borderColor: SF_BLUE, color: SF_BLUE }}>+</button>
+                </div>
               </div>
             </div>
             <div className="rounded-[12px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
@@ -660,6 +667,7 @@ export default function WizardClient({
                           key={u.key}
                           type="button"
                           onClick={() => handleTap(g.key, u.key)}
+                          style={{ touchAction: "manipulation" }}
                           className={`flex flex-col items-center justify-center rounded-[12px] border py-4 active:scale-95 ${
                             count > 0 ? "border-brand/40 bg-brand/5" : "border-slate-200 bg-slate-50"
                           }`}
