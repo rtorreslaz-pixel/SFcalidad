@@ -37,7 +37,7 @@ export default async function FormatosPage({
   return (
     <div className="mx-auto max-w-[800px]">
       <div className="mb-4 flex items-center justify-between print:hidden">
-        <Link href={`/jornadas/${jornadaId}`} className="text-sm text-emerald-700 hover:underline">
+        <Link href={`/jornadas/${jornadaId}`} className="text-sm font-semibold text-brand hover:underline">
           ← Volver a la jornada
         </Link>
         <PrintButton />
