@@ -272,6 +272,7 @@ export default function WizardClient({
     initial.hematomaDetalles.forEach((d) => { vals[`${d.grado}_${d.ubicacion}`] = d.cantidad; });
     return vals;
   });
+  const [tapHistory, setTapHistory] = useState<{ grado: string; ubicacion: string }[]>([]);
 
   // Step 5 state
   const [pig, setPig] = useState([
@@ -345,6 +346,33 @@ export default function WizardClient({
         return { grado: g, ubicacion: u, cantidad };
       }),
     });
+  }
+
+  function saveHemDetalle(next: Record<string, number>) {
+    scheduleGuardado({
+      hematomaDetalles: Object.entries(next).map(([key, cantidad]) => {
+        const [g, u] = key.split("_");
+        return { grado: g, ubicacion: u, cantidad };
+      }),
+    });
+  }
+
+  function handleTap(grado: string, ubicacion: string) {
+    const key = `${grado}_${ubicacion}`;
+    const next = { ...hemDetalle, [key]: (hemDetalle[key] ?? 0) + 1 };
+    setHemDetalle(next);
+    setTapHistory((h) => [...h, { grado, ubicacion }]);
+    saveHemDetalle(next);
+  }
+
+  function handleUndoTap() {
+    if (tapHistory.length === 0) return;
+    const last = tapHistory[tapHistory.length - 1];
+    const key = `${last.grado}_${last.ubicacion}`;
+    const next = { ...hemDetalle, [key]: Math.max(0, (hemDetalle[key] ?? 0) - 1) };
+    setHemDetalle(next);
+    setTapHistory((h) => h.slice(0, -1));
+    saveHemDetalle(next);
   }
 
   async function stampWatermark(file: File): Promise<Blob> {
@@ -584,7 +612,7 @@ export default function WizardClient({
         const hemDetalleTotal = Object.values(hemDetalle).reduce((a, b) => a + b, 0);
         return (
           <div className="space-y-4">
-            <p className="text-sm text-slate-500">Muestra de 50 aves. Registra aves con y sin hematomas.</p>
+            <p className="text-sm text-slate-500">Muestra de 50 aves. Registra aves con y sin hematomas, luego toca para clasificar.</p>
             <Counter label="Con hematoma" value={hemCon} onChange={(v) => { setHemCon(v); scheduleGuardado({ hematomasCon: v }); }} />
             <Counter label="Sin hematoma" value={hemSin} onChange={(v) => { setHemSin(v); scheduleGuardado({ hematomasSin: v }); }} />
             <div className="rounded-[12px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
@@ -592,39 +620,56 @@ export default function WizardClient({
             </div>
 
             <div>
-              <div className="mb-2 flex items-center justify-between">
-                <h3 className="font-bold text-slate-800">Clasificación por grado y ubicación</h3>
-                <span className="text-sm text-slate-400">Total: {hemDetalleTotal} / {hemCon}</span>
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="font-bold text-slate-800">Clasificación</h3>
+                <span className="text-sm text-slate-400">Registradas: <span className="font-mono font-bold text-slate-700">{hemDetalleTotal}</span></span>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr>
-                      <th className="p-1 text-left text-xs font-medium text-slate-400"></th>
-                      {UBICACIONES_HEMATOMA.map((u) => (
-                        <th key={u.key} className="p-1 text-center text-xs font-medium text-slate-400">{u.label}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {GRADOS_HEMATOMA.map((g) => (
-                      <tr key={g.key}>
-                        <td className="p-1 whitespace-nowrap text-xs font-semibold text-slate-600">{g.label}</td>
-                        {UBICACIONES_HEMATOMA.map((u) => (
-                          <td key={u.key} className="p-1">
-                            <input
-                              type="number" min={0}
-                              value={hemDetalle[`${g.key}_${u.key}`] || ""}
-                              onChange={(e) => updateHematomaDetalle(g.key, u.key, Number(e.target.value) || 0)}
-                              className="w-[54px] rounded-[8px] border border-slate-200 bg-white p-[9px] text-center font-mono text-sm"
-                            />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+
+              {/* Column headers */}
+              <div className="mb-1.5 grid grid-cols-[40px_1fr_1fr_1fr_1fr] gap-1.5">
+                <div />
+                {UBICACIONES_HEMATOMA.map((u) => (
+                  <div key={u.key} className="text-center text-[11px] font-semibold text-slate-400">{u.label}</div>
+                ))}
               </div>
+
+              {/* Tally rows */}
+              <div className="space-y-1.5">
+                {GRADOS_HEMATOMA.map((g) => (
+                  <div key={g.key} className="grid grid-cols-[40px_1fr_1fr_1fr_1fr] gap-1.5">
+                    <div className="flex items-center justify-center text-xs font-bold text-slate-500">
+                      {g.label.replace("er grado", "°").replace("do grado", "°").replace("er ", "").replace("do ", "")}
+                    </div>
+                    {UBICACIONES_HEMATOMA.map((u) => {
+                      const count = hemDetalle[`${g.key}_${u.key}`] ?? 0;
+                      return (
+                        <button
+                          key={u.key}
+                          type="button"
+                          onClick={() => handleTap(g.key, u.key)}
+                          className={`flex flex-col items-center justify-center rounded-[12px] border py-4 active:scale-95 ${
+                            count > 0 ? "border-brand/40 bg-brand/5" : "border-slate-200 bg-slate-50"
+                          }`}
+                        >
+                          <span className={`font-mono text-2xl font-extrabold leading-none ${count > 0 ? "text-brand" : "text-slate-300"}`}>
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+
+              {/* Undo */}
+              <button
+                type="button"
+                onClick={handleUndoTap}
+                disabled={tapHistory.length === 0}
+                className="mt-3 w-full rounded-[12px] border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-500 disabled:opacity-30"
+              >
+                ↩ Deshacer último
+              </button>
             </div>
           </div>
         );
