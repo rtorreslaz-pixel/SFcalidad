@@ -256,9 +256,8 @@ export function FormatoSeleccion({
             <td className={`${LABEL} text-center`} colSpan={10}>DATOS DE BENEFICIADO</td>
           </tr>
           <tr>
-            <td className={LABEL} colSpan={4}>DISTRIBUIDOR: {jornada.cliente.nombre}</td>
+            <td className={LABEL} colSpan={6}>DISTRIBUIDOR: {jornada.cliente.nombre}</td>
             <td className={LABEL} colSpan={2}>FECHA: {fechaCorta(jornada.fecha)}</td>
-            <td className={LABEL} colSpan={2}>VERIFICADOR: {jornada.verificador.nombre}</td>
             <td className={LABEL} colSpan={2}>SEXO: {inspeccion.sexo ?? ""}</td>
           </tr>
           <tr>
@@ -268,9 +267,8 @@ export function FormatoSeleccion({
             <td className={LABEL} colSpan={2}>UNIDADES: {cnt(inspeccion.cantidad)}</td>
           </tr>
           <tr>
-            <td className={LABEL} colSpan={2}>PROM VIVO: {num(inspeccion.promVivo)}</td>
-            <td className={LABEL} colSpan={2}>PROM BENEFICIADO: {num(inspeccion.promBeneficiado)}</td>
-            <td className={LABEL} colSpan={2}>DENSIDAD: {num(inspeccion.densidad)}</td>
+            <td className={LABEL} colSpan={3}>PROM VIVO: {num(inspeccion.promVivo)}</td>
+            <td className={LABEL} colSpan={3}>PROM BENEFICIADO: {num(inspeccion.promBeneficiado)}</td>
             <td className={LABEL} colSpan={4}>COMPLEX: {inspeccion.complex ?? ""}</td>
           </tr>
 
@@ -390,14 +388,11 @@ export function FormatoSeleccion({
           </tr>
           <tr>
             <td className={LABEL} colSpan={2}>PIGMENTACIÓN</td>
-            {[0, 1, 2, 3, 4, 5, 6, 7].map((n) => (
-              <td key={n} className={`${CELL} text-center text-[9px] font-semibold`}>{n}</td>
-            ))}
-          </tr>
-          <tr>
-            <td className={LABEL} colSpan={2}></td>
             {pig.map((c, nivel) => (
-              <td key={nivel} className={DATA}>{cnt(c)}</td>
+              <td key={nivel} className={DATA}>
+                <span className="block text-[9px] text-slate-500">{nivel}</span>
+                {cnt(c)}
+              </td>
             ))}
           </tr>
         </tbody>

@@ -243,10 +243,4 @@ body {
   .formato-hoja {
     max-width: 100%;
   }
-  /* Force white/black regardless of dark mode */
-  body { background: white !important; }
-  .formato-hoja, .formato-hoja * {
-    color: black !important;
-    background: white !important;
-  }
 }
