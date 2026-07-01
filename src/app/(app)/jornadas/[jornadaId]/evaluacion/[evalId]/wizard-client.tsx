@@ -349,7 +349,9 @@ export default function WizardClient({
   }
 
   function saveHemDetalle(next: Record<string, number>) {
+    const total = Object.values(next).reduce((a, b) => a + b, 0);
     scheduleGuardado({
+      hematomasCon: total,
       hematomaDetalles: Object.entries(next).map(([key, cantidad]) => {
         const [g, u] = key.split("_");
         return { grado: g, ubicacion: u, cantidad };
@@ -360,7 +362,9 @@ export default function WizardClient({
   function handleTap(grado: string, ubicacion: string) {
     const key = `${grado}_${ubicacion}`;
     const next = { ...hemDetalle, [key]: (hemDetalle[key] ?? 0) + 1 };
+    const total = Object.values(next).reduce((a, b) => a + b, 0);
     setHemDetalle(next);
+    setHemCon(total);
     setTapHistory((h) => [...h, { grado, ubicacion }]);
     saveHemDetalle(next);
   }
@@ -370,7 +374,9 @@ export default function WizardClient({
     const last = tapHistory[tapHistory.length - 1];
     const key = `${last.grado}_${last.ubicacion}`;
     const next = { ...hemDetalle, [key]: Math.max(0, (hemDetalle[key] ?? 0) - 1) };
+    const total = Object.values(next).reduce((a, b) => a + b, 0);
     setHemDetalle(next);
+    setHemCon(total);
     setTapHistory((h) => h.slice(0, -1));
     saveHemDetalle(next);
   }
@@ -612,11 +618,18 @@ export default function WizardClient({
         const hemDetalleTotal = Object.values(hemDetalle).reduce((a, b) => a + b, 0);
         return (
           <div className="space-y-4">
-            <p className="text-sm text-slate-500">Muestra de 50 aves. Registra aves con y sin hematomas, luego toca para clasificar.</p>
-            <Counter label="Con hematoma" value={hemCon} onChange={(v) => { setHemCon(v); scheduleGuardado({ hematomasCon: v }); }} />
-            <Counter label="Sin hematoma" value={hemSin} onChange={(v) => { setHemSin(v); scheduleGuardado({ hematomasSin: v }); }} />
+            <p className="text-sm text-slate-500">Muestra de 50 aves. Toca la celda para registrar cada hematoma; el conteo cuadra automáticamente.</p>
+            <div className="flex gap-3">
+              <div className="flex-1 rounded-[14px] border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="text-xs font-semibold text-slate-400">Con hematoma</p>
+                <p className="font-mono text-2xl font-extrabold text-brand">{hemDetalleTotal}</p>
+              </div>
+              <div className="flex-1">
+                <Counter label="Sin hematoma" value={hemSin} onChange={(v) => { setHemSin(v); scheduleGuardado({ hematomasSin: v }); }} />
+              </div>
+            </div>
             <div className="rounded-[12px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
-              Total evaluadas: <span className="font-mono font-bold text-slate-700">{hemCon + hemSin}</span> / 50
+              Total evaluadas: <span className="font-mono font-bold text-slate-700">{hemDetalleTotal + hemSin}</span> / 50
             </div>
 
             <div>
