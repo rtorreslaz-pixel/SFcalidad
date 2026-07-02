@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.migration.Migration
 
-@Database(entities = [RegistroPeso::class], version = 3, exportSchema = true)
+@Database(entities = [RegistroPeso::class], version = 4, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun registroPesoDao(): RegistroPesoDao
@@ -36,6 +36,17 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // Campos de cabecera del lote: edad en días, línea genética, lote (J/A) y N° aves
+        // por pesada. Todos opcionales para filas existentes (null / default 1).
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE registro_peso ADD COLUMN edad INTEGER")
+                db.execSQL("ALTER TABLE registro_peso ADD COLUMN linea TEXT")
+                db.execSQL("ALTER TABLE registro_peso ADD COLUMN lote TEXT")
+                db.execSQL("ALTER TABLE registro_peso ADD COLUMN nAvesPorPesada INTEGER NOT NULL DEFAULT 1")
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -44,7 +55,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "scale-prototype.db",
                     // Sin fallbackToDestructiveMigration(): un futuro cambio de esquema
                     // debe ir por una Migration real, no borrar la cola de un verificador.
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build().also { instance = it }
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build().also { instance = it }
             }
         }
     }

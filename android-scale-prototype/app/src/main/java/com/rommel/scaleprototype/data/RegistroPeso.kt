@@ -21,6 +21,11 @@ data class RegistroPeso(
     val gradoPododermatitis: Int? = null,
     val gradoRasguno: Int? = null,
     val pigmentacion: Int? = null,
+    // Metadatos del lote capturados en CaptureSetupFragment.
+    val edad: Int? = null,           // días de vida del lote al momento de la pesada
+    val linea: String? = null,       // línea genética (Ross, Cobb, etc.)
+    val lote: String? = null,        // J (Joven) / A (Adulto)
+    val nAvesPorPesada: Int = 1,     // N° aves pesadas juntas en cada lectura de báscula
     val synced: Boolean = false,
     val createdAtEpochMillis: Long,
 )

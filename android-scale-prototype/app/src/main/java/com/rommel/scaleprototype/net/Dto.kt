@@ -32,6 +32,11 @@ data class RegistroDto(
     val numeroAve: Int,
     val pesoGramos: Double,
     val fechaHora: String,
+    // Metadatos del lote -- null en registros anteriores a este campo.
+    val edad: Int? = null,
+    val linea: String? = null,
+    val lote: String? = null,
+    val nAvesPorPesada: Int? = null,
     // Calidad evaluada opcionalmente sobre esta misma ave -- null si no se evaluó.
     val tieneHematoma: Boolean? = null,
     val tieneDefectoSeleccion: Boolean? = null,

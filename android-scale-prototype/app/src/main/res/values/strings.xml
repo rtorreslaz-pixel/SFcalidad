@@ -43,7 +43,14 @@
     <string name="categoria_hembra">Hembra</string>
     <string name="categoria_mediano">Mediano</string>
     <string name="action_start_capture">Comenzar captura</string>
-    <string name="error_setup_fields_required">Selecciona plantel e ingresa campaña, galpón y corral.</string>
+    <string name="label_edad">Edad (días)</string>
+    <string name="label_linea">Línea genética (ej. Ross, Cobb)</string>
+    <string name="label_lote">Lote</string>
+    <string name="lote_j">J — Joven</string>
+    <string name="lote_a">A — Adulto</string>
+    <string name="label_n_aves_pesada">N° aves por pesada</string>
+    <string name="capture_sub_header_format">Edad %1$d d · %2$s · Lote %3$s · %4$d ave(s)/pesada</string>
+    <string name="error_setup_fields_required">Completa todos los campos: plantel, campaña, galpón, corral, edad, línea y lote.</string>
     <string name="error_load_planteles">No se pudo cargar el catálogo de planteles: %1$s</string>
 
     <string name="title_capture">Captura</string>
