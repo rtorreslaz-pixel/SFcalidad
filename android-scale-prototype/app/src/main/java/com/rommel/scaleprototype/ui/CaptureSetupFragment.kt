@@ -34,6 +34,11 @@ class CaptureSetupFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding?.spinnerNAvesPesada?.adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            (1..10).toList(),
+        )
         loadPlanteles()
         binding?.buttonStartCapture?.setOnClickListener { onStartCaptureClicked() }
     }
@@ -69,8 +74,17 @@ class CaptureSetupFragment : Fragment() {
         val campania = b.editCampania.text.toString().trim()
         val galpon = b.editGalpon.text.toString().trim()
         val corral = b.editCorral.text.toString().trim()
+        val edadStr = b.editEdad.text.toString().trim()
+        val linea = b.editLinea.text.toString().trim()
 
-        if (plantel == null || campania.isEmpty() || galpon.isEmpty() || corral.isEmpty()) {
+        if (plantel == null || campania.isEmpty() || galpon.isEmpty() || corral.isEmpty()
+            || edadStr.isEmpty() || linea.isEmpty()) {
+            showError(getString(R.string.error_setup_fields_required))
+            return
+        }
+
+        val edad = edadStr.toIntOrNull()
+        if (edad == null || edad <= 0) {
             showError(getString(R.string.error_setup_fields_required))
             return
         }
@@ -81,6 +95,13 @@ class CaptureSetupFragment : Fragment() {
             else -> "MACHO"
         }
 
+        val lote = when (b.radioGroupLote.checkedRadioButtonId) {
+            R.id.radioLoteA -> "A"
+            else -> "J"
+        }
+
+        val nAvesPorPesada = b.spinnerNAvesPesada.selectedItemPosition + 1
+
         findNavController().navigate(
             R.id.action_captureSetup_to_capture,
             bundleOf(
@@ -90,6 +111,10 @@ class CaptureSetupFragment : Fragment() {
                 ARG_GALPON to galpon,
                 ARG_CORRAL to corral,
                 ARG_CATEGORIA to categoria,
+                ARG_EDAD to edad,
+                ARG_LINEA to linea,
+                ARG_LOTE to lote,
+                ARG_N_AVES_PESADA to nAvesPorPesada,
             ),
         )
     }
@@ -125,5 +150,9 @@ class CaptureSetupFragment : Fragment() {
         const val ARG_GALPON = "galpon"
         const val ARG_CORRAL = "corral"
         const val ARG_CATEGORIA = "categoria"
+        const val ARG_EDAD = "edad"
+        const val ARG_LINEA = "linea"
+        const val ARG_LOTE = "lote"
+        const val ARG_N_AVES_PESADA = "nAvesPorPesada"
     }
 }

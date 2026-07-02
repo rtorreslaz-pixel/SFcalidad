@@ -1,0 +1,154 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "d1adbc9711d997f76c365e6f89d0af5d",
+    "entities": [
+      {
+        "tableName": "registro_peso",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `plantelId` TEXT NOT NULL, `plantelCodigo` TEXT NOT NULL, `campania` TEXT NOT NULL, `galpon` TEXT NOT NULL, `corral` TEXT NOT NULL, `categoria` TEXT NOT NULL, `numeroAve` INTEGER NOT NULL, `pesoGramos` REAL NOT NULL, `fechaHoraEpochMillis` INTEGER NOT NULL, `tieneHematoma` INTEGER, `tieneDefectoSeleccion` INTEGER, `gradoPododermatitis` INTEGER, `gradoRasguno` INTEGER, `pigmentacion` INTEGER, `edad` INTEGER, `linea` TEXT, `lote` TEXT, `nAvesPorPesada` INTEGER NOT NULL, `synced` INTEGER NOT NULL, `createdAtEpochMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plantelId",
+            "columnName": "plantelId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plantelCodigo",
+            "columnName": "plantelCodigo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "campania",
+            "columnName": "campania",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "galpon",
+            "columnName": "galpon",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "corral",
+            "columnName": "corral",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoria",
+            "columnName": "categoria",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numeroAve",
+            "columnName": "numeroAve",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pesoGramos",
+            "columnName": "pesoGramos",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaHoraEpochMillis",
+            "columnName": "fechaHoraEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tieneHematoma",
+            "columnName": "tieneHematoma",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "tieneDefectoSeleccion",
+            "columnName": "tieneDefectoSeleccion",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "gradoPododermatitis",
+            "columnName": "gradoPododermatitis",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "gradoRasguno",
+            "columnName": "gradoRasguno",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pigmentacion",
+            "columnName": "pigmentacion",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "edad",
+            "columnName": "edad",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "linea",
+            "columnName": "linea",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lote",
+            "columnName": "lote",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nAvesPorPesada",
+            "columnName": "nAvesPorPesada",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "synced",
+            "columnName": "synced",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "createdAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd1adbc9711d997f76c365e6f89d0af5d')"
+    ]
+  }
+}

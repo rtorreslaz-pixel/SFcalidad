@@ -30,6 +30,14 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/textCaptureSubHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="#555555"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
         android:id="@+id/textPendingBadge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -69,28 +77,6 @@
         android:orientation="vertical"
         android:visibility="gone"
         android:layout_marginBottom="8dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Switch
-                android:id="@+id/switchHematoma"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="12sp"
-                android:text="@string/label_hematoma" />
-
-            <Switch
-                android:id="@+id/switchDefectoSeleccion"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="12sp"
-                android:text="@string/label_defecto_seleccion" />
-        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"

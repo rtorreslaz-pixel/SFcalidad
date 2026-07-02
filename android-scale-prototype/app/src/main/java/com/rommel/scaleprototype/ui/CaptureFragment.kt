@@ -51,6 +51,10 @@ class CaptureFragment : Fragment() {
     private lateinit var galpon: String
     private lateinit var corral: String
     private lateinit var categoria: String
+    private var edad: Int = 0
+    private lateinit var linea: String
+    private lateinit var lote: String
+    private var nAvesPorPesada: Int = 1
 
     private val requestBluetoothConnect = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -75,9 +79,15 @@ class CaptureFragment : Fragment() {
         galpon = args.getString(CaptureSetupFragment.ARG_GALPON)!!
         corral = args.getString(CaptureSetupFragment.ARG_CORRAL)!!
         categoria = args.getString(CaptureSetupFragment.ARG_CATEGORIA)!!
+        edad = args.getInt(CaptureSetupFragment.ARG_EDAD, 0)
+        linea = args.getString(CaptureSetupFragment.ARG_LINEA) ?: ""
+        lote = args.getString(CaptureSetupFragment.ARG_LOTE) ?: "J"
+        nAvesPorPesada = args.getInt(CaptureSetupFragment.ARG_N_AVES_PESADA, 1)
 
         binding?.textSelectionHeader?.text =
             getString(R.string.capture_header_format, plantelCodigo, campania, galpon, categoria, corral)
+        binding?.textCaptureSubHeader?.text =
+            getString(R.string.capture_sub_header_format, edad, linea, lote, nAvesPorPesada)
 
         binding?.textChangeSelection?.setOnClickListener {
             findNavController().navigate(R.id.action_capture_to_captureSetup)
@@ -232,7 +242,9 @@ class CaptureFragment : Fragment() {
     }
 
     private fun setWeight(valueKg: Double?) {
-        latestWeightGramos = valueKg?.let { it * 1000.0 }
+        // Si se pesan N aves juntas, la báscula devuelve el total. Se divide para obtener
+        // el promedio por ave, que es lo que se almacena y compara contra el estándar.
+        latestWeightGramos = valueKg?.let { (it * 1000.0) / nAvesPorPesada }
         binding?.textCaptureWeight?.text = if (valueKg != null) {
             getString(R.string.weight_format, valueKg, "kg")
         } else {
@@ -249,8 +261,6 @@ class CaptureFragment : Fragment() {
         val pesoGramos = latestWeightGramos ?: return
         val dao = AppDatabase.getInstance(requireContext()).registroPesoDao()
         val evaluarCalidad = binding?.switchEvaluarCalidad?.isChecked == true
-        val tieneHematoma = if (evaluarCalidad) binding?.switchHematoma?.isChecked else null
-        val tieneDefectoSeleccion = if (evaluarCalidad) binding?.switchDefectoSeleccion?.isChecked else null
         val gradoPododermatitis = if (evaluarCalidad) gradoFromRadioGroup(
             binding?.radioGroupPododermatitis?.checkedRadioButtonId, R.id.radioPodoLeve, R.id.radioPodoGrave
         ) else null
@@ -275,8 +285,12 @@ class CaptureFragment : Fragment() {
                     numeroAve = numeroAve,
                     pesoGramos = pesoGramos,
                     fechaHoraEpochMillis = nowMillis,
-                    tieneHematoma = tieneHematoma,
-                    tieneDefectoSeleccion = tieneDefectoSeleccion,
+                    edad = edad,
+                    linea = linea,
+                    lote = lote,
+                    nAvesPorPesada = nAvesPorPesada,
+                    tieneHematoma = null,
+                    tieneDefectoSeleccion = null,
                     gradoPododermatitis = gradoPododermatitis,
                     gradoRasguno = gradoRasguno,
                     pigmentacion = pigmentacion,
