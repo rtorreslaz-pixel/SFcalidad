@@ -1,6 +1,6 @@
 import sharp from "sharp";
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 
 // Referencia de saturación HSV para cada grado del abanico DSM/Roche (0-5)
 // Ajustar estos umbrales si las fotos del entorno muestran desvíos sistemáticos.
@@ -50,7 +50,7 @@ function clasificarGrado(s: number, h: number): { grado: number; confianza: stri
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
+  const session = await getCurrentUser();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   try {
