@@ -1,72 +1,77 @@
 /**
- * Script de prueba para el clasificador de pigmentación.
- * Uso: ANTHROPIC_API_KEY=sk-ant-... node scripts/test-pigmentacion.mjs
+ * Script de prueba para el clasificador de pigmentación (análisis de color con sharp).
+ * Uso: node scripts/test-pigmentacion.mjs <imagen.jpg> [imagen2.jpg ...]
+ * No requiere API key — usa análisis de color local.
  */
-import Anthropic from "@anthropic-ai/sdk";
-import { readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
+import sharp from "sharp";
 
-const client = new Anthropic();
+const GRADO_THRESHOLDS = [
+  { grado: 0, satMin: 0,  satMax: 18, label: "Sin pigmentación (fuera de abanico)" },
+  { grado: 1, satMin: 18, satMax: 32, label: "Amarillo muy pálido" },
+  { grado: 2, satMin: 32, satMax: 48, label: "Amarillo pálido" },
+  { grado: 3, satMin: 48, satMax: 62, label: "Amarillo medio" },
+  { grado: 4, satMin: 62, satMax: 76, label: "Amarillo intenso / dorado" },
+  { grado: 5, satMin: 76, satMax: 100, label: "Amarillo-naranja intenso" },
+];
 
-const SYSTEM_PROMPT = `Eres un experto en clasificación de pigmentación en pollos de engorde.
-Tu tarea es analizar la foto de las patas de un pollo y clasificar su nivel de pigmentación
-usando la escala del abanico colorimétrico DSM/Roche, que va de 0 a 5:
-
-- Grado 0: Color blanquecino / pálido — NO coincide con ningún nivel del abanico
-- Grado 1: Amarillo muy pálido (primer nivel del abanico)
-- Grado 2: Amarillo pálido
-- Grado 3: Amarillo medio
-- Grado 4: Amarillo intenso / dorado
-- Grado 5: Amarillo-naranja intenso (máximo del abanico)
-
-Analiza la zona de las patas (tarso/metatarso) ignorando manchas, moretones o suciedad superficial.
-Responde SOLO con un JSON válido, sin texto extra:
-{"grado": <número 0-5>, "confianza": "<alta|media|baja>", "descripcion": "<breve descripción del color observado>"}`;
+function rgbToHsv(r, g, b) {
+  const rn = r / 255, gn = g / 255, bn = b / 255;
+  const max = Math.max(rn, gn, bn), min = Math.min(rn, gn, bn);
+  const delta = max - min;
+  const v = max * 100;
+  const s = max === 0 ? 0 : (delta / max) * 100;
+  let h = 0;
+  if (delta > 0) {
+    if (max === rn) h = 60 * (((gn - bn) / delta) % 6);
+    else if (max === gn) h = 60 * ((bn - rn) / delta + 2);
+    else h = 60 * ((rn - gn) / delta + 4);
+    if (h < 0) h += 360;
+  }
+  return { h, s, v };
+}
 
 async function clasificar(imagePath) {
-  const bytes = readFileSync(imagePath);
-  const base64 = bytes.toString("base64");
-  const ext = imagePath.split(".").pop().toLowerCase();
-  const mediaType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+  const meta = await sharp(imagePath).metadata();
+  const w = meta.width, h = meta.height;
+  const cropW = Math.round(w * 0.4), cropH = Math.round(h * 0.4);
+  const left = Math.round((w - cropW) / 2), top = Math.round((h - cropH) / 2);
 
-  console.log(`\nAnalizando: ${imagePath}`);
-  const msg = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 256,
-    system: SYSTEM_PROMPT,
-    messages: [{
-      role: "user",
-      content: [
-        { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
-        { type: "text", text: "Clasifica el nivel de pigmentación de las patas de este pollo." },
-      ],
-    }],
-  });
+  const { data, info } = await sharp(imagePath)
+    .extract({ left, top, width: cropW, height: cropH })
+    .resize(50, 50)
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
 
-  const text = msg.content[0].text;
-  const result = JSON.parse(text);
-  console.log(`  → Grado: ${result.grado} | Confianza: ${result.confianza}`);
-  console.log(`  → ${result.descripcion}`);
-  return result;
+  let r = 0, g = 0, b = 0;
+  const pixels = info.width * info.height;
+  for (let i = 0; i < data.length; i += 3) { r += data[i]; g += data[i+1]; b += data[i+2]; }
+  r /= pixels; g /= pixels; b /= pixels;
+
+  const hsv = rgbToHsv(r, g, b);
+  const esAmarillo = hsv.h >= 25 && hsv.h <= 75;
+
+  let resultado;
+  if (!esAmarillo) {
+    resultado = { grado: 0, confianza: "alta", descripcion: "Tono fuera del rango amarillo" };
+  } else {
+    const match = GRADO_THRESHOLDS.find(t => hsv.s >= t.satMin && hsv.s < t.satMax) ?? GRADO_THRESHOLDS.at(-1);
+    const rango = match.satMax - match.satMin;
+    const distancia = Math.abs(hsv.s - (match.satMin + rango / 2)) / (rango / 2);
+    const confianza = distancia < 0.3 ? "alta" : distancia < 0.65 ? "media" : "baja";
+    resultado = { grado: match.grado, confianza, descripcion: match.label };
+  }
+
+  console.log(`\nImagen: ${imagePath}`);
+  console.log(`  RGB promedio (centro): R=${Math.round(r)} G=${Math.round(g)} B=${Math.round(b)}`);
+  console.log(`  HSV: H=${Math.round(hsv.h)}° S=${Math.round(hsv.s)}% V=${Math.round(hsv.v)}%`);
+  console.log(`  → GRADO ${resultado.grado} | Confianza: ${resultado.confianza}`);
+  console.log(`  → ${resultado.descripcion}`);
 }
 
-// Uso: pasar rutas de imágenes como argumentos
-// Ej: node scripts/test-pigmentacion.mjs foto_pata1.jpg foto_pata2.jpg
 const args = process.argv.slice(2);
-
 if (args.length === 0) {
-  console.log("Uso: node scripts/test-pigmentacion.mjs <imagen1.jpg> [imagen2.jpg ...]");
-  console.log("\nEjemplo rápido (sin imagen — solo verifica conexión a la API):");
-  const msg = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 32,
-    messages: [{ role: "user", content: "Responde solo: API OK" }],
-  });
-  console.log("Conexión API:", msg.content[0].text);
+  console.log("Uso: node scripts/test-pigmentacion.mjs <imagen.jpg> [imagen2.jpg ...]");
   process.exit(0);
 }
-
-for (const img of args) {
-  await clasificar(img);
-}
+for (const img of args) await clasificar(img);
