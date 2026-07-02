@@ -4,13 +4,14 @@ import { getSession } from "@/lib/auth";
 
 // Referencia de saturación HSV para cada grado del abanico DSM/Roche (0-5)
 // Ajustar estos umbrales si las fotos del entorno muestran desvíos sistemáticos.
+// Umbrales calibrados con fotos reales del abanico DSM/Roche (grados 1-4 validados en campo)
 const GRADO_THRESHOLDS = [
-  { grado: 0, satMin: 0,  satMax: 18, label: "Sin pigmentación (fuera de abanico)" },
-  { grado: 1, satMin: 18, satMax: 32, label: "Amarillo muy pálido" },
-  { grado: 2, satMin: 32, satMax: 48, label: "Amarillo pálido" },
-  { grado: 3, satMin: 48, satMax: 62, label: "Amarillo medio" },
-  { grado: 4, satMin: 62, satMax: 76, label: "Amarillo intenso / dorado" },
-  { grado: 5, satMin: 76, satMax: 100, label: "Amarillo-naranja intenso" },
+  { grado: 0, satMin: 0,  satMax: 25, label: "Sin pigmentación (fuera de abanico)" },
+  { grado: 1, satMin: 25, satMax: 42, label: "Amarillo muy pálido" },
+  { grado: 2, satMin: 42, satMax: 56, label: "Amarillo pálido" },
+  { grado: 3, satMin: 56, satMax: 71, label: "Amarillo medio" },
+  { grado: 4, satMin: 71, satMax: 85, label: "Amarillo intenso / dorado" },
+  { grado: 5, satMin: 85, satMax: 100, label: "Amarillo-naranja intenso" },
 ];
 
 function rgbToHsv(r: number, g: number, b: number) {
