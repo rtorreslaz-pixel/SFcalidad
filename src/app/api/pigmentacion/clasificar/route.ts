@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 
 // Referencia de saturación HSV para cada grado del abanico DSM/Roche (0-5)
-// Calibrado a partir de la escala estándar de pigmentación avícola.
 // Ajustar estos umbrales si las fotos del entorno muestran desvíos sistemáticos.
 const GRADO_THRESHOLDS = [
   { grado: 0, satMin: 0,  satMax: 18, label: "Sin pigmentación (fuera de abanico)" },
@@ -33,7 +32,6 @@ function rgbToHsv(r: number, g: number, b: number) {
 }
 
 function clasificarGrado(s: number, h: number): { grado: number; confianza: string; descripcion: string } {
-  // Fuera del rango amarillo/naranja → Grado 0
   const esAmarillo = h >= 25 && h <= 75;
   if (!esAmarillo) {
     return { grado: 0, confianza: "alta", descripcion: "Tono fuera del rango amarillo, no coincide con el abanico" };
@@ -42,7 +40,6 @@ function clasificarGrado(s: number, h: number): { grado: number; confianza: stri
   const match = GRADO_THRESHOLDS.find((t) => s >= t.satMin && s < t.satMax)
     ?? GRADO_THRESHOLDS[GRADO_THRESHOLDS.length - 1];
 
-  // Confianza según qué tan centrado está el valor en el rango
   const rango = match.satMax - match.satMin;
   const centro = match.satMin + rango / 2;
   const distancia = Math.abs(s - centro) / (rango / 2);
@@ -62,7 +59,6 @@ export async function POST(req: NextRequest) {
 
     const bytes = Buffer.from(await file.arrayBuffer());
 
-    // Recortamos el centro de la imagen (40% central) para evitar fondo y bordes
     const meta = await sharp(bytes).metadata();
     const w = meta.width ?? 100;
     const h = meta.height ?? 100;
@@ -73,21 +69,29 @@ export async function POST(req: NextRequest) {
 
     const stats = await sharp(bytes)
       .extract({ left, top, width: cropW, height: cropH })
-      .resize(50, 50)           // reducimos para calcular color promedio rápido
+      .resize(80, 80)
       .removeAlpha()
       .raw()
       .toBuffer({ resolveWithObject: true })
-      .then(({ data, info }) => {
-        let r = 0, g = 0, b = 0;
-        const pixels = info.width * info.height;
+      .then(({ data }) => {
+        let r = 0, g = 0, b = 0, count = 0;
         for (let i = 0; i < data.length; i += 3) {
-          r += data[i]; g += data[i + 1]; b += data[i + 2];
+          const pr = data[i], pg = data[i + 1], pb = data[i + 2];
+          // Filtrar solo pixels amarillos/naranja — ignorar fondo gris/azul/oscuro
+          const max = Math.max(pr, pg, pb);
+          const min = Math.min(pr, pg, pb);
+          const sat = max === 0 ? 0 : (max - min) / max;
+          const esAmarillo = pr > pb && pg > pb && sat > 0.2 && max > 80;
+          if (esAmarillo) { r += pr; g += pg; b += pb; count++; }
         }
-        return { r: r / pixels, g: g / pixels, b: b / pixels };
+        if (count < 100) return { r: 200, g: 200, b: 200, escasos: true };
+        return { r: r / count, g: g / count, b: b / count, escasos: false };
       });
 
     const hsv = rgbToHsv(stats.r, stats.g, stats.b);
-    const resultado = clasificarGrado(hsv.s, hsv.h);
+    const resultado = stats.escasos
+      ? { grado: 0, confianza: "media" as const, descripcion: "Pocas zonas amarillas detectadas — posible Grado 0 o foto sin patas visibles" }
+      : clasificarGrado(hsv.s, hsv.h);
 
     return NextResponse.json({
       ...resultado,
