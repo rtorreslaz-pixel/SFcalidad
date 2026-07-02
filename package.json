@@ -12,6 +12,7 @@
     "test:mobile-e2e": "tsx scripts/test-mobile-e2e.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.109.1",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "bcryptjs": "^3.0.3",
@@ -22,7 +23,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.8.1",
-    "sharp": "^0.35.1"
+    "sharp": "^0.35.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
