@@ -10,8 +10,8 @@ const GRADO_THRESHOLDS = [
   { grado: 1, satMin: 25, satMax: 42, label: "Amarillo muy pálido" },
   { grado: 2, satMin: 42, satMax: 56, label: "Amarillo pálido" },
   { grado: 3, satMin: 56, satMax: 71, label: "Amarillo medio" },
-  { grado: 4, satMin: 71, satMax: 85, label: "Amarillo intenso / dorado" },
-  { grado: 5, satMin: 85, satMax: 100, label: "Amarillo-naranja intenso" },
+  { grado: 4, satMin: 71, satMax: 80, label: "Amarillo intenso / dorado" },
+  { grado: 5, satMin: 80, satMax: 100, label: "Amarillo-naranja intenso" },
 ];
 
 function rgbToHsv(r: number, g: number, b: number) {
