@@ -14,6 +14,10 @@ type RegistroInput = {
   numeroAve: number;
   pesoGramos: number;
   fechaHora: string;
+  edad?: number | null;
+  linea?: string | null;
+  lote?: string | null;
+  nAvesPorPesada?: number | null;
   tieneHematoma?: boolean | null;
   tieneDefectoSeleccion?: boolean | null;
   gradoPododermatitis?: number | null;
@@ -48,7 +52,11 @@ function isValidRegistro(r: unknown): r is RegistroInput {
     isValidGrado(v.gradoRasguno) &&
     (v.pigmentacion === undefined ||
       v.pigmentacion === null ||
-      (typeof v.pigmentacion === "number" && v.pigmentacion >= 0 && v.pigmentacion <= 7))
+      (typeof v.pigmentacion === "number" && v.pigmentacion >= 0 && v.pigmentacion <= 7)) &&
+    (v.edad === undefined || v.edad === null || (typeof v.edad === "number" && Number.isInteger(v.edad) && v.edad >= 0)) &&
+    (v.linea === undefined || v.linea === null || typeof v.linea === "string") &&
+    (v.lote === undefined || v.lote === null || typeof v.lote === "string") &&
+    (v.nAvesPorPesada === undefined || v.nAvesPorPesada === null || (typeof v.nAvesPorPesada === "number" && Number.isInteger(v.nAvesPorPesada) && v.nAvesPorPesada > 0))
   );
 }
 
@@ -90,6 +98,10 @@ export async function POST(request: NextRequest) {
           numeroAve: r.numeroAve,
           pesoGramos: r.pesoGramos,
           fechaHora: new Date(r.fechaHora),
+          edad: r.edad ?? null,
+          linea: r.linea ?? null,
+          lote: r.lote ?? null,
+          nAvesPorPesada: r.nAvesPorPesada ?? null,
           tieneHematoma: r.tieneHematoma ?? null,
           tieneDefectoSeleccion: r.tieneDefectoSeleccion ?? null,
           gradoPododermatitis: r.gradoPododermatitis ?? null,

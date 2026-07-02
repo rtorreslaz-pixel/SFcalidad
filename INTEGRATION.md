@@ -126,7 +126,11 @@ Request:
       "tieneDefectoSeleccion": false,
       "gradoPododermatitis": 0,
       "gradoRasguno": 1,
-      "pigmentacion": 4
+      "pigmentacion": 4,
+      "edad": 42,
+      "linea": "Ross",
+      "lote": "J",
+      "nAvesPorPesada": 1
     }
   ]
 }
@@ -145,6 +149,10 @@ Reglas de cada registro:
 - `gradoPododermatitis`, `gradoRasguno`: `0` | `1` | `2` | null (0 sin lesión, 1 leve, 2 grave).
 - `pigmentacion`: entero `0`–`7` | null.
 - `campania`: string | null.
+- `edad`: entero ≥ 0 | null — días de vida del lote al momento de la pesada.
+- `linea`: string | null — línea genética (ej. `"Ross"`, `"Cobb"`).
+- `lote`: string | null — clasificación del lote (`"J"` Joven / `"A"` Adulto).
+- `nAvesPorPesada`: entero > 0 | null — N° aves pesadas juntas por lectura de báscula.
 
 Response `200`:
 ```json
@@ -161,8 +169,9 @@ Definidos en `prisma/schema.prisma`. **No editar desde la rama Android.**
 ### `RegistroPesoPreventa`
 Registro por ave pesada en granja. Campos clave: `id` (UUID de cliente, **sin** `@default`),
 `plantelId`, `campania?`, `galpon`, `corral`, `categoria`, `numeroAve`, `pesoGramos`,
-`fechaHora` (captura), `complex?`, `tipoMuestreo` (`PREVENTA` por defecto), criterios de
-calidad opcionales por ave (`tieneHematoma?`, `tieneDefectoSeleccion?`, `gradoPododermatitis?`,
+`fechaHora` (captura), `complex?`, `tipoMuestreo` (`PREVENTA` por defecto), metadatos del
+lote opcionales (`edad?`, `linea?`, `lote?`, `nAvesPorPesada?`), criterios de calidad
+opcionales por ave (`tieneHematoma?`, `tieneDefectoSeleccion?`, `gradoPododermatitis?`,
 `gradoRasguno?`, `pigmentacion?`), `verificadorId`, `syncedAt`, `createdAt`.
 Índices: `[plantelId, galpon, corral, categoria]`, `[verificadorId, fechaHora]`.
 

@@ -311,6 +311,12 @@ model RegistroPesoPreventa {
   // Mismos criterios que Inspeccion.{hematomasCon/Sin, defectos, evaluacionesLesion,
   // pigNivel*} pero a nivel de ave individual en granja, para poder comparar contra el
   // censo de calidad de cliente lote por lote.
+  // Metadatos del lote al momento de la pesada
+  edad          Int?    // días de vida del lote
+  linea         String? // línea genética (ej. Ross, Cobb)
+  lote          String? // J (Joven) / A (Adulto)
+  nAvesPorPesada Int?   // N° aves pesadas juntas por lectura de báscula
+
   tieneHematoma         Boolean?
   tieneDefectoSeleccion Boolean?
   gradoPododermatitis   Int? // 0 sin lesión, 1 leve, 2 grave (grave = Grado 2, igual que EvaluacionLesion.grave)
