@@ -304,6 +304,12 @@ export default function WizardClient({
   const cameraRef = useRef<HTMLInputElement>(null);
   const [cameraKey, setCameraKey] = useState(0);
 
+  // Pigmentación scanner
+  const pigCameraRef = useRef<HTMLInputElement>(null);
+  const [pigCameraKey, setPigCameraKey] = useState(0);
+  const [pigScanStatus, setPigScanStatus] = useState<"idle" | "scanning" | "ok" | "error">("idle");
+  const [pigScanResult, setPigScanResult] = useState<{ grado: number; confianza: string; descripcion: string } | null>(null);
+
   // Autoguardado
   const scheduleGuardado = useCallback((patch: Record<string, unknown>) => {
     pendingPatchRef.current = { ...pendingPatchRef.current, ...patch };
@@ -704,6 +710,91 @@ export default function WizardClient({
               Muestra de 100 aves. Total:{" "}
               <span className="font-mono font-bold text-slate-700">{pigTotal}</span> / 100
             </p>
+
+            {/* IA Scanner */}
+            <div className="rounded-[14px] border border-blue-100 bg-blue-50 p-3">
+              <p className="mb-2 text-xs font-semibold text-blue-700">Clasificación automática con cámara</p>
+              <button
+                type="button"
+                disabled={pigScanStatus === "scanning"}
+                onClick={() => { setPigScanResult(null); setPigScanStatus("idle"); pigCameraRef.current?.click(); }}
+                className="flex w-full items-center justify-center gap-2 rounded-[12px] border border-blue-200 bg-white py-3 text-sm font-bold text-blue-700 disabled:opacity-50"
+              >
+                {pigScanStatus === "scanning" ? (
+                  <><span className="animate-spin">⏳</span> Analizando…</>
+                ) : (
+                  <><span>📷</span> Escanear pata de pollo</>
+                )}
+              </button>
+
+              {pigScanResult && pigScanStatus === "ok" && (
+                <div className="mt-2 rounded-[10px] border border-blue-200 bg-white px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-extrabold" style={{ color: SF_BLUE }}>
+                      Grado {pigScanResult.grado}
+                    </span>
+                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                      pigScanResult.confianza === "alta" ? "bg-green-100 text-green-700" :
+                      pigScanResult.confianza === "media" ? "bg-yellow-100 text-yellow-700" :
+                      "bg-red-100 text-red-700"
+                    }`}>
+                      {pigScanResult.confianza}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-xs text-slate-500">{pigScanResult.descripcion}</p>
+                  <button
+                    type="button"
+                    className="mt-2 w-full rounded-[8px] py-2 text-xs font-bold text-white"
+                    style={{ background: SF_BLUE }}
+                    onClick={() => {
+                      const grado = pigScanResult.grado;
+                      const next = [...pig];
+                      next[grado] = next[grado] + 1;
+                      setPig(next);
+                      scheduleGuardado({
+                        pigNivel0: next[0], pigNivel1: next[1], pigNivel2: next[2], pigNivel3: next[3],
+                        pigNivel4: next[4], pigNivel5: next[5], pigNivel6: next[6], pigNivel7: next[7],
+                      });
+                      setPigScanResult(null);
+                      setPigScanStatus("idle");
+                      setPigCameraKey((k) => k + 1);
+                    }}
+                  >
+                    + Agregar al Nivel {pigScanResult.grado}
+                  </button>
+                </div>
+              )}
+
+              {pigScanStatus === "error" && (
+                <p className="mt-2 text-center text-xs text-red-500">No se pudo clasificar. Intenta con mejor iluminación.</p>
+              )}
+            </div>
+
+            <input
+              key={`pig-cam-${pigCameraKey}`}
+              ref={pigCameraRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setPigScanStatus("scanning");
+                try {
+                  const fd = new FormData();
+                  fd.append("imagen", file);
+                  const res = await fetch("/api/pigmentacion/clasificar", { method: "POST", body: fd });
+                  if (!res.ok) throw new Error("error");
+                  const data = await res.json();
+                  setPigScanResult(data);
+                  setPigScanStatus("ok");
+                } catch {
+                  setPigScanStatus("error");
+                }
+              }}
+            />
+
             {pig.map((val, nivel) => (
               <Counter key={nivel} label={`Nivel ${nivel}`} value={val} onChange={(v) => {
                 const next = [...pig];
