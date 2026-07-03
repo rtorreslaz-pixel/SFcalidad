@@ -13,6 +13,7 @@ export default function NavLinks({ role }: { role: Role }) {
           { href: "/dashboard", label: "Dashboard" },
           { href: "/dashboard-bi", label: "Indicadores BI" },
           { href: "/dashboard-bi/engranaje", label: "Engranaje granja-clientes" },
+          { href: "/dashboard/pesaje", label: "Monitor de pesaje" },
           { href: "/dashboard/preventa", label: "Peso en planta" },
           { href: "/jornadas", label: "Jornadas" },
           { href: "/inspecciones", label: "Inspecciones" },
@@ -21,10 +22,14 @@ export default function NavLinks({ role }: { role: Role }) {
       : role === "VERIFICADOR"
         ? [
             { href: "/jornadas", label: "Mis jornadas" },
+            { href: "/dashboard/pesaje", label: "Monitor de pesaje" },
             { href: "/dashboard/preventa", label: "Peso en planta" },
           ]
         : role === "COMERCIAL"
-          ? [{ href: "/dashboard/preventa", label: "Peso en planta" }]
+          ? [
+              { href: "/dashboard/pesaje", label: "Monitor de pesaje" },
+              { href: "/dashboard/preventa", label: "Peso en planta" },
+            ]
           : [
               { href: "/dashboard", label: "Dashboard" },
               { href: "/dashboard-bi", label: "Indicadores BI" },
