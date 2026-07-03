@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import { Prisma } from "@/generated/prisma/client";
 
 export const JORNADA_REPORTE_INCLUDE = {
-  cliente: true,
+  cliente: { select: { nombre: true } },
   verificador: { select: { nombre: true } },
   inspecciones: {
     where: { estado: "COMPLETA" },
@@ -16,6 +16,10 @@ export const JORNADA_REPORTE_INCLUDE = {
 } satisfies Prisma.JornadaInclude;
 
 export type JornadaReporte = Prisma.JornadaGetPayload<{ include: typeof JORNADA_REPORTE_INCLUDE }>;
+
+// Datos que el reporte necesita. Puede venir de una Jornada real o de un grupo
+// de inspecciones armado por cliente/día (para incluir inspecciones sin jornada).
+export type ReporteData = Pick<JornadaReporte, "fecha" | "cliente" | "verificador" | "inspecciones">;
 
 const NOMBRES_MERMA_PASO7 = [
   "Alas Grado 1°", "Alas Grado 2°", "Alas Grado 3°", "Alas Rota",
@@ -64,7 +68,7 @@ function ubicacion(insp: { plantel: { codigo: string } | null; galpon: string | 
   return { pl: insp.plantel?.codigo ?? "-", gl: [insp.galpon, insp.corral].filter(Boolean).join("-") || "-" };
 }
 
-export default function ReporteCard({ jornada }: { jornada: JornadaReporte }) {
+export default function ReporteCard({ jornada }: { jornada: ReporteData }) {
   const fechaLabel = jornada.fecha.toLocaleDateString("es-PE", {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   });

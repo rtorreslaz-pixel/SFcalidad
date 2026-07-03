@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import PrintButton from "../print-button";
-import ReporteCard, { JORNADA_REPORTE_INCLUDE } from "../reporte-card";
+import ReporteCard, { type ReporteData } from "../reporte-card";
 
 function hoyIso() {
   return new Date().toISOString().slice(0, 10);
@@ -21,15 +21,53 @@ export default async function ReportesDelDiaPage({
   const { fecha: fechaParam } = await searchParams;
   const fechaStr = fechaParam || hoyIso();
   const fecha = new Date(`${fechaStr}T00:00:00.000Z`);
+  const finDia = new Date(fecha.getTime() + 24 * 3600 * 1000);
+  const rango = { gte: fecha, lt: finDia };
 
-  const jornadas = await prisma.jornada.findMany({
+  // Se arma un reporte por cliente desde las inspecciones del día (con o sin jornada),
+  // usando la fecha efectiva (campo `fecha` directo o el de la jornada). Así aparecen
+  // también las inspecciones cargadas por importación, que no tienen jornada.
+  const inspecciones = await prisma.inspeccion.findMany({
     where: {
-      fecha,
+      estado: "COMPLETA",
       ...(user.role === "VERIFICADOR" ? { verificadorId: user.id } : {}),
+      OR: [
+        { fecha: rango },
+        { AND: [{ fecha: null }, { jornada: { is: { fecha: rango } } }] },
+      ],
     },
-    orderBy: { cliente: { nombre: "asc" } },
-    include: JORNADA_REPORTE_INCLUDE,
+    include: {
+      plantel: { select: { codigo: true } },
+      defectos: { include: { tipoDefecto: true }, orderBy: { tipoDefecto: { orden: "asc" } } },
+      evaluacionesLesion: true,
+      cliente: { select: { nombre: true } },
+      verificador: { select: { nombre: true } },
+      jornada: { select: { cliente: { select: { nombre: true } } } },
+    },
+    orderBy: { createdAt: "asc" },
   });
+
+  // Agrupar por cliente efectivo
+  const grupos = new Map<string, ReporteData & { verificadores: Set<string> }>();
+  for (const insp of inspecciones) {
+    const nombre = insp.cliente?.nombre ?? insp.jornada?.cliente?.nombre ?? "Sin cliente";
+    const existing = grupos.get(nombre);
+    const g =
+      existing ??
+      {
+        fecha,
+        cliente: { nombre },
+        verificador: { nombre: "" },
+        inspecciones: [],
+        verificadores: new Set<string>(),
+      };
+    if (!existing) grupos.set(nombre, g);
+    g.inspecciones.push(insp);
+    if (insp.verificador?.nombre) g.verificadores.add(insp.verificador.nombre);
+  }
+  const reportes: ReporteData[] = Array.from(grupos.values())
+    .sort((a, b) => a.cliente.nombre.localeCompare(b.cliente.nombre))
+    .map((g) => ({ ...g, verificador: { nombre: [...g.verificadores].join(", ") || "—" } }));
 
   const fechaLabel = fecha.toLocaleDateString("es-PE", {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
@@ -41,7 +79,7 @@ export default async function ReportesDelDiaPage({
         <Link href="/jornadas" className="text-sm text-emerald-700 hover:underline">
           ← Jornadas
         </Link>
-        {jornadas.length > 0 && <PrintButton />}
+        {reportes.length > 0 && <PrintButton />}
       </div>
 
       <div className="mb-6 print:hidden">
@@ -59,19 +97,19 @@ export default async function ReportesDelDiaPage({
           </button>
         </form>
         <p className="mt-3 text-sm capitalize text-slate-500">
-          {fechaLabel} · {jornadas.length} {jornadas.length === 1 ? "reporte" : "reportes"}
+          {fechaLabel} · {reportes.length} {reportes.length === 1 ? "reporte" : "reportes"}
         </p>
       </div>
 
-      {jornadas.length === 0 ? (
+      {reportes.length === 0 ? (
         <div className="rounded-xl bg-white p-10 text-center shadow-sm ring-1 ring-slate-200 print:hidden">
-          <p className="text-slate-400">No hay jornadas registradas para esta fecha.</p>
+          <p className="text-slate-400">No hay inspecciones registradas para esta fecha.</p>
         </div>
       ) : (
         <div className="space-y-6">
-          {jornadas.map((j) => (
-            <div key={j.id} className="print:break-after-page">
-              <ReporteCard jornada={j} />
+          {reportes.map((r) => (
+            <div key={r.cliente.nombre} className="print:break-after-page">
+              <ReporteCard jornada={r} />
             </div>
           ))}
         </div>
