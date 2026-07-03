@@ -20,7 +20,7 @@ export async function createInspectionAction(
   const fechaStr = String(formData.get("fecha") ?? "");
   const clienteId = String(formData.get("clienteId") ?? "");
   const plantelId = String(formData.get("plantelId") ?? "") || null;
-  const galpon = String(formData.get("galpon") ?? "").trim() || null;
+  const galpon = String(formData.get("galpon") ?? "").trim().toUpperCase() || null;
   const sexo = String(formData.get("sexo") ?? "") || null;
   const cantidad = Number(formData.get("cantidad") ?? 0);
   const jabas = formData.get("jabas") ? Number(formData.get("jabas")) : null;

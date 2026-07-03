@@ -498,10 +498,11 @@ export default function WizardClient({
             }} placeholder="Ej. 2401" />
 
             <BigInput label="Galpón" type="text" value={galpon} onChange={(v) => {
-              setGalpon(v);
-              const nextComplex = recomputeComplex({ galpon: v });
+              const vUp = v.toUpperCase();
+              setGalpon(vUp);
+              const nextComplex = recomputeComplex({ galpon: vUp });
               setComplex(nextComplex);
-              scheduleGuardado({ galpon: v || null, complex: nextComplex || null });
+              scheduleGuardado({ galpon: vUp || null, complex: nextComplex || null });
             }} placeholder="Ej. 11" />
 
             {/* Sexo selector */}
