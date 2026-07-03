@@ -469,7 +469,6 @@ export default async function DashboardBiPage({
         {plantelId && <input type="hidden" name="plantelId" value={plantelId} />}
         {zona && <input type="hidden" name="zona" value={zona} />}
         {subZona && <input type="hidden" name="subZona" value={subZona} />}
-        {zonaEvaluacion && <input type="hidden" name="zonaEvaluacion" value={zonaEvaluacion} />}
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500">Año</label>
           <select name="anio" defaultValue={anio ?? ""} className="input w-28">
@@ -485,6 +484,15 @@ export default async function DashboardBiPage({
             <option value="">Todos los clientes</option>
             {clientes.map((c) => (
               <option key={c.id} value={c.id}>{c.nombre}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Zona de evaluación</label>
+          <select name="zonaEvaluacion" defaultValue={zonaEvaluacion ?? ""} className="input w-44">
+            <option value="">Todas</option>
+            {zonasEvaluacion.map((z) => (
+              <option key={z} value={z}>{z}</option>
             ))}
           </select>
         </div>
@@ -602,6 +610,7 @@ export default async function DashboardBiPage({
         {semana && <input type="hidden" name="semana" value={semana} />}
         {dia && <input type="hidden" name="dia" value={dia} />}
         {clienteId && <input type="hidden" name="clienteId" value={clienteId} />}
+        {zonaEvaluacion && <input type="hidden" name="zonaEvaluacion" value={zonaEvaluacion} />}
         {complexEntity && <input type="hidden" name="complexEntity" value={complexEntity} />}
         {campania && <input type="hidden" name="campania" value={campania} />}
         {galpon && <input type="hidden" name="galpon" value={galpon} />}
@@ -622,15 +631,6 @@ export default async function DashboardBiPage({
             <option value="">Todas las subzonas</option>
             {subZonas.map((s) => (
               <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Zona de evaluación</label>
-          <select name="zonaEvaluacion" defaultValue={zonaEvaluacion ?? ""} className="input w-44">
-            <option value="">Todas</option>
-            {zonasEvaluacion.map((z) => (
-              <option key={z} value={z}>{z}</option>
             ))}
           </select>
         </div>
