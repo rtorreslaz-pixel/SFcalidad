@@ -565,7 +565,7 @@ export default async function DashboardBiPage({
         />
         <KpiCard label="Planteles evaluados" value={ranking.length.toString()} />
         <KpiCard
-          label="Evaluaciones solo lesión/pigmentación"
+          label="Evaluaciones solo pododermatitis/rasguños o pigmentación"
           value={inspeccionesParciales.length.toString()}
           sub="No suman a % Selección ni % Merma"
         />
