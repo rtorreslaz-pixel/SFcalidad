@@ -6,6 +6,7 @@ import type { SexoAve } from "@/generated/prisma/enums";
 import { TendenciaChart, RankingChart, PigmentacionChart, LesionChart, ClienteChart, DefectoChart } from "./charts";
 import { esDefectoMerma } from "@/lib/defectos-merma";
 import { getISOWeek } from "@/lib/calc";
+import DiaField from "./dia-field";
 
 const MESES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -472,10 +473,7 @@ export default async function DashboardBiPage({
           <label className="mb-1 block text-xs font-medium text-slate-500">Semana (ISO)</label>
           <input type="number" name="semana" min={1} max={53} placeholder="1-53" defaultValue={semana ?? ""} className="input w-24" />
         </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Día</label>
-          <input type="date" name="dia" defaultValue={dia ?? ""} className="input" />
-        </div>
+        <DiaField defaultValue={dia} />
         <button
           type="submit"
           className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover"
