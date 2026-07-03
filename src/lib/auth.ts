@@ -78,8 +78,8 @@ export async function requireMobileUser(request: Request): Promise<SessionUser |
 // Comercial: solo visualiza el peso de preventa (no entra a calidad ni a catálogos).
 export function homeRouteForRole(role: Role): string {
   if (role === "VERIFICADOR") return "/jornadas";
-  if (role === "COMERCIAL") return "/dashboard/preventa";
-  return "/dashboard";
+  if (role === "COMERCIAL") return "/dashboard/pesaje";
+  return "/dashboard-bi";
 }
 
 export const ROLE_LABELS: Record<Role, string> = {
