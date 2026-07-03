@@ -264,20 +264,21 @@ export default async function DashboardBiPage({
     .map((p) => ({
       codigo: p.codigo,
       evaluaciones: p.evaluaciones,
+      mermaUnid: p.mermaUnid,
       pctSeleccion: pct(p.seleccionUnid, p.cantidad),
       pctMerma: pct(p.mermaUnid, p.cantidad),
       pctHematomas: pct(p.hemCon, p.hemCon + p.hemSin),
     }))
-    .sort((a, b) => b.pctMerma - a.pctMerma);
+    .sort((a, b) => b.mermaUnid - a.mermaUnid);
 
-  // Top 20 planteles con mayor % de merma (el detalle completo está en la tabla de abajo).
-  // Evita un gráfico de cientos de barras y garantiza que se vean las de mayor señal.
+  // Top 20 planteles con mayor cantidad (unidades) de merma. El detalle completo
+  // está en la tabla de abajo. El color mantiene el semáforo por % (salud del lote).
   const rankingChartData = ranking
-    .filter((p) => p.pctMerma > 0)
+    .filter((p) => p.mermaUnid > 0)
     .slice(0, 20)
     .map((p) => ({
       codigo: p.codigo,
-      pctMerma: Number(p.pctMerma.toFixed(2)),
+      valor: p.mermaUnid,
       color: SEMAFORO_HEX[semaforo(p.pctMerma, UMBRAL_MERMA)],
     }));
 
@@ -625,7 +626,7 @@ export default async function DashboardBiPage({
       </form>
 
       <div className="mb-6 grid grid-cols-1 gap-6">
-        <ChartCard title="Top 20 planteles por % de merma (mayor a menor)" full>
+        <ChartCard title="Top 20 planteles por merma (unidades, mayor a menor)" full>
           <RankingChart data={rankingChartData} />
         </ChartCard>
       </div>

@@ -24,7 +24,7 @@ type TendenciaPunto = {
   pctPododermatitis: number;
   pctRasgunos: number;
 };
-type RankingPunto = { codigo: string; pctMerma: number; color: string };
+type RankingPunto = { codigo: string; valor: number; color: string };
 
 export function TendenciaChart({
   data,
@@ -169,16 +169,22 @@ export function DefectoChart({ data }: { data: DefectoPunto[] }) {
   );
 }
 
-export function RankingChart({ data }: { data: RankingPunto[] }) {
+export function RankingChart({
+  data,
+  name = "Merma (unidades)",
+}: {
+  data: RankingPunto[];
+  name?: string;
+}) {
   if (data.length === 0) return <EmptyState />;
   return (
     <ResponsiveContainer width="100%" height={Math.max(220, data.length * 36)}>
       <BarChart data={data} layout="vertical" margin={{ left: 16 }}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis type="number" tick={{ fontSize: 11 }} unit="%" />
+        <XAxis type="number" tick={{ fontSize: 11 }} />
         <YAxis type="category" dataKey="codigo" tick={{ fontSize: 11 }} width={90} />
-        <Tooltip formatter={(value) => `${Number(value).toFixed(2)}%`} />
-        <Bar dataKey="pctMerma" name="% Merma">
+        <Tooltip formatter={(value) => Number(value).toLocaleString("es-PE")} />
+        <Bar dataKey="valor" name={name}>
           {data.map((d, i) => (
             <Cell key={i} fill={d.color} />
           ))}
