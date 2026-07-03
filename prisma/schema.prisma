@@ -75,6 +75,10 @@ model Cliente {
   id     String @id @default(cuid())
   nombre String @unique
 
+  // Zona de evaluación del cliente (CD-LIMA / SUR-LIMA). Es atributo del cliente,
+  // no del plantel: el filtro del dashboard segmenta por esta.
+  zonaEvaluacion String?
+
   planteles    Plantel[]
   jornadas     Jornada[]
   inspecciones Inspeccion[]

@@ -105,17 +105,11 @@ export default async function DashboardBiPage({
     ...(galpon ? { galpon: { contains: galpon } } : {}),
     ...(sexo ? { sexo: sexo as SexoAve } : {}),
     ...(corral ? { corral: { contains: corral } } : {}),
-    ...(zona || subZona || zonaEvaluacion
-      ? {
-          plantel: {
-            is: {
-              ...(zona ? { zona } : {}),
-              ...(subZona ? { subZona } : {}),
-              ...(zonaEvaluacion ? { zonaEvaluacion } : {}),
-            },
-          },
-        }
+    ...(zona || subZona
+      ? { plantel: { is: { ...(zona ? { zona } : {}), ...(subZona ? { subZona } : {}) } } }
       : {}),
+    // La zona de evaluación es atributo del cliente, no del plantel.
+    ...(zonaEvaluacion ? { cliente: { is: { zonaEvaluacion } } } : {}),
   };
 
   const [inspeccionesSinFecha, clientes, planteles, zonasRaw, subZonasRaw, zonasEvalRaw] = await Promise.all([
@@ -147,7 +141,7 @@ export default async function DashboardBiPage({
       distinct: ["subZona"],
       orderBy: { subZona: "asc" },
     }),
-    prisma.plantel.findMany({
+    prisma.cliente.findMany({
       where: { zonaEvaluacion: { not: null } },
       select: { zonaEvaluacion: true },
       distinct: ["zonaEvaluacion"],
