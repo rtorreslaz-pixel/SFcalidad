@@ -269,17 +269,17 @@ export default async function DashboardBiPage({
       pctMerma: pct(p.mermaUnid, p.cantidad),
       pctHematomas: pct(p.hemCon, p.hemCon + p.hemSin),
     }))
-    .sort((a, b) => b.mermaUnid - a.mermaUnid);
+    .sort((a, b) => b.pctSeleccion - a.pctSeleccion);
 
-  // Top 20 planteles con mayor cantidad (unidades) de merma. El detalle completo
-  // está en la tabla de abajo. El color mantiene el semáforo por % (salud del lote).
+  // Top 20 planteles con mayor % de selección. El detalle completo está en la
+  // tabla de abajo. Color por objetivo de selección (≤ 0.6% verde, si no rojo).
   const rankingChartData = ranking
-    .filter((p) => p.mermaUnid > 0)
+    .filter((p) => p.pctSeleccion > 0)
     .slice(0, 20)
     .map((p) => ({
       codigo: p.codigo,
-      valor: p.mermaUnid,
-      color: SEMAFORO_HEX[semaforo(p.pctMerma, UMBRAL_MERMA)],
+      valor: Number(p.pctSeleccion.toFixed(2)),
+      color: SEMAFORO_HEX[semaforoMax(p.pctSeleccion, OBJETIVO_SELECCION)],
     }));
 
   // Ranking por zona de plantel
@@ -626,8 +626,8 @@ export default async function DashboardBiPage({
       </form>
 
       <div className="mb-6 grid grid-cols-1 gap-6">
-        <ChartCard title="Top 20 planteles por merma (unidades, mayor a menor)" full>
-          <RankingChart data={rankingChartData} />
+        <ChartCard title="Top 20 planteles por % de selección (mayor a menor)" full>
+          <RankingChart data={rankingChartData} name="% Selección" unit="%" />
         </ChartCard>
       </div>
 

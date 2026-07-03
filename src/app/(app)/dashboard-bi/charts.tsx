@@ -171,19 +171,23 @@ export function DefectoChart({ data }: { data: DefectoPunto[] }) {
 
 export function RankingChart({
   data,
-  name = "Merma (unidades)",
+  name = "Valor",
+  unit = "",
 }: {
   data: RankingPunto[];
   name?: string;
+  unit?: string;
 }) {
   if (data.length === 0) return <EmptyState />;
   return (
     <ResponsiveContainer width="100%" height={Math.max(220, data.length * 36)}>
       <BarChart data={data} layout="vertical" margin={{ left: 16 }}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis type="number" tick={{ fontSize: 11 }} />
+        <XAxis type="number" tick={{ fontSize: 11 }} unit={unit} />
         <YAxis type="category" dataKey="codigo" tick={{ fontSize: 11 }} width={90} />
-        <Tooltip formatter={(value) => Number(value).toLocaleString("es-PE")} />
+        <Tooltip
+          formatter={(value) => (unit === "%" ? `${Number(value).toFixed(2)}%` : Number(value).toLocaleString("es-PE"))}
+        />
         <Bar dataKey="valor" name={name}>
           {data.map((d, i) => (
             <Cell key={i} fill={d.color} />
