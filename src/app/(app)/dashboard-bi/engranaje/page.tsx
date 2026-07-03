@@ -7,6 +7,11 @@ import { buildComplexEntity } from "@/lib/complex-entity";
 import { esDefectoMerma } from "@/lib/defectos-merma";
 import { ComparativoCalidadChart, type PuntoComparativo } from "./charts";
 
+const MESES = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+];
+
 const UMBRAL_HEMATOMAS = { verde: 5, amarillo: 15 };
 const OBJETIVO_SELECCION = 0.6;
 const OBJETIVO_PODODERMATITIS = 11;
@@ -107,22 +112,54 @@ type GranjaAgg = LoteLabel & {
 export default async function EngranajePage({
   searchParams,
 }: {
-  searchParams: Promise<{ clienteId?: string; plantelId?: string; desde?: string; hasta?: string }>;
+  searchParams: Promise<{ clienteId?: string; plantelId?: string; desde?: string; hasta?: string; todo?: string }>;
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role === "VERIFICADOR") redirect("/jornadas");
   if (user.role === "COMERCIAL") redirect("/dashboard/pesaje");
 
-  const { clienteId, plantelId, desde, hasta } = await searchParams;
+  const { clienteId, plantelId, desde, hasta, todo } = await searchParams;
+  const verTodo = todo === "1";
+
+  // Rango de fechas a nivel BD para no cargar todo el historial de ambas tablas.
+  // Por defecto (sin desde/hasta) = mes del registro de calidad más reciente
+  // (mes en curso, o el anterior si aquel está vacío). ?todo=1 muestra todo.
+  let dbDesde: Date | null = null;
+  let dbHasta: Date | null = null;
+  let etiquetaMes: string | null = null;
+  if (!verTodo) {
+    if (desde || hasta) {
+      dbDesde = desde ? new Date(desde) : null;
+      dbHasta = hasta ? new Date(`${hasta}T23:59:59.999`) : null;
+    } else {
+      const ultimo = await prisma.inspeccion.findFirst({
+        where: { fecha: { not: null } },
+        orderBy: { fecha: "desc" },
+        select: { fecha: true },
+      });
+      const base = ultimo?.fecha ?? new Date();
+      const y = base.getUTCFullYear();
+      const m = base.getUTCMonth();
+      dbDesde = new Date(Date.UTC(y, m, 1));
+      dbHasta = new Date(Date.UTC(y, m + 1, 1) - 1);
+      etiquetaMes = `${MESES[m]} ${y}`;
+    }
+  }
+  const rangoFecha =
+    dbDesde || dbHasta ? { ...(dbDesde ? { gte: dbDesde } : {}), ...(dbHasta ? { lte: dbHasta } : {}) } : null;
 
   const whereInspeccion: Prisma.InspeccionWhereInput = {
     ...(clienteId ? { clienteId } : {}),
     ...(plantelId ? { plantelId } : {}),
+    ...(rangoFecha
+      ? { OR: [{ fecha: rangoFecha }, { AND: [{ fecha: null }, { jornada: { is: { fecha: rangoFecha } } }] }] }
+      : {}),
   };
   const wherePeso: Prisma.RegistroPesoPreventaWhereInput = {
     ...(clienteId ? { plantel: { clienteId } } : {}),
     ...(plantelId ? { plantelId } : {}),
+    ...(rangoFecha ? { fechaHora: rangoFecha } : {}),
   };
 
   const [inspeccionesSinFecha, registrosPesoSinFecha, clientes, planteles] = await Promise.all([
@@ -429,6 +466,18 @@ export default async function EngranajePage({
         campaña, galpón, corral y categoría/sexo de cada registro -- no la columna de texto ya congelada. La merma
         se analiza por separado, fuera de este comparativo.
       </p>
+
+      {etiquetaMes ? (
+        <p className="mb-6 rounded-lg bg-sky-50 px-3 py-2 text-sm text-sky-800 ring-1 ring-sky-100">
+          Mostrando <strong>{etiquetaMes}</strong> (últimos datos). Usa el filtro de fechas para otro período, o{" "}
+          <a href="/dashboard-bi/engranaje?todo=1" className="font-semibold underline hover:no-underline">ver todo el historial</a>.
+        </p>
+      ) : verTodo ? (
+        <p className="mb-6 rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-600">
+          Mostrando <strong>todo el historial</strong>.{" "}
+          <a href="/dashboard-bi/engranaje" className="font-semibold text-brand underline hover:no-underline">Volver a lo más reciente</a>.
+        </p>
+      ) : null}
 
       <form className="mb-6 flex flex-wrap items-end gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
         <div>
