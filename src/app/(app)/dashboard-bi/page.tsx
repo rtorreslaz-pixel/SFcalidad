@@ -77,6 +77,7 @@ export default async function DashboardBiPage({
     plantelId?: string;
     zona?: string;
     subZona?: string;
+    zonaEvaluacion?: string;
     anio?: string;
     mes?: string;
     semana?: string;
@@ -93,7 +94,7 @@ export default async function DashboardBiPage({
   if (user.role === "VERIFICADOR") redirect("/jornadas");
   if (user.role === "COMERCIAL") redirect("/dashboard/pesaje");
 
-  const { clienteId, plantelId, zona, subZona, anio, mes, semana, dia, complexEntity, campania, galpon, sexo, corral } =
+  const { clienteId, plantelId, zona, subZona, zonaEvaluacion, anio, mes, semana, dia, complexEntity, campania, galpon, sexo, corral } =
     await searchParams;
 
   const where: Prisma.InspeccionWhereInput = {
@@ -104,12 +105,20 @@ export default async function DashboardBiPage({
     ...(galpon ? { galpon: { contains: galpon } } : {}),
     ...(sexo ? { sexo: sexo as SexoAve } : {}),
     ...(corral ? { corral: { contains: corral } } : {}),
-    ...(zona || subZona
-      ? { plantel: { is: { ...(zona ? { zona } : {}), ...(subZona ? { subZona } : {}) } } }
+    ...(zona || subZona || zonaEvaluacion
+      ? {
+          plantel: {
+            is: {
+              ...(zona ? { zona } : {}),
+              ...(subZona ? { subZona } : {}),
+              ...(zonaEvaluacion ? { zonaEvaluacion } : {}),
+            },
+          },
+        }
       : {}),
   };
 
-  const [inspeccionesSinFecha, clientes, planteles, zonasRaw, subZonasRaw] = await Promise.all([
+  const [inspeccionesSinFecha, clientes, planteles, zonasRaw, subZonasRaw, zonasEvalRaw] = await Promise.all([
     prisma.inspeccion.findMany({
       where,
       include: {
@@ -138,10 +147,17 @@ export default async function DashboardBiPage({
       distinct: ["subZona"],
       orderBy: { subZona: "asc" },
     }),
+    prisma.plantel.findMany({
+      where: { zonaEvaluacion: { not: null } },
+      select: { zonaEvaluacion: true },
+      distinct: ["zonaEvaluacion"],
+      orderBy: { zonaEvaluacion: "asc" },
+    }),
   ]);
 
   const zonas = zonasRaw.map((z) => z.zona).filter((z): z is string => !!z);
   const subZonas = subZonasRaw.map((s) => s.subZona).filter((s): s is string => !!s);
+  const zonasEvaluacion = zonasEvalRaw.map((z) => z.zonaEvaluacion).filter((z): z is string => !!z);
 
   // El período se aplica en memoria sobre la fecha "efectiva" (campo legacy `fecha`
   // o `jornada.fecha`), extrayéndola en UTC para calzar con el filtro de día ISO.
@@ -424,7 +440,7 @@ export default async function DashboardBiPage({
   );
 
   const hayFiltros = Boolean(
-    clienteId || plantelId || zona || subZona || anio || mes || semana || dia ||
+    clienteId || plantelId || zona || subZona || zonaEvaluacion || anio || mes || semana || dia ||
     complexEntity || campania || galpon || sexo || corral
   );
 
@@ -453,6 +469,7 @@ export default async function DashboardBiPage({
         {plantelId && <input type="hidden" name="plantelId" value={plantelId} />}
         {zona && <input type="hidden" name="zona" value={zona} />}
         {subZona && <input type="hidden" name="subZona" value={subZona} />}
+        {zonaEvaluacion && <input type="hidden" name="zonaEvaluacion" value={zonaEvaluacion} />}
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500">Año</label>
           <select name="anio" defaultValue={anio ?? ""} className="input w-28">
@@ -605,6 +622,15 @@ export default async function DashboardBiPage({
             <option value="">Todas las subzonas</option>
             {subZonas.map((s) => (
               <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Zona de evaluación</label>
+          <select name="zonaEvaluacion" defaultValue={zonaEvaluacion ?? ""} className="input w-44">
+            <option value="">Todas</option>
+            {zonasEvaluacion.map((z) => (
+              <option key={z} value={z}>{z}</option>
             ))}
           </select>
         </div>
