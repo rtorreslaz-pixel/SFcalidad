@@ -82,6 +82,7 @@ export default async function DashboardBiPage({
     mes?: string;
     semana?: string;
     dia?: string;
+    todo?: string;
     complexEntity?: string;
     campania?: string;
     galpon?: string;
@@ -94,8 +95,39 @@ export default async function DashboardBiPage({
   if (user.role === "VERIFICADOR") redirect("/jornadas");
   if (user.role === "COMERCIAL") redirect("/dashboard/pesaje");
 
-  const { clienteId, plantelId, zona, subZona, zonaEvaluacion, anio, mes, semana, dia, complexEntity, campania, galpon, sexo, corral } =
+  const { clienteId, plantelId, zona, subZona, zonaEvaluacion, anio, mes, semana, dia, complexEntity, campania, galpon, sexo, corral, todo } =
     await searchParams;
+
+  const anioNum = anio ? Number(anio) : null;
+  const mesNum = mes ? Number(mes) : null;
+  const semanaNum = semana ? Number(semana) : null;
+  const verTodo = todo === "1";
+
+  // Rango de fechas a nivel de BD para no cargar todo el historial en cada visita.
+  // Por defecto (sin filtro de período) se muestra solo el mes del registro más reciente
+  // = el mes en curso, o el anterior si aquel aún no tiene datos. Se amplía si el usuario
+  // elige año/mes, y se quita del todo con ?todo=1.
+  let rangoDesde: Date | null = null;
+  let rangoHasta: Date | null = null;
+  let etiquetaMes: string | null = null;
+  if (!verTodo) {
+    if (anioNum) {
+      rangoDesde = new Date(Date.UTC(anioNum, mesNum ? mesNum - 1 : 0, 1));
+      rangoHasta = new Date(Date.UTC(mesNum ? anioNum : anioNum + 1, mesNum ? mesNum : 0, 1));
+    } else if (!mesNum && !semanaNum && !dia) {
+      const ultimo = await prisma.inspeccion.findFirst({
+        where: { fecha: { not: null } },
+        orderBy: { fecha: "desc" },
+        select: { fecha: true },
+      });
+      const base = ultimo?.fecha ?? new Date();
+      const y = base.getUTCFullYear();
+      const m = base.getUTCMonth();
+      rangoDesde = new Date(Date.UTC(y, m, 1));
+      rangoHasta = new Date(Date.UTC(y, m + 1, 1));
+      etiquetaMes = `${MESES[m]} ${y}`;
+    }
+  }
 
   const where: Prisma.InspeccionWhereInput = {
     ...(clienteId ? { clienteId } : {}),
@@ -110,6 +142,15 @@ export default async function DashboardBiPage({
       : {}),
     // La zona de evaluación es atributo del cliente, no del plantel.
     ...(zonaEvaluacion ? { cliente: { is: { zonaEvaluacion } } } : {}),
+    // Rango por defecto/por año a nivel BD (respeta fecha directa o de la jornada).
+    ...(rangoDesde && rangoHasta
+      ? {
+          OR: [
+            { fecha: { gte: rangoDesde, lt: rangoHasta } },
+            { AND: [{ fecha: null }, { jornada: { is: { fecha: { gte: rangoDesde, lt: rangoHasta } } } }] },
+          ],
+        }
+      : {}),
   };
 
   const [inspeccionesSinFecha, clientes, planteles, zonasRaw, subZonasRaw, zonasEvalRaw] = await Promise.all([
@@ -153,11 +194,8 @@ export default async function DashboardBiPage({
   const subZonas = subZonasRaw.map((s) => s.subZona).filter((s): s is string => !!s);
   const zonasEvaluacion = zonasEvalRaw.map((z) => z.zonaEvaluacion).filter((z): z is string => !!z);
 
-  // El período se aplica en memoria sobre la fecha "efectiva" (campo legacy `fecha`
-  // o `jornada.fecha`), extrayéndola en UTC para calzar con el filtro de día ISO.
-  const anioNum = anio ? Number(anio) : null;
-  const mesNum = mes ? Number(mes) : null;
-  const semanaNum = semana ? Number(semana) : null;
+  // Refinamiento en memoria del período (semana/día y mes suelto) sobre la fecha
+  // "efectiva" (campo legacy `fecha` o `jornada.fecha`), en UTC para calzar con el día ISO.
   const hayPeriodo = Boolean(anioNum || mesNum || semanaNum || dia);
   const inspecciones = inspeccionesSinFecha.filter((insp) => {
     if (!hayPeriodo) return true;
@@ -456,6 +494,19 @@ export default async function DashboardBiPage({
           </a>
         )}
       </div>
+
+      {/* Aviso del alcance por defecto / historial completo */}
+      {etiquetaMes ? (
+        <p className="mb-6 rounded-lg bg-sky-50 px-3 py-2 text-sm text-sky-800 ring-1 ring-sky-100">
+          Mostrando <strong>{etiquetaMes}</strong> (últimos datos). Usa los filtros para otro período, o{" "}
+          <a href="/dashboard-bi?todo=1" className="font-semibold underline hover:no-underline">ver todo el historial</a>.
+        </p>
+      ) : verTodo ? (
+        <p className="mb-6 rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-600">
+          Mostrando <strong>todo el historial</strong>.{" "}
+          <a href="/dashboard-bi" className="font-semibold text-brand underline hover:no-underline">Volver a lo más reciente</a>.
+        </p>
+      ) : null}
 
       {/* ---- Filtros de período y cliente (aplican a todos los indicadores) ---- */}
       <form className="mb-6 flex flex-wrap items-end gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
