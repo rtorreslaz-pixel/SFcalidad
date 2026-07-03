@@ -20,8 +20,13 @@ function techoRealista(values: number[], floor: number): number {
   const v = values.filter((x) => Number.isFinite(x) && x > 0).sort((a, b) => a - b);
   if (v.length === 0) return floor;
   const p95 = v[Math.min(v.length - 1, Math.floor(v.length * 0.95))];
-  const conAire = Math.ceil((p95 * 1.2) / 5) * 5;
-  return Math.max(floor, conAire);
+  const target = Math.max(floor, p95 * 1.2);
+  // Redondear al "lindo" superior más cercano: 1, 2 o 5 × 10^n.
+  const mag = Math.pow(10, Math.floor(Math.log10(target)));
+  for (const m of [1, 2, 5]) {
+    if (target <= m * mag) return m * mag;
+  }
+  return 10 * mag;
 }
 
 const UMBRAL_MERMA = { verde: 2, amarillo: 5 };
@@ -265,11 +270,16 @@ export default async function DashboardBiPage({
     }))
     .sort((a, b) => b.pctMerma - a.pctMerma);
 
-  const rankingChartData = ranking.map((p) => ({
-    codigo: p.codigo,
-    pctMerma: Number(p.pctMerma.toFixed(2)),
-    color: SEMAFORO_HEX[semaforo(p.pctMerma, UMBRAL_MERMA)],
-  }));
+  // Top 20 planteles con mayor % de merma (el detalle completo está en la tabla de abajo).
+  // Evita un gráfico de cientos de barras y garantiza que se vean las de mayor señal.
+  const rankingChartData = ranking
+    .filter((p) => p.pctMerma > 0)
+    .slice(0, 20)
+    .map((p) => ({
+      codigo: p.codigo,
+      pctMerma: Number(p.pctMerma.toFixed(2)),
+      color: SEMAFORO_HEX[semaforo(p.pctMerma, UMBRAL_MERMA)],
+    }));
 
   // Ranking por zona de plantel
   type ZonaAgg = {
@@ -404,8 +414,8 @@ export default async function DashboardBiPage({
 
   // Techos de eje Y realistas (evitan que un dato atípico lleve el eje a 100%).
   const tendenciaYMax = techoRealista(
-    tendencia.flatMap((t) => [t.pctSeleccion, t.pctHematomas]),
-    5
+    tendencia.map((t) => t.pctSeleccion),
+    1
   );
   const lesionYMax = techoRealista(
     tendencia.flatMap((t) => [t.pctPododermatitis, t.pctRasgunos]),
@@ -561,7 +571,7 @@ export default async function DashboardBiPage({
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6">
-        <ChartCard title="Tendencia en el tiempo · Selección y hematomas" full>
+        <ChartCard title="Tendencia en el tiempo · Selección" full>
           <TendenciaChart data={tendencia} objetivoSeleccion={OBJETIVO_SELECCION} yMax={tendenciaYMax} />
         </ChartCard>
       </div>
@@ -615,10 +625,8 @@ export default async function DashboardBiPage({
       </form>
 
       <div className="mb-6 grid grid-cols-1 gap-6">
-        <ChartCard title="Ranking de planteles por % de merma (mayor a menor)" full>
-          <div className="max-h-[60vh] overflow-y-auto">
-            <RankingChart data={rankingChartData} />
-          </div>
+        <ChartCard title="Top 20 planteles por % de merma (mayor a menor)" full>
+          <RankingChart data={rankingChartData} />
         </ChartCard>
       </div>
 

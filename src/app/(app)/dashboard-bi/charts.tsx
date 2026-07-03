@@ -51,7 +51,6 @@ export function TendenciaChart({
           label={{ value: `Objetivo ${objetivoSeleccion}%`, fontSize: 10, position: "insideTopLeft" }}
         />
         <Line type="monotone" dataKey="pctSeleccion" name="% Selección" stroke="#059669" strokeWidth={2} />
-        <Line type="monotone" dataKey="pctHematomas" name="% Hematomas" stroke="#d97706" strokeWidth={2} />
       </LineChart>
     </ResponsiveContainer>
   );
