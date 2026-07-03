@@ -9,7 +9,7 @@ export default async function AdminLayout({
 }>) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role !== "SUPERVISOR") redirect("/dashboard");
+  if (user.role !== "SUPERVISOR") redirect("/dashboard-bi");
 
   const tabs = [
     { href: "/admin", label: "Resumen" },

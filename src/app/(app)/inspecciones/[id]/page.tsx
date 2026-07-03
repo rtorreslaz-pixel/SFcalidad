@@ -12,8 +12,8 @@ export default async function InspeccionDetallePage({
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role === "JEFE") redirect("/dashboard");
-  if (user.role === "COMERCIAL") redirect("/dashboard/preventa");
+  if (user.role === "JEFE") redirect("/dashboard-bi");
+  if (user.role === "COMERCIAL") redirect("/dashboard/pesaje");
 
   const { id } = await params;
 

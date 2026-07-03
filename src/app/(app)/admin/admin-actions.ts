@@ -8,7 +8,7 @@ import { getCurrentUser, hashPassword, generateApiToken } from "@/lib/auth";
 async function requireSupervisor() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role !== "SUPERVISOR") redirect("/dashboard");
+  if (user.role !== "SUPERVISOR") redirect("/dashboard-bi");
   return user;
 }
 

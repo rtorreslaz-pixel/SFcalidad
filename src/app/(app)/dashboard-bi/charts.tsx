@@ -128,6 +128,45 @@ export function LesionChart({
   );
 }
 
+type ClientePunto = { cliente: string; pctSeleccion: number };
+type DefectoPunto = { defecto: string; unidades: number };
+
+export function ClienteChart({ data, objetivo }: { data: ClientePunto[]; objetivo: number }) {
+  if (data.length === 0) return <EmptyState />;
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={data} margin={{ bottom: 40 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="cliente" tick={{ fontSize: 11 }} interval={0} angle={-30} textAnchor="end" height={70} />
+        <YAxis tick={{ fontSize: 11 }} unit="%" />
+        <Tooltip formatter={(value) => `${Number(value).toFixed(2)}%`} />
+        <ReferenceLine
+          y={objetivo}
+          stroke="#dc2626"
+          strokeDasharray="4 4"
+          label={{ value: `Objetivo ${objetivo}%`, fontSize: 10, position: "insideTopRight" }}
+        />
+        <Bar dataKey="pctSeleccion" name="% Selección" fill="#0b4ea2" />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function DefectoChart({ data }: { data: DefectoPunto[] }) {
+  if (data.length === 0) return <EmptyState />;
+  return (
+    <ResponsiveContainer width="100%" height={Math.max(240, data.length * 32)}>
+      <BarChart data={data} layout="vertical" margin={{ left: 40 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis type="number" tick={{ fontSize: 11 }} />
+        <YAxis type="category" dataKey="defecto" tick={{ fontSize: 11 }} width={140} />
+        <Tooltip formatter={(value) => Number(value).toLocaleString("es-PE")} />
+        <Bar dataKey="unidades" name="Unidades" fill="#0d9488" />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
 export function RankingChart({ data }: { data: RankingPunto[] }) {
   if (data.length === 0) return <EmptyState />;
   return (

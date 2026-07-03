@@ -112,7 +112,7 @@ export default async function EngranajePage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role === "VERIFICADOR") redirect("/jornadas");
-  if (user.role === "COMERCIAL") redirect("/dashboard/preventa");
+  if (user.role === "COMERCIAL") redirect("/dashboard/pesaje");
 
   const { clienteId, plantelId, desde, hasta } = await searchParams;
 

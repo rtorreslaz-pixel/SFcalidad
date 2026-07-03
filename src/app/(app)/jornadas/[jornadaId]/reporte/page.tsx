@@ -12,7 +12,7 @@ export default async function ReporteDiarioPage({
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role === "JEFE") redirect("/dashboard");
+  if (user.role === "JEFE") redirect("/dashboard-bi");
 
   const { jornadaId } = await params;
 

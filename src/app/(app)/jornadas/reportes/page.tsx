@@ -16,7 +16,7 @@ export default async function ReportesDelDiaPage({
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role === "JEFE") redirect("/dashboard");
+  if (user.role === "JEFE") redirect("/dashboard-bi");
 
   const { fecha: fechaParam } = await searchParams;
   const fechaStr = fechaParam || hoyIso();

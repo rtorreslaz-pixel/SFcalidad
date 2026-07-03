@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import type { SexoAve } from "@/generated/prisma/enums";
-import { TendenciaChart, RankingChart, PigmentacionChart, LesionChart } from "./charts";
+import { TendenciaChart, RankingChart, PigmentacionChart, LesionChart, ClienteChart, DefectoChart } from "./charts";
 import { esDefectoMerma } from "@/lib/defectos-merma";
 
 const UMBRAL_MERMA = { verde: 2, amarillo: 5 };
@@ -77,7 +77,7 @@ export default async function DashboardBiPage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role === "VERIFICADOR") redirect("/jornadas");
-  if (user.role === "COMERCIAL") redirect("/dashboard/preventa");
+  if (user.role === "COMERCIAL") redirect("/dashboard/pesaje");
 
   const { clienteId, plantelId, desde, hasta, complexEntity, campania, galpon, sexo, corral } = await searchParams;
 
@@ -96,9 +96,10 @@ export default async function DashboardBiPage({
       where,
       include: {
         plantel: true,
+        cliente: { select: { nombre: true } },
         defectos: { include: { tipoDefecto: true } },
         evaluacionesLesion: true,
-        jornada: { select: { fecha: true } },
+        jornada: { select: { fecha: true, cliente: { select: { nombre: true } } } },
       },
       orderBy: { fecha: "asc" },
     }),
@@ -269,6 +270,33 @@ export default async function DashboardBiPage({
     pctMerma: Number(z.pctMerma.toFixed(2)),
     color: SEMAFORO_HEX[semaforo(z.pctMerma, UMBRAL_MERMA)],
   }));
+
+  // Por cliente: % de selección (usa solo evaluaciones completas, igual que el KPI de selección)
+  const clienteMap = new Map<string, { seleccionUnid: number; cantidad: number }>();
+  for (const insp of inspeccionesCompletas) {
+    const nombre = insp.cliente?.nombre ?? insp.jornada?.cliente?.nombre ?? "Sin cliente";
+    const entry = clienteMap.get(nombre) ?? { seleccionUnid: 0, cantidad: 0 };
+    entry.cantidad += insp.cantidad;
+    for (const d of insp.defectos) {
+      if (!esDefectoMerma(d.tipoDefecto.nombre)) entry.seleccionUnid += d.unidades;
+    }
+    clienteMap.set(nombre, entry);
+  }
+  const porCliente = Array.from(clienteMap.entries())
+    .map(([cliente, v]) => ({ cliente, pctSeleccion: Number(pct(v.seleccionUnid, v.cantidad).toFixed(2)) }))
+    .sort((a, b) => b.pctSeleccion - a.pctSeleccion);
+
+  // Top 10 tipos de defecto por unidades (evaluaciones completas)
+  const defectoMap = new Map<string, number>();
+  for (const insp of inspeccionesCompletas) {
+    for (const d of insp.defectos) {
+      defectoMap.set(d.tipoDefecto.nombre, (defectoMap.get(d.tipoDefecto.nombre) ?? 0) + d.unidades);
+    }
+  }
+  const porDefecto = Array.from(defectoMap.entries())
+    .map(([defecto, unidades]) => ({ defecto, unidades }))
+    .sort((a, b) => b.unidades - a.unidades)
+    .slice(0, 10);
 
   // Tendencia en el tiempo (por fecha). Selección/merma usan solo evaluaciones completas
   // (censo); hematomas, pigmentación y lesión usan todas las inspecciones, igual que sus KPIs.
@@ -520,6 +548,15 @@ export default async function DashboardBiPage({
           <div className="max-h-[60vh] overflow-y-auto">
             <RankingChart data={rankingZonasChartData} />
           </div>
+        </ChartCard>
+      </div>
+
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <ChartCard title="% Selección por cliente">
+          <ClienteChart data={porCliente} objetivo={OBJETIVO_SELECCION} />
+        </ChartCard>
+        <ChartCard title="Top 10 defectos (unidades)">
+          <DefectoChart data={porDefecto} />
         </ChartCard>
       </div>
 
