@@ -187,8 +187,14 @@ export default async function InspeccionesPage({
                   </p>
                   <p className="truncate text-sm font-medium text-slate-800">{clienteNombre ?? "—"}</p>
                   <p className="text-sm text-slate-500">
-                    {insp.plantel?.codigo ?? "—"}{insp.galpon ? ` · ${insp.galpon}${insp.corral ?? ""}` : ""}
+                    {insp.plantel?.codigo ?? "—"}
+                    {insp.galpon ? ` · G${insp.galpon}` : ""}
+                    {insp.corral ? ` · C${insp.corral}` : ""}
+                    {insp.campania ? ` · ${insp.campania}` : ""}
                   </p>
+                  {insp.complex && (
+                    <p className="mt-0.5 font-mono text-xs text-slate-400">{insp.complex}</p>
+                  )}
                 </div>
                 <div className="flex-none text-right">
                   <span className={`inline-block rounded-md px-2 py-0.5 text-sm font-semibold ${
@@ -217,7 +223,11 @@ export default async function InspeccionesPage({
             <tr>
               <th className="px-3 py-2.5 font-medium">Fecha</th>
               <th className="px-3 py-2.5 font-medium">Cliente</th>
-              <th className="px-3 py-2.5 font-medium">Plantel / Galpón</th>
+              <th className="px-3 py-2.5 font-medium">Plantel</th>
+              <th className="px-3 py-2.5 font-medium">Galpón</th>
+              <th className="px-3 py-2.5 font-medium">Corral</th>
+              <th className="px-3 py-2.5 font-medium">Campaña</th>
+              <th className="px-3 py-2.5 font-medium">Complex</th>
               <th className="px-3 py-2.5 font-medium">Cantidad</th>
               <th className="px-3 py-2.5 font-medium">% Selección</th>
               <th className="px-3 py-2.5 font-medium">Verificador</th>
@@ -237,9 +247,11 @@ export default async function InspeccionesPage({
                     </Link>
                   </td>
                   <td className="px-3 py-2">{clienteNombre ?? "—"}</td>
-                  <td className="px-3 py-2">
-                    {insp.plantel?.codigo ?? "—"}{insp.galpon ? ` · ${insp.galpon}${insp.corral ?? ""}` : ""}
-                  </td>
+                  <td className="px-3 py-2">{insp.plantel?.codigo ?? "—"}</td>
+                  <td className="px-3 py-2">{insp.galpon ?? "—"}</td>
+                  <td className="px-3 py-2">{insp.corral ?? "—"}</td>
+                  <td className="px-3 py-2">{insp.campania ?? "—"}</td>
+                  <td className="px-3 py-2 font-mono text-xs text-slate-500">{insp.complex ?? "—"}</td>
                   <td className="px-3 py-2">{insp.cantidad.toLocaleString()}</td>
                   <td className="px-3 py-2">
                     <span className={`rounded-md px-2 py-0.5 font-semibold ${
@@ -255,7 +267,7 @@ export default async function InspeccionesPage({
             })}
             {inspecciones.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-slate-400">
+                <td colSpan={11} className="px-3 py-8 text-center text-slate-400">
                   No hay inspecciones registradas con estos filtros.
                 </td>
               </tr>
