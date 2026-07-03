@@ -199,6 +199,40 @@ const VERIFICADORES = [
 
 const DEFAULT_PASSWORD = "demo1234";
 
+// Pesos estándar Ross 308 (fuente: Aviagen Ross 308 Broiler Performance Objectives 2022)
+// Base diaria interpolada linealmente entre los valores semanales oficiales.
+// Reemplazar con la tabla STD del cliente una vez disponible.
+function generarPesosRoss308(): { linea: string; sexo: "MACHO" | "HEMBRA"; edadDias: number; pesoGramos: number }[] {
+  const benchmarks: Record<"MACHO" | "HEMBRA", { dia: number; peso: number }[]> = {
+    MACHO: [
+      { dia: 0, peso: 42 }, { dia: 7, peso: 198 }, { dia: 14, peso: 493 },
+      { dia: 21, peso: 995 }, { dia: 28, peso: 1660 }, { dia: 35, peso: 2441 },
+      { dia: 42, peso: 3230 }, { dia: 49, peso: 3958 },
+    ],
+    HEMBRA: [
+      { dia: 0, peso: 42 }, { dia: 7, peso: 183 }, { dia: 14, peso: 444 },
+      { dia: 21, peso: 872 }, { dia: 28, peso: 1413 }, { dia: 35, peso: 2038 },
+      { dia: 42, peso: 2673 }, { dia: 49, peso: 3252 },
+    ],
+  };
+
+  const result: { linea: string; sexo: "MACHO" | "HEMBRA"; edadDias: number; pesoGramos: number }[] = [];
+  for (const sexo of ["MACHO", "HEMBRA"] as const) {
+    const pts = benchmarks[sexo];
+    for (let i = 0; i < pts.length - 1; i++) {
+      const { dia: d0, peso: p0 } = pts[i];
+      const { dia: d1, peso: p1 } = pts[i + 1];
+      for (let dia = d0; dia < d1; dia++) {
+        const t = (dia - d0) / (d1 - d0);
+        result.push({ linea: "Ross", sexo, edadDias: dia, pesoGramos: Math.round(p0 + t * (p1 - p0)) });
+      }
+    }
+    const last = pts[pts.length - 1];
+    result.push({ linea: "Ross", sexo, edadDias: last.dia, pesoGramos: last.peso });
+  }
+  return result;
+}
+
 async function main() {
   console.log("Sembrando tipos de defecto...");
   for (const tipo of TIPOS_DEFECTO) {
@@ -316,6 +350,16 @@ async function main() {
         }
       }
     }
+  }
+
+  console.log("Sembrando pesos estándar Ross 308...");
+  const pesosRoss = generarPesosRoss308();
+  for (const p of pesosRoss) {
+    await prisma.pesoEstandar.upsert({
+      where: { linea_sexo_edadDias: { linea: p.linea, sexo: p.sexo, edadDias: p.edadDias } },
+      update: { pesoGramos: p.pesoGramos },
+      create: p,
+    });
   }
 
   console.log("Listo. Usuarios creados con contraseña por defecto:", DEFAULT_PASSWORD);

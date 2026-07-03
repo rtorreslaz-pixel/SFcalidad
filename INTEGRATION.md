@@ -61,18 +61,26 @@ Request:
 ```
 Response `200`:
 ```json
-{ "token": "<apiToken>", "user": { "id": "...", "nombre": "...", "email": "..." } }
+{ "token": "<apiToken>", "user": { "id": "...", "nombre": "...", "email": "...", "role": "SUPERVISOR" } }
 ```
+`role`: `SUPERVISOR` | `VERIFICADOR` | `JEFE` | `COMERCIAL` — usar para mostrar/ocultar la pantalla de Indicadores (solo `SUPERVISOR` y `ADMIN` la ven).
+
 Errores: `400` faltan campos · `401` credenciales inválidas o usuario inactivo.
 
 ### `GET /api/mobile/catalogos`
-Catálogo de planteles para la captura en campo. Requiere Bearer.
+Catálogo de planteles + tabla de pesos estándar. Requiere Bearer. Descargar una vez al iniciar la sesión del día.
 
 Response `200`:
 ```json
-{ "planteles": [ { "id": "...", "codigo": "P006", "nombre": "...", "cliente": "AKIM" } ] }
+{
+  "planteles": [ { "id": "...", "codigo": "P006", "nombre": "...", "cliente": "AKIM" } ],
+  "pesosEstandar": [
+    { "linea": "Ross", "sexo": "MACHO",  "edadDias": 35, "pesoGramos": 2441 },
+    { "linea": "Ross", "sexo": "HEMBRA", "edadDias": 35, "pesoGramos": 2038 }
+  ]
+}
 ```
-`cliente` y `nombre` pueden ser `null`.
+`cliente` y `nombre` en planteles pueden ser `null`. `pesosEstandar` contiene la tabla STD completa (días 0–49 por defecto con datos Ross 308); vacío si aún no se ha cargado la tabla del cliente.
 
 ### `GET /api/mobile/numero-ave-max`
 Devuelve el mayor `numeroAve` ya sincronizado para un corral concreto. El celular lo usa
@@ -174,6 +182,12 @@ lote opcionales (`edad?`, `linea?`, `lote?`, `nAvesPorPesada?`), criterios de ca
 opcionales por ave (`tieneHematoma?`, `tieneDefectoSeleccion?`, `gradoPododermatitis?`,
 `gradoRasguno?`, `pigmentacion?`), `verificadorId`, `syncedAt`, `createdAt`.
 Índices: `[plantelId, galpon, corral, categoria]`, `[verificadorId, fechaHora]`.
+
+### `PesoEstandar`
+Tabla de pesos estándar por raza. Campos: `linea` (Ross/Cobb/etc.), `sexo` (MACHO|HEMBRA),
+`edadDias` (0–49), `pesoGramos`. Unique `[linea, sexo, edadDias]`.
+Sembrada con datos Ross 308 (Aviagen 2022) hasta que el cliente provea su tabla STD.
+Accesible en `GET /api/mobile/catalogos → pesosEstandar[]`.
 
 ### `LiveWeightReading`
 Última lectura de balanza por verificador. PK = `verificadorId` (una fila por usuario):

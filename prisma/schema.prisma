@@ -333,6 +333,20 @@ model RegistroPesoPreventa {
   @@index([verificadorId, fechaHora])
 }
 
+// Tabla de pesos estándar por raza, sexo y edad. Se incluye en GET /api/mobile/catalogos
+// para que la app compare el peso en vivo contra el estándar sin llamadas adicionales.
+// Poblar con los datos de la hoja STD del Excel del cliente.
+model PesoEstandar {
+  id         String  @id @default(cuid())
+  linea      String  // "Ross", "Cobb", "Hubbard", etc.
+  sexo       SexoAve // MACHO | HEMBRA
+  edadDias   Int
+  pesoGramos Float
+
+  @@unique([linea, sexo, edadDias])
+  @@index([linea, sexo])
+}
+
 // Última lectura de la báscula por verificador, sobrescrita en cada lectura
 // (no es historial -- el historial real son los RegistroPesoPreventa). Alimenta
 // el panel "Peso en vivo" del dashboard.
