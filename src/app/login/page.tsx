@@ -12,7 +12,14 @@ export default async function LoginPage() {
     <div className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-slate-900">
+          <div className="mx-auto mb-4 inline-flex flex-col items-center">
+            <span className="text-3xl font-extrabold tracking-tight text-brand">San Fernando</span>
+            <span className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              Calidad · Clientes Lima
+            </span>
+          </div>
+          <div className="mx-auto mb-5 h-1 w-16 rounded-full bg-brand" />
+          <h1 className="text-xl font-bold text-slate-900">
             Control de Calidad Avícola
           </h1>
           <p className="mt-2 text-sm text-slate-500">
