@@ -183,7 +183,7 @@ function DetallePanel({ b, now }: { b: Balanza; now: number }) {
             <Fila label="Plantel" value={b.plantelCodigo} />
             <Fila label="Galpón" value={b.galpon} />
             <Fila label="Corral" value={b.corral} />
-            <Fila label="Sexo" value={sexo} />
+            <Fila label="Categoría" value={sexo} />
             <Fila label="Peso promedio (hoy)" value={kg(b.pesoPromedioLote)} strong />
           </dl>
         </div>
@@ -229,7 +229,7 @@ function TablaBalanzas({
             <th className="px-3 py-2.5 font-medium">Plantel</th>
             <th className="px-3 py-2.5 font-medium">Galpón</th>
             <th className="px-3 py-2.5 font-medium">Corral</th>
-            <th className="px-3 py-2.5 font-medium">Sexo</th>
+            <th className="px-3 py-2.5 font-medium">Categoría</th>
             <th className="px-3 py-2.5 text-right font-medium">Aves hoy</th>
             <th className="px-3 py-2.5 text-right font-medium">Prom. hoy</th>
           </tr>
