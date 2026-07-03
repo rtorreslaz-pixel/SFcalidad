@@ -29,9 +29,11 @@ type RankingPunto = { codigo: string; pctMerma: number; color: string };
 export function TendenciaChart({
   data,
   objetivoSeleccion,
+  yMax,
 }: {
   data: TendenciaPunto[];
   objetivoSeleccion: number;
+  yMax?: number;
 }) {
   if (data.length === 0) return <EmptyState />;
   return (
@@ -39,7 +41,7 @@ export function TendenciaChart({
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="fecha" tick={{ fontSize: 11 }} />
-        <YAxis tick={{ fontSize: 11 }} unit="%" />
+        <YAxis tick={{ fontSize: 11 }} unit="%" domain={[0, yMax ?? "auto"]} allowDataOverflow={yMax != null} />
         <Tooltip formatter={(value) => `${value}%`} />
         <Legend />
         <ReferenceLine
@@ -49,7 +51,6 @@ export function TendenciaChart({
           label={{ value: `Objetivo ${objetivoSeleccion}%`, fontSize: 10, position: "insideTopLeft" }}
         />
         <Line type="monotone" dataKey="pctSeleccion" name="% Selección" stroke="#059669" strokeWidth={2} />
-        <Line type="monotone" dataKey="pctMerma" name="% Merma" stroke="#dc2626" strokeWidth={2} />
         <Line type="monotone" dataKey="pctHematomas" name="% Hematomas" stroke="#d97706" strokeWidth={2} />
       </LineChart>
     </ResponsiveContainer>
@@ -95,10 +96,12 @@ export function LesionChart({
   data,
   objetivoPodo,
   objetivoRasg,
+  yMax,
 }: {
   data: TendenciaPunto[];
   objetivoPodo: number;
   objetivoRasg: number;
+  yMax?: number;
 }) {
   if (data.length === 0) return <EmptyState />;
   return (
@@ -106,7 +109,7 @@ export function LesionChart({
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="fecha" tick={{ fontSize: 11 }} />
-        <YAxis tick={{ fontSize: 11 }} unit="%" />
+        <YAxis tick={{ fontSize: 11 }} unit="%" domain={[0, yMax ?? "auto"]} allowDataOverflow={yMax != null} />
         <Tooltip formatter={(value) => `${value}%`} />
         <Legend />
         <ReferenceLine

@@ -5,6 +5,23 @@ import type { Prisma } from "@/generated/prisma/client";
 import type { SexoAve } from "@/generated/prisma/enums";
 import { TendenciaChart, RankingChart, PigmentacionChart, LesionChart, ClienteChart, DefectoChart } from "./charts";
 import { esDefectoMerma } from "@/lib/defectos-merma";
+import { getISOWeek } from "@/lib/calc";
+
+const MESES = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+];
+
+// Techo de eje Y realista: percentil 95 con 20% de aire, redondeado a múltiplo de 5,
+// para que un dato atípico (ej. 80%) no aplaste el rango normal. floor asegura que las
+// líneas de objetivo queden visibles.
+function techoRealista(values: number[], floor: number): number {
+  const v = values.filter((x) => Number.isFinite(x) && x > 0).sort((a, b) => a - b);
+  if (v.length === 0) return floor;
+  const p95 = v[Math.min(v.length - 1, Math.floor(v.length * 0.95))];
+  const conAire = Math.ceil((p95 * 1.2) / 5) * 5;
+  return Math.max(floor, conAire);
+}
 
 const UMBRAL_MERMA = { verde: 2, amarillo: 5 };
 const UMBRAL_HEMATOMAS = { verde: 5, amarillo: 15 };
@@ -46,27 +63,18 @@ function semaforoRango(value: number, min: number, max: number): "verde" | "rojo
   return value >= min && value <= max ? "verde" : "rojo";
 }
 
-function buildHref(params: Record<string, string | undefined>) {
-  const sp = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) {
-    if (v) sp.set(k, v);
-  }
-  const qs = sp.toString();
-  return qs ? `/dashboard-bi?${qs}` : "/dashboard-bi";
-}
-
-function isoDaysAgo(dias: number) {
-  return new Date(Date.now() - dias * 86400000).toISOString().slice(0, 10);
-}
-
 export default async function DashboardBiPage({
   searchParams,
 }: {
   searchParams: Promise<{
     clienteId?: string;
     plantelId?: string;
-    desde?: string;
-    hasta?: string;
+    zona?: string;
+    subZona?: string;
+    anio?: string;
+    mes?: string;
+    semana?: string;
+    dia?: string;
     complexEntity?: string;
     campania?: string;
     galpon?: string;
@@ -79,7 +87,8 @@ export default async function DashboardBiPage({
   if (user.role === "VERIFICADOR") redirect("/jornadas");
   if (user.role === "COMERCIAL") redirect("/dashboard/pesaje");
 
-  const { clienteId, plantelId, desde, hasta, complexEntity, campania, galpon, sexo, corral } = await searchParams;
+  const { clienteId, plantelId, zona, subZona, anio, mes, semana, dia, complexEntity, campania, galpon, sexo, corral } =
+    await searchParams;
 
   const where: Prisma.InspeccionWhereInput = {
     ...(clienteId ? { clienteId } : {}),
@@ -89,9 +98,12 @@ export default async function DashboardBiPage({
     ...(galpon ? { galpon: { contains: galpon } } : {}),
     ...(sexo ? { sexo: sexo as SexoAve } : {}),
     ...(corral ? { corral: { contains: corral } } : {}),
+    ...(zona || subZona
+      ? { plantel: { is: { ...(zona ? { zona } : {}), ...(subZona ? { subZona } : {}) } } }
+      : {}),
   };
 
-  const [inspeccionesSinFecha, clientes, planteles] = await Promise.all([
+  const [inspeccionesSinFecha, clientes, planteles, zonasRaw, subZonasRaw] = await Promise.all([
     prisma.inspeccion.findMany({
       where,
       include: {
@@ -108,20 +120,48 @@ export default async function DashboardBiPage({
       where: clienteId ? { clienteId } : {},
       orderBy: { codigo: "asc" },
     }),
+    prisma.plantel.findMany({
+      where: { zona: { not: null } },
+      select: { zona: true },
+      distinct: ["zona"],
+      orderBy: { zona: "asc" },
+    }),
+    prisma.plantel.findMany({
+      where: { subZona: { not: null } },
+      select: { subZona: true },
+      distinct: ["subZona"],
+      orderBy: { subZona: "asc" },
+    }),
   ]);
 
-  // El horizonte temporal se aplica en memoria porque la fecha "efectiva" de una
-  // inspección puede venir del campo legacy `fecha` o de `jornada.fecha`.
-  const desdeDate = desde ? new Date(desde) : null;
-  const hastaDate = hasta ? new Date(`${hasta}T23:59:59.999`) : null;
+  const zonas = zonasRaw.map((z) => z.zona).filter((z): z is string => !!z);
+  const subZonas = subZonasRaw.map((s) => s.subZona).filter((s): s is string => !!s);
+
+  // El período se aplica en memoria sobre la fecha "efectiva" (campo legacy `fecha`
+  // o `jornada.fecha`), extrayéndola en UTC para calzar con el filtro de día ISO.
+  const anioNum = anio ? Number(anio) : null;
+  const mesNum = mes ? Number(mes) : null;
+  const semanaNum = semana ? Number(semana) : null;
+  const hayPeriodo = Boolean(anioNum || mesNum || semanaNum || dia);
   const inspecciones = inspeccionesSinFecha.filter((insp) => {
-    if (!desdeDate && !hastaDate) return true;
+    if (!hayPeriodo) return true;
     const fecha = insp.fecha ?? insp.jornada?.fecha ?? null;
     if (!fecha) return false;
-    if (desdeDate && fecha < desdeDate) return false;
-    if (hastaDate && fecha > hastaDate) return false;
+    if (anioNum && fecha.getUTCFullYear() !== anioNum) return false;
+    if (mesNum && fecha.getUTCMonth() + 1 !== mesNum) return false;
+    if (semanaNum && getISOWeek(fecha) !== semanaNum) return false;
+    if (dia && fecha.toISOString().slice(0, 10) !== dia) return false;
     return true;
   });
+
+  // Años presentes en los datos (para el selector), más reciente primero.
+  const aniosDisponibles = Array.from(
+    new Set(
+      inspeccionesSinFecha
+        .map((i) => (i.fecha ?? i.jornada?.fecha ?? null)?.getUTCFullYear())
+        .filter((y): y is number => !!y)
+    )
+  ).sort((a, b) => b - a);
 
   // Las evaluaciones "solo lesión/pigmentación" no traen censo de selección/merma:
   // se excluyen de esos ratios para no diluirlos con su tamaño de muestra.
@@ -222,7 +262,7 @@ export default async function DashboardBiPage({
       pctMerma: pct(p.mermaUnid, p.cantidad),
       pctHematomas: pct(p.hemCon, p.hemCon + p.hemSin),
     }))
-    .sort((a, b) => a.pctMerma - b.pctMerma);
+    .sort((a, b) => b.pctMerma - a.pctMerma);
 
   const rankingChartData = ranking.map((p) => ({
     codigo: p.codigo,
@@ -264,12 +304,6 @@ export default async function DashboardBiPage({
       pctHematomas: pct(z.hemCon, z.hemCon + z.hemSin),
     }))
     .sort((a, b) => a.pctMerma - b.pctMerma);
-
-  const rankingZonasChartData = rankingZonas.map((z) => ({
-    codigo: z.zona,
-    pctMerma: Number(z.pctMerma.toFixed(2)),
-    color: SEMAFORO_HEX[semaforo(z.pctMerma, UMBRAL_MERMA)],
-  }));
 
   // Por cliente: % de selección (usa solo evaluaciones completas, igual que el KPI de selección)
   const clienteMap = new Map<string, { seleccionUnid: number; cantidad: number }>();
@@ -367,123 +401,119 @@ export default async function DashboardBiPage({
       pctRasgunos: Number(pct(f.rasgGrado2, f.rasgMuestra).toFixed(3)),
     }));
 
-  const quickRanges: { label: string; desde?: string; hasta?: string }[] = [
-    { label: "Hoy", desde: isoDaysAgo(0), hasta: isoDaysAgo(0) },
-    { label: "Últimos 7 días", desde: isoDaysAgo(7), hasta: isoDaysAgo(0) },
-    { label: "Últimos 30 días", desde: isoDaysAgo(30), hasta: isoDaysAgo(0) },
-    { label: "Todo", desde: undefined, hasta: undefined },
-  ];
+  // Techos de eje Y realistas (evitan que un dato atípico lleve el eje a 100%).
+  const tendenciaYMax = techoRealista(
+    tendencia.flatMap((t) => [t.pctSeleccion, t.pctHematomas]),
+    5
+  );
+  const lesionYMax = techoRealista(
+    tendencia.flatMap((t) => [t.pctPododermatitis, t.pctRasgunos]),
+    Math.ceil(Math.max(OBJETIVO_PODODERMATITIS, OBJETIVO_RASGUNOS) * 1.2)
+  );
+
   const hayFiltros = Boolean(
-    clienteId || plantelId || desde || hasta || complexEntity || campania || galpon || sexo || corral
+    clienteId || plantelId || zona || subZona || anio || mes || semana || dia ||
+    complexEntity || campania || galpon || sexo || corral
   );
 
   return (
     <div>
-      <h1 className="mb-1 text-xl font-bold text-slate-900">Indicadores de calidad</h1>
-      <p className="mb-6 text-sm text-slate-500">
-        Selección, merma, hematomas, pigmentación y condiciones de transporte de todas las inspecciones.
-      </p>
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900">Dashboard</h1>
+          <p className="text-sm text-slate-500">
+            Indicadores de calidad: selección, hematomas, pigmentación, lesiones y transporte.
+          </p>
+        </div>
+        {hayFiltros && (
+          <a
+            href="/dashboard-bi"
+            className="flex-none rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+          >
+            Limpiar filtros
+          </a>
+        )}
+      </div>
 
-      <form className="mb-3 flex flex-wrap items-end gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+      {/* ---- Filtros de período y cliente (aplican a todos los indicadores) ---- */}
+      <form className="mb-6 flex flex-wrap items-end gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        {/* Preserva la segmentación por zona/subzona/plantel al filtrar por período */}
+        {plantelId && <input type="hidden" name="plantelId" value={plantelId} />}
+        {zona && <input type="hidden" name="zona" value={zona} />}
+        {subZona && <input type="hidden" name="subZona" value={subZona} />}
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Año</label>
+          <select name="anio" defaultValue={anio ?? ""} className="input w-28">
+            <option value="">Todos</option>
+            {aniosDisponibles.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500">Cliente</label>
           <select name="clienteId" defaultValue={clienteId ?? ""} className="input max-w-xs">
             <option value="">Todos los clientes</option>
             {clientes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
-              </option>
+              <option key={c.id} value={c.id}>{c.nombre}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Plantel</label>
-          <select name="plantelId" defaultValue={plantelId ?? ""} className="input max-w-xs">
-            <option value="">Todos los planteles</option>
-            {planteles.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.codigo}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Desde</label>
-          <input type="date" name="desde" defaultValue={desde ?? ""} className="input" />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Hasta</label>
-          <input type="date" name="hasta" defaultValue={hasta ?? ""} className="input" />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Complex Entity</label>
-          <input
-            type="text"
-            name="complexEntity"
-            placeholder="Ej: P289-2401-11-M-A"
-            defaultValue={complexEntity ?? ""}
-            className="input max-w-xs"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Campaña</label>
-          <input type="text" name="campania" placeholder="Ej: 2401" defaultValue={campania ?? ""} className="input w-24" />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Galpón</label>
-          <input type="text" name="galpon" placeholder="Ej: 11" defaultValue={galpon ?? ""} className="input w-20" />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Sexo</label>
-          <select name="sexo" defaultValue={sexo ?? ""} className="input w-32">
+          <label className="mb-1 block text-xs font-medium text-slate-500">Mes</label>
+          <select name="mes" defaultValue={mes ?? ""} className="input w-36">
             <option value="">Todos</option>
-            <option value="MACHO">Macho</option>
-            <option value="HEMBRA">Hembra</option>
+            {MESES.map((nombre, i) => (
+              <option key={nombre} value={i + 1}>{nombre}</option>
+            ))}
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Corral</label>
-          <input type="text" name="corral" placeholder="Ej: A" defaultValue={corral ?? ""} className="input w-20" />
+          <label className="mb-1 block text-xs font-medium text-slate-500">Semana (ISO)</label>
+          <input type="number" name="semana" min={1} max={53} placeholder="1-53" defaultValue={semana ?? ""} className="input w-24" />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Día</label>
+          <input type="date" name="dia" defaultValue={dia ?? ""} className="input" />
         </div>
         <button
           type="submit"
-          className="rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900"
+          className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover"
         >
           Filtrar
         </button>
-        {hayFiltros && (
-          <a href="/dashboard-bi" className="rounded-md px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100">
-            Limpiar filtros
-          </a>
-        )}
+        <details className="w-full">
+          <summary className="cursor-pointer text-xs font-medium text-slate-500 hover:text-slate-700">
+            Filtros avanzados (Complex, Campaña, Galpón, Sexo, Corral)
+          </summary>
+          <div className="mt-3 flex flex-wrap items-end gap-3">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-500">Complex Entity</label>
+              <input type="text" name="complexEntity" placeholder="Ej: P289-2401-11-M-A" defaultValue={complexEntity ?? ""} className="input max-w-xs" />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-500">Campaña</label>
+              <input type="text" name="campania" placeholder="Ej: 2401" defaultValue={campania ?? ""} className="input w-24" />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-500">Galpón</label>
+              <input type="text" name="galpon" placeholder="Ej: 11" defaultValue={galpon ?? ""} className="input w-20" />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-500">Sexo</label>
+              <select name="sexo" defaultValue={sexo ?? ""} className="input w-32">
+                <option value="">Todos</option>
+                <option value="MACHO">Macho</option>
+                <option value="HEMBRA">Hembra</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-500">Corral</label>
+              <input type="text" name="corral" placeholder="Ej: A" defaultValue={corral ?? ""} className="input w-20" />
+            </div>
+          </div>
+        </details>
       </form>
-
-      <div className="mb-6 flex flex-wrap gap-2">
-        {quickRanges.map((r) => {
-          const activo = (r.desde ?? "") === (desde ?? "") && (r.hasta ?? "") === (hasta ?? "");
-          return (
-            <a
-              key={r.label}
-              href={buildHref({
-                clienteId,
-                plantelId,
-                desde: r.desde,
-                hasta: r.hasta,
-                complexEntity,
-                campania,
-                galpon,
-                sexo,
-                corral,
-              })}
-              className={`rounded-full px-3 py-1 text-xs font-medium ${
-                activo ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              {r.label}
-            </a>
-          );
-        })}
-      </div>
 
       <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Evaluaciones completas" value={evaluacionesCompletas.toString()} />
@@ -532,21 +562,64 @@ export default async function DashboardBiPage({
         />
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ChartCard title="Tendencia en el tiempo · Selección, merma y hematomas">
-          <TendenciaChart data={tendencia} objetivoSeleccion={OBJETIVO_SELECCION} />
-        </ChartCard>
-        <ChartCard title="Ranking de planteles por % de merma (mejor desempeño arriba)">
-          <div className="max-h-[60vh] overflow-y-auto">
-            <RankingChart data={rankingChartData} />
-          </div>
+      <div className="mb-6 grid grid-cols-1 gap-6">
+        <ChartCard title="Tendencia en el tiempo · Selección y hematomas" full>
+          <TendenciaChart data={tendencia} objetivoSeleccion={OBJETIVO_SELECCION} yMax={tendenciaYMax} />
         </ChartCard>
       </div>
 
+      {/* ---- Segmentación por zona, subzona y plantel (para el ranking de abajo) ---- */}
+      <form className="mb-3 flex flex-wrap items-end gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        {/* Preserva el período/cliente al segmentar por zona/plantel */}
+        {anio && <input type="hidden" name="anio" value={anio} />}
+        {mes && <input type="hidden" name="mes" value={mes} />}
+        {semana && <input type="hidden" name="semana" value={semana} />}
+        {dia && <input type="hidden" name="dia" value={dia} />}
+        {clienteId && <input type="hidden" name="clienteId" value={clienteId} />}
+        {complexEntity && <input type="hidden" name="complexEntity" value={complexEntity} />}
+        {campania && <input type="hidden" name="campania" value={campania} />}
+        {galpon && <input type="hidden" name="galpon" value={galpon} />}
+        {sexo && <input type="hidden" name="sexo" value={sexo} />}
+        {corral && <input type="hidden" name="corral" value={corral} />}
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Zona</label>
+          <select name="zona" defaultValue={zona ?? ""} className="input w-40">
+            <option value="">Todas las zonas</option>
+            {zonas.map((z) => (
+              <option key={z} value={z}>{z}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Subzona</label>
+          <select name="subZona" defaultValue={subZona ?? ""} className="input w-40">
+            <option value="">Todas las subzonas</option>
+            {subZonas.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Plantel</label>
+          <select name="plantelId" defaultValue={plantelId ?? ""} className="input w-40">
+            <option value="">Todos los planteles</option>
+            {planteles.map((p) => (
+              <option key={p.id} value={p.id}>{p.codigo}</option>
+            ))}
+          </select>
+        </div>
+        <button
+          type="submit"
+          className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover"
+        >
+          Filtrar
+        </button>
+      </form>
+
       <div className="mb-6 grid grid-cols-1 gap-6">
-        <ChartCard title="Ranking de zonas por % de merma (mejor desempeño arriba)" full>
+        <ChartCard title="Ranking de planteles por % de merma (mayor a menor)" full>
           <div className="max-h-[60vh] overflow-y-auto">
-            <RankingChart data={rankingZonasChartData} />
+            <RankingChart data={rankingChartData} />
           </div>
         </ChartCard>
       </div>
@@ -565,7 +638,7 @@ export default async function DashboardBiPage({
           <PigmentacionChart data={tendencia} objetivo={OBJETIVO_PIGMENTACION} />
         </ChartCard>
         <ChartCard title="Tendencia en el tiempo · Pododermatitis y rasguños (Grado 2)">
-          <LesionChart data={tendencia} objetivoPodo={OBJETIVO_PODODERMATITIS} objetivoRasg={OBJETIVO_RASGUNOS} />
+          <LesionChart data={tendencia} objetivoPodo={OBJETIVO_PODODERMATITIS} objetivoRasg={OBJETIVO_RASGUNOS} yMax={lesionYMax} />
         </ChartCard>
       </div>
 
