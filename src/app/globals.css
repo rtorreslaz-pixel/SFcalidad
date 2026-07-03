@@ -9,13 +9,10 @@
    Colores: paleta SF + aliases semánticos
    ============================================================ */
 
-/* ---- Fuentes (Google Fonts fallback — next/font las inyecta en SSR) ---- */
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
-
 :root {
-  /* ---- Fuentes ---- */
-  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  /* ---- Fuentes (inyectadas por next/font en layout.tsx; @theme inline las mapea) ---- */
+  --font-sans: var(--font-geist), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
   /* ---- Canvas ---- */
   --background: #f5f6f8;
