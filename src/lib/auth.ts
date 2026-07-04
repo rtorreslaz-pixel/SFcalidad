@@ -4,10 +4,11 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import type { Role } from "@/generated/prisma/enums";
 
-const SESSION_COOKIE = "session_user_id";
+const SESSION_COOKIE = "session_token";
+const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 días
 
 export async function hashPassword(password: string) {
-  return bcrypt.hash(password, 10);
+  return bcrypt.hash(password, 12);
 }
 
 export async function verifyPassword(password: string, hash: string) {
@@ -15,18 +16,26 @@ export async function verifyPassword(password: string, hash: string) {
 }
 
 export async function createSession(userId: string) {
+  const token = randomBytes(32).toString("base64url");
+  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+  await prisma.session.create({ data: { token, userId, expiresAt } });
+
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, userId, {
+  cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30, // 30 dias
+    maxAge: Math.floor(SESSION_TTL_MS / 1000),
   });
 }
 
 export async function destroySession() {
   const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (token) {
+    await prisma.session.deleteMany({ where: { token } });
+  }
   cookieStore.delete(SESSION_COOKIE);
 }
 
@@ -35,21 +44,32 @@ export type SessionUser = {
   nombre: string;
   email: string;
   role: Role;
+  mustChangePassword: boolean;
 };
 
 export async function getCurrentUser(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
-  const userId = cookieStore.get(SESSION_COOKIE)?.value;
-  if (!userId) return null;
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!token) return null;
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { id: true, nombre: true, email: true, role: true, activo: true },
+  const session = await prisma.session.findUnique({
+    where: { token },
+    select: {
+      expiresAt: true,
+      user: { select: { id: true, nombre: true, email: true, role: true, activo: true, mustChangePassword: true } },
+    },
   });
 
-  if (!user || !user.activo) return null;
+  if (!session || session.expiresAt < new Date() || !session.user.activo) {
+    // Sesión inválida/expirada: se limpia si estaba vencida.
+    if (session && session.expiresAt < new Date()) {
+      await prisma.session.deleteMany({ where: { token } });
+    }
+    return null;
+  }
 
-  return { id: user.id, nombre: user.nombre, email: user.email, role: user.role };
+  const u = session.user;
+  return { id: u.id, nombre: u.nombre, email: u.email, role: u.role, mustChangePassword: u.mustChangePassword };
 }
 
 export function generateApiToken() {
@@ -64,12 +84,12 @@ export async function requireMobileUser(request: Request): Promise<SessionUser |
 
   const user = await prisma.user.findUnique({
     where: { apiToken: token },
-    select: { id: true, nombre: true, email: true, role: true, activo: true },
+    select: { id: true, nombre: true, email: true, role: true, activo: true, mustChangePassword: true },
   });
 
   if (!user || !user.activo) return null;
 
-  return { id: user.id, nombre: user.nombre, email: user.email, role: user.role };
+  return { id: user.id, nombre: user.nombre, email: user.email, role: user.role, mustChangePassword: user.mustChangePassword };
 }
 
 // Verificador: solo registra inspecciones nuevas.

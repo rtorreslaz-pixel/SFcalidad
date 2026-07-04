@@ -56,19 +56,35 @@ enum TipoMuestreo {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  nombre       String
-  email        String   @unique
-  passwordHash String
-  role         Role     @default(VERIFICADOR)
-  activo       Boolean  @default(true)
-  apiToken     String?  @unique
-  createdAt    DateTime @default(now())
+  id                 String   @id @default(cuid())
+  nombre             String
+  email              String   @unique
+  passwordHash       String
+  role               Role     @default(VERIFICADOR)
+  activo             Boolean  @default(true)
+  apiToken           String?  @unique
+  // Obliga a establecer una nueva contraseña en el próximo ingreso (ver login).
+  mustChangePassword Boolean  @default(false)
+  createdAt          DateTime @default(now())
 
   jornadas              Jornada[]
   inspecciones          Inspeccion[]
   registrosPesoPreventa RegistroPesoPreventa[]
   liveWeightReading     LiveWeightReading?
+  sessions              Session[]
+}
+
+// Sesión web con token opaco aleatorio (la cookie guarda el token, no el userId),
+// para poder revocar sesiones y que expiren de verdad.
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Cliente {
