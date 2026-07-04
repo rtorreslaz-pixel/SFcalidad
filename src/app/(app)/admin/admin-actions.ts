@@ -69,12 +69,13 @@ export async function createUsuarioAction(
   const role = String(formData.get("role") ?? "VERIFICADOR") as "VERIFICADOR" | "SUPERVISOR" | "JEFE" | "COMERCIAL";
 
   if (!nombre || !email || !password) return { error: "Completa todos los campos." };
-  if (password.length < 6) return { error: "La contraseña debe tener al menos 6 caracteres." };
+  if (password.length < 8) return { error: "La contraseña debe tener al menos 8 caracteres." };
 
   const passwordHash = await hashPassword(password);
 
   try {
-    await prisma.user.create({ data: { nombre, email, passwordHash, role } });
+    // El usuario deberá cambiar esta contraseña inicial en su primer ingreso.
+    await prisma.user.create({ data: { nombre, email, passwordHash, role, mustChangePassword: true } });
   } catch {
     return { error: "Ya existe un usuario con ese correo." };
   }

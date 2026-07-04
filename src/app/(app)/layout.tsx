@@ -13,6 +13,10 @@ export default async function AppLayout({
   if (!user) {
     redirect("/login");
   }
+  // Contraseña inicial / marcada para cambio: bloquea el acceso hasta actualizarla.
+  if (user.mustChangePassword) {
+    redirect("/cambiar-clave");
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
