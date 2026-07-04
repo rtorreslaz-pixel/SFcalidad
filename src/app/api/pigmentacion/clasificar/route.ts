@@ -58,6 +58,14 @@ export async function POST(req: NextRequest) {
     const file = form.get("imagen") as File | null;
     if (!file) return NextResponse.json({ error: "Imagen requerida" }, { status: 400 });
 
+    // Validaciones antes de procesar (evita DoS por archivos enormes o no-imagen).
+    if (file.size > 8 * 1024 * 1024) {
+      return NextResponse.json({ error: "La imagen supera el máximo de 8 MB" }, { status: 413 });
+    }
+    if (file.type && !file.type.startsWith("image/")) {
+      return NextResponse.json({ error: "El archivo debe ser una imagen" }, { status: 400 });
+    }
+
     const bytes = Buffer.from(await file.arrayBuffer());
 
     const meta = await sharp(bytes).metadata();
