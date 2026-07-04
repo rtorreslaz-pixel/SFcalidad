@@ -274,7 +274,9 @@ async function main() {
   }
 
   console.log("Sembrando usuarios...");
-  const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 10);
+  // Contraseña inicial que el usuario DEBE cambiar en su primer ingreso
+  // (mustChangePassword: true). Nunca se usa como clave definitiva.
+  const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 12);
 
   await prisma.user.upsert({
     where: { email: "supervisor@avicola.com" },
@@ -284,6 +286,7 @@ async function main() {
       email: "supervisor@avicola.com",
       passwordHash,
       role: "SUPERVISOR",
+      mustChangePassword: true,
     },
   });
 
@@ -295,6 +298,7 @@ async function main() {
       email: "jefe@avicola.com",
       passwordHash,
       role: "JEFE",
+      mustChangePassword: true,
     },
   });
 
@@ -307,6 +311,7 @@ async function main() {
         email: v.email,
         passwordHash,
         role: "VERIFICADOR",
+        mustChangePassword: true,
       },
     });
   }
