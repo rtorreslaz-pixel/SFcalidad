@@ -594,56 +594,69 @@ export default async function DashboardBiPage({
         </details>
       </form>
 
-      <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* KPIs — una sola grilla compacta (bento) */}
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <KpiCard label="Evaluaciones completas" value={evaluacionesCompletas.toString()} />
         <KpiCard label="Unidades evaluadas" value={totalUnidades.toLocaleString("es-PE")} />
         <KpiCard
           label="% Selección"
           value={`${pctSeleccion.toFixed(2)}%`}
           highlight={semaforoMax(pctSeleccion, OBJETIVO_SELECCION)}
-          sub={`Objetivo: ≤ ${OBJETIVO_SELECCION.toFixed(2)}%`}
+          sub={`Obj. ≤ ${OBJETIVO_SELECCION.toFixed(2)}%`}
         />
         <KpiCard
           label="% Hematomas"
           value={`${pctHematomas.toFixed(2)}%`}
           highlight={semaforo(pctHematomas, UMBRAL_HEMATOMAS)}
         />
-      </div>
-
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
         <KpiCard
-          label="Temp. promedio camión"
-          value={tempCamionProm != null ? `${tempCamionProm.toFixed(1)} °C` : "Sin datos"}
-        />
-        <KpiCard
-          label="Pigmentación promedio (nivel 0-7)"
-          value={pigmentacionProm != null ? pigmentacionProm.toFixed(2) : "Sin datos"}
+          label="Pigmentación (0-7)"
+          value={pigmentacionProm != null ? pigmentacionProm.toFixed(2) : "—"}
           highlight={pigmentacionProm != null ? semaforoRango(pigmentacionProm, OBJETIVO_PIGMENTACION.min, OBJETIVO_PIGMENTACION.max) : undefined}
-          sub={`Objetivo: ${OBJETIVO_PIGMENTACION.min} - ${OBJETIVO_PIGMENTACION.max}`}
+          sub={`Obj. ${OBJETIVO_PIGMENTACION.min}–${OBJETIVO_PIGMENTACION.max}`}
         />
         <KpiCard
-          label="% Pododermatitis (Grado 2)"
+          label="% Pododermatitis (G2)"
           value={`${pctPododermatitis.toFixed(2)}%`}
           highlight={semaforoMax(pctPododermatitis, OBJETIVO_PODODERMATITIS)}
-          sub={`Objetivo: ≤ ${OBJETIVO_PODODERMATITIS}% · muestra propia`}
+          sub={`Obj. ≤ ${OBJETIVO_PODODERMATITIS}%`}
         />
         <KpiCard
-          label="% Rasguños (Grado 2)"
+          label="% Rasguños (G2)"
           value={`${pctRasgunos.toFixed(2)}%`}
           highlight={semaforoMax(pctRasgunos, OBJETIVO_RASGUNOS)}
-          sub={`Objetivo: ≤ ${OBJETIVO_RASGUNOS}% · muestra propia`}
+          sub={`Obj. ≤ ${OBJETIVO_RASGUNOS}%`}
+        />
+        <KpiCard
+          label="Temp. camión"
+          value={tempCamionProm != null ? `${tempCamionProm.toFixed(1)} °C` : "—"}
         />
         <KpiCard label="Planteles evaluados" value={ranking.length.toString()} />
         <KpiCard
-          label="Evaluaciones solo pododermatitis/rasguños o pigmentación"
+          label="Solo lesión/pigmentación"
           value={inspeccionesParciales.length.toString()}
-          sub="No suman a % Selección ni % Merma"
+          sub="No suman a selección"
         />
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-6">
-        <ChartCard title="Tendencia en el tiempo · Selección" full>
+      <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <ChartCard title="Tendencia · Selección">
           <TendenciaChart data={tendencia} objetivoSeleccion={OBJETIVO_SELECCION} yMax={tendenciaYMax} />
+        </ChartCard>
+        <ChartCard title="Tendencia · Pigmentación">
+          <PigmentacionChart data={tendencia} objetivo={OBJETIVO_PIGMENTACION} />
+        </ChartCard>
+        <ChartCard title="Tendencia · Pododermatitis y rasguños (G2)">
+          <LesionChart data={tendencia} objetivoPodo={OBJETIVO_PODODERMATITIS} objetivoRasg={OBJETIVO_RASGUNOS} yMax={lesionYMax} />
+        </ChartCard>
+      </div>
+
+      <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <ChartCard title="% Selección por cliente">
+          <ClienteChart data={porCliente} objetivo={OBJETIVO_SELECCION} />
+        </ChartCard>
+        <ChartCard title="Top 10 defectos (unidades)">
+          <DefectoChart data={porDefecto} />
         </ChartCard>
       </div>
 
@@ -696,29 +709,17 @@ export default async function DashboardBiPage({
         </button>
       </form>
 
-      <div className="mb-6 grid grid-cols-1 gap-6">
+      <div className="mb-4 grid grid-cols-1 gap-4">
         <ChartCard title="Top 20 planteles por % de selección (mayor a menor)" full>
           <RankingChart data={rankingChartData} name="% Selección" unit="%" />
         </ChartCard>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ChartCard title="% Selección por cliente">
-          <ClienteChart data={porCliente} objetivo={OBJETIVO_SELECCION} />
-        </ChartCard>
-        <ChartCard title="Top 10 defectos (unidades)">
-          <DefectoChart data={porDefecto} />
-        </ChartCard>
-      </div>
-
-      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ChartCard title="Tendencia en el tiempo · Pigmentación promedio">
-          <PigmentacionChart data={tendencia} objetivo={OBJETIVO_PIGMENTACION} />
-        </ChartCard>
-        <ChartCard title="Tendencia en el tiempo · Pododermatitis y rasguños (Grado 2)">
-          <LesionChart data={tendencia} objetivoPodo={OBJETIVO_PODODERMATITIS} objetivoRasg={OBJETIVO_RASGUNOS} yMax={lesionYMax} />
-        </ChartCard>
-      </div>
+      <details className="mb-4 rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-slate-900">
+          Ver detalle por plantel y por zona
+        </summary>
+        <div className="space-y-4 border-t border-slate-100 p-4">
 
       <ChartCard title="Detalle por plantel" full>
         <div className="overflow-x-auto">
@@ -807,6 +808,8 @@ export default async function DashboardBiPage({
           </table>
         </div>
       </ChartCard>
+        </div>
+      </details>
     </div>
   );
 }
@@ -831,10 +834,10 @@ function KpiCard({
           ? "text-emerald-600"
           : "text-slate-900";
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-      <p className={`mt-1 text-2xl font-bold ${color}`}>{value}</p>
-      {sub && <p className="mt-0.5 text-xs text-slate-400">{sub}</p>}
+    <div className="rounded-lg bg-white p-3 shadow-sm ring-1 ring-slate-200">
+      <p className="text-[11px] font-medium uppercase leading-tight tracking-wide text-slate-500">{label}</p>
+      <p className={`mt-0.5 text-xl font-bold ${color}`}>{value}</p>
+      {sub && <p className="text-[11px] text-slate-400">{sub}</p>}
     </div>
   );
 }
@@ -842,7 +845,7 @@ function KpiCard({
 function ChartCard({ title, children, full }: { title: string; children: React.ReactNode; full?: boolean }) {
   return (
     <div className={`rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 ${full ? "lg:col-span-2" : ""}`}>
-      <h2 className="mb-3 font-semibold text-slate-900">{title}</h2>
+      <h2 className="mb-2 text-sm font-semibold text-slate-900">{title}</h2>
       {children}
     </div>
   );

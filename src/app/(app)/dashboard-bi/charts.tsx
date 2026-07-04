@@ -37,7 +37,7 @@ export function TendenciaChart({
 }) {
   if (data.length === 0) return <EmptyState />;
   return (
-    <ResponsiveContainer width="100%" height={300}>
+    <ResponsiveContainer width="100%" height={230}>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="fecha" tick={{ fontSize: 11 }} />
@@ -66,7 +66,7 @@ export function PigmentacionChart({
   const puntos = data.filter((d) => d.pigmentacion != null);
   if (puntos.length === 0) return <EmptyState />;
   return (
-    <ResponsiveContainer width="100%" height={300}>
+    <ResponsiveContainer width="100%" height={230}>
       <LineChart data={puntos}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="fecha" tick={{ fontSize: 11 }} />
@@ -104,7 +104,7 @@ export function LesionChart({
 }) {
   if (data.length === 0) return <EmptyState />;
   return (
-    <ResponsiveContainer width="100%" height={300}>
+    <ResponsiveContainer width="100%" height={230}>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="fecha" tick={{ fontSize: 11 }} />
@@ -136,7 +136,7 @@ type DefectoPunto = { defecto: string; unidades: number };
 export function ClienteChart({ data, objetivo }: { data: ClientePunto[]; objetivo: number }) {
   if (data.length === 0) return <EmptyState />;
   return (
-    <ResponsiveContainer width="100%" height={300}>
+    <ResponsiveContainer width="100%" height={230}>
       <BarChart data={data} margin={{ bottom: 40 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="cliente" tick={{ fontSize: 11 }} interval={0} angle={-30} textAnchor="end" height={70} />
@@ -157,7 +157,7 @@ export function ClienteChart({ data, objetivo }: { data: ClientePunto[]; objetiv
 export function DefectoChart({ data }: { data: DefectoPunto[] }) {
   if (data.length === 0) return <EmptyState />;
   return (
-    <ResponsiveContainer width="100%" height={Math.max(240, data.length * 32)}>
+    <ResponsiveContainer width="100%" height={Math.max(200, data.length * 26)}>
       <BarChart data={data} layout="vertical" margin={{ left: 40 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis type="number" tick={{ fontSize: 11 }} />
@@ -180,7 +180,7 @@ export function RankingChart({
 }) {
   if (data.length === 0) return <EmptyState />;
   return (
-    <ResponsiveContainer width="100%" height={Math.max(220, data.length * 36)}>
+    <ResponsiveContainer width="100%" height={Math.max(200, data.length * 26)}>
       <BarChart data={data} layout="vertical" margin={{ left: 16 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis type="number" tick={{ fontSize: 11 }} unit={unit} />
