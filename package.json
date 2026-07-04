@@ -8,7 +8,7 @@
     "start": "npm run db:setup && next start -p ${PORT:-3000}",
     "lint": "eslint",
     "postinstall": "prisma generate",
-    "db:setup": "prisma migrate deploy && prisma db seed",
+    "db:setup": "prisma migrate deploy && node scripts/enable-wal.cjs && prisma db seed",
     "test:mobile-e2e": "tsx scripts/test-mobile-e2e.ts"
   },
   "dependencies": {
