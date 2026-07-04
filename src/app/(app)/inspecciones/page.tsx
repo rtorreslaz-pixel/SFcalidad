@@ -174,6 +174,9 @@ export default async function InspeccionesPage({
           const totalUnidades = insp.defectos.reduce((acc, d) => acc + d.unidades, 0);
           const porcentaje = calcularPorcentajeSeleccion(totalUnidades, insp.cantidad);
           const excede = porcentaje > insp.metaPorcentaje;
+          // Las evaluaciones solo de lesión/pigmentación no traen censo de selección:
+          // mostrar "—" (no aplica) en vez de un 0% engañoso.
+          const sinSeleccion = insp.soloLesionPigmentacion;
           return (
             <Link
               key={insp.id}
@@ -197,11 +200,17 @@ export default async function InspeccionesPage({
                   )}
                 </div>
                 <div className="flex-none text-right">
-                  <span className={`inline-block rounded-md px-2 py-0.5 text-sm font-semibold ${
-                    excede ? "bg-red-100 text-red-700" : "bg-sky-50 text-sky-700"
-                  }`}>
-                    {porcentaje.toFixed(2)}%
-                  </span>
+                  {sinSeleccion ? (
+                    <span className="inline-block rounded-md bg-slate-100 px-2 py-0.5 text-sm font-semibold text-slate-500" title="Solo lesión/pigmentación — sin censo de selección">
+                      —
+                    </span>
+                  ) : (
+                    <span className={`inline-block rounded-md px-2 py-0.5 text-sm font-semibold ${
+                      excede ? "bg-red-100 text-red-700" : "bg-sky-50 text-sky-700"
+                    }`}>
+                      {porcentaje.toFixed(2)}%
+                    </span>
+                  )}
                   <p className="mt-1 text-xs text-slate-400">{insp.cantidad.toLocaleString()} aves</p>
                   {insp._count.fotos > 0 && (
                     <p className="text-xs text-slate-400">📷 {insp._count.fotos}</p>
@@ -239,6 +248,7 @@ export default async function InspeccionesPage({
               const totalUnidades = insp.defectos.reduce((acc, d) => acc + d.unidades, 0);
               const porcentaje = calcularPorcentajeSeleccion(totalUnidades, insp.cantidad);
               const excede = porcentaje > insp.metaPorcentaje;
+              const sinSeleccion = insp.soloLesionPigmentacion;
               return (
                 <tr key={insp.id} className="hover:bg-slate-50">
                   <td className="px-3 py-2">
@@ -254,11 +264,17 @@ export default async function InspeccionesPage({
                   <td className="px-3 py-2 font-mono text-xs text-slate-500">{insp.complex ?? "—"}</td>
                   <td className="px-3 py-2">{insp.cantidad.toLocaleString()}</td>
                   <td className="px-3 py-2">
-                    <span className={`rounded-md px-2 py-0.5 font-semibold ${
-                      excede ? "bg-red-100 text-red-700" : "bg-sky-50 text-sky-700"
-                    }`}>
-                      {porcentaje.toFixed(3)}%
-                    </span>
+                    {sinSeleccion ? (
+                      <span className="rounded-md bg-slate-100 px-2 py-0.5 font-semibold text-slate-500" title="Solo lesión/pigmentación — sin censo de selección">
+                        —
+                      </span>
+                    ) : (
+                      <span className={`rounded-md px-2 py-0.5 font-semibold ${
+                        excede ? "bg-red-100 text-red-700" : "bg-sky-50 text-sky-700"
+                      }`}>
+                        {porcentaje.toFixed(3)}%
+                      </span>
+                    )}
                   </td>
                   <td className="px-3 py-2">{verificadorNombre ?? "—"}</td>
                   <td className="px-3 py-2">{insp._count.fotos}</td>
