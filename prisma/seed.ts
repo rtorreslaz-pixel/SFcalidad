@@ -316,46 +316,9 @@ async function main() {
     });
   }
 
-  console.log("Sembrando muestras de peso preventa...");
-  const planteles = await prisma.plantel.findMany({ where: { codigo: { in: ["P006", "P016", "P051"] } } });
-  const verificadores = await prisma.user.findMany({ where: { role: "VERIFICADOR" } });
-  const categorias = ["MACHO", "HEMBRA", "MEDIANO"] as const;
-  const pesoBaseGramos: Record<(typeof categorias)[number], number> = {
-    MACHO: 2100,
-    HEMBRA: 1750,
-    MEDIANO: 1900,
-  };
-
-  const ahora = new Date();
-  let numeroAve = 0;
-  for (const plantel of planteles) {
-    for (const galpon of ["1", "2"]) {
-      for (const corral of ["A", "B"]) {
-        for (const categoria of categorias) {
-          numeroAve += 1;
-          const verificador = verificadores[numeroAve % verificadores.length];
-          const peso = pesoBaseGramos[categoria] + (Math.random() - 0.5) * 200;
-          const fechaHora = new Date(ahora.getTime() - numeroAve * 5 * 60 * 1000);
-
-          await prisma.registroPesoPreventa.upsert({
-            where: { id: `seed-${plantel.codigo}-${galpon}-${corral}-${categoria}` },
-            update: {},
-            create: {
-              id: `seed-${plantel.codigo}-${galpon}-${corral}-${categoria}`,
-              plantelId: plantel.id,
-              galpon,
-              corral,
-              categoria,
-              numeroAve,
-              pesoGramos: Math.round(peso * 10) / 10,
-              fechaHora,
-              verificadorId: verificador.id,
-            },
-          });
-        }
-      }
-    }
-  }
+  // NOTA: NO se siembran muestras de peso preventa. Esos datos deben venir SOLO de la
+  // app Android (sync real), para no contaminar los módulos de "peso en planta" y
+  // "engranaje granja-clientes" con datos de prueba ni romper la trazabilidad por complex.
 
   console.log("Sembrando pesos estándar Ross 308...");
   const pesosRoss = generarPesosRoss308();
@@ -367,7 +330,7 @@ async function main() {
     });
   }
 
-  console.log("Listo. Usuarios creados con contraseña por defecto:", DEFAULT_PASSWORD);
+  console.log("Seed completo. (Usuarios sembrados requieren cambio de contraseña al primer ingreso.)");
 }
 
 main()
