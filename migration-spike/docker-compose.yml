@@ -1,0 +1,23 @@
+# Spike de migración a SQL Server — levanta un SQL Server 2022 local para probar
+# que el modelo de datos de la app corre en ese motor. No es infraestructura de
+# producción; es un banco de pruebas desechable.
+#
+#   docker compose -f migration-spike/docker-compose.yml up -d
+#   docker compose -f migration-spike/docker-compose.yml down -v   (para borrar)
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sf-spike-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Spike_Passw0rd!"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q \"SELECT 1\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s

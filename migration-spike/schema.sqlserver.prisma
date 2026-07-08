@@ -1,0 +1,333 @@
+// =============================================================================
+// SPIKE DE MIGRACIÓN A SQL SERVER  (NO es el esquema de producción)
+// =============================================================================
+// Este esquema es una COPIA del de producción (prisma/schema.prisma) adaptada al
+// conector de SQL Server, para PROBAR que el modelo de datos corre en SQL Server.
+// No lo usa la app en producción (que sigue en SQLite). Sirve para de-riesgar la
+// migración corporativa y llevar evidencia a la reunión con Arquitectura.
+//
+// Diferencias respecto al esquema de producción y por qué:
+//  1) provider = "sqlserver" (en vez de "sqlite").
+//  2) Los IDs y llaves foráneas / columnas indexadas de tipo texto llevan
+//     @db.NVarChar(n): SQL Server limita una llave/índice a 900 bytes, y el
+//     default de Prisma para String en SQL Server es NVarChar(1000) = 2000 bytes,
+//     que reventaría toda PK de texto. Con NVarChar(36) alcanza para cuid (25) y
+//     UUID v4 (36).
+//  3) Los enums se representan como NVarChar corto. SQL Server no tiene enums
+//     nativos; a nivel de aplicación el cliente Prisma de producción los mantiene
+//     tipados. Aquí solo probamos el almacenamiento y las consultas.
+// El resto (modelos, relaciones, índices, defaults) es idéntico a producción.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+model User {
+  id                 String   @id @default(cuid()) @db.NVarChar(36)
+  nombre             String
+  email              String   @unique @db.NVarChar(255)
+  passwordHash       String
+  role               String   @default("VERIFICADOR") @db.NVarChar(20) // enum Role
+  activo             Boolean  @default(true)
+  apiToken           String?  @unique @db.NVarChar(255)
+  mustChangePassword Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  jornadas              Jornada[]
+  inspecciones          Inspeccion[]
+  registrosPesoPreventa RegistroPesoPreventa[]
+  liveWeightReading     LiveWeightReading?
+  sessions              Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid()) @db.NVarChar(36)
+  token     String   @unique @db.NVarChar(64)
+  userId    String   @db.NVarChar(36)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Cliente {
+  id             String  @id @default(cuid()) @db.NVarChar(36)
+  nombre         String  @unique @db.NVarChar(255)
+  zonaEvaluacion String?
+
+  planteles    Plantel[]
+  jornadas     Jornada[]
+  inspecciones Inspeccion[]
+}
+
+model Plantel {
+  id             String  @id @default(cuid()) @db.NVarChar(36)
+  codigo         String  @unique @db.NVarChar(100)
+  nombre         String?
+  zona           String?
+  subZona        String?
+  tipoPlantel    String?
+  zonaEvaluacion String?
+
+  clienteId String?  @db.NVarChar(36)
+  cliente   Cliente? @relation(fields: [clienteId], references: [id])
+
+  inspecciones          Inspeccion[]
+  registrosPesoPreventa RegistroPesoPreventa[]
+}
+
+model TipoDefecto {
+  id        String  @id @default(cuid()) @db.NVarChar(36)
+  nombre    String  @unique @db.NVarChar(255)
+  categoria String?
+  orden     Int     @default(0)
+  principal Boolean @default(false)
+
+  registros DefectoRegistro[]
+}
+
+model Jornada {
+  id     String   @id @default(cuid()) @db.NVarChar(36)
+  fecha  DateTime
+  anio   Int
+  mes    Int
+  semana Int
+
+  clienteId     String  @db.NVarChar(36)
+  cliente       Cliente @relation(fields: [clienteId], references: [id])
+  verificadorId String  @db.NVarChar(36)
+  verificador   User    @relation(fields: [verificadorId], references: [id])
+
+  saldos       SaldoDiaAnterior[]
+  inspecciones Inspeccion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SaldoDiaAnterior {
+  id        String  @id @default(cuid()) @db.NVarChar(36)
+  jornadaId String  @db.NVarChar(36)
+  jornada   Jornada @relation(fields: [jornadaId], references: [id], onDelete: Cascade)
+
+  sexo String @db.NVarChar(20) // enum SexoAve
+
+  unidades Int?
+  jabas    Int?
+  kg       Float?
+
+  unidadesSeleccion Int?
+  jabasSeleccion    Int?
+  kgSeleccion       Float?
+
+  unidadesRemanente Int?
+  jabasRemanente    Int?
+  kgRemanente       Float?
+
+  @@unique([jornadaId, sexo])
+}
+
+model Inspeccion {
+  id String @id @default(cuid()) @db.NVarChar(36)
+
+  // SQL Server no permite múltiples caminos de cascada hacia la misma tabla
+  // (Cliente y User llegan a Inspeccion directo y vía Jornada). Se rompe el
+  // ciclo con NoAction. En SQLite esto era implícito; aquí debe ser explícito.
+  jornadaId String?  @db.NVarChar(36)
+  jornada   Jornada? @relation(fields: [jornadaId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  fecha          DateTime?
+  anio           Int?
+  mes            Int?
+  semana         Int?
+  campania       String?
+  clienteId      String?   @db.NVarChar(36)
+  cliente        Cliente?  @relation(fields: [clienteId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  verificadorId  String?   @db.NVarChar(36)
+  verificador    User?     @relation(fields: [verificadorId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  metaPorcentaje Float     @default(0.6)
+
+  plantelId String?  @db.NVarChar(36)
+  plantel   Plantel? @relation(fields: [plantelId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  galpon   String?
+  corral   String?
+  sexo     String? @db.NVarChar(20) // enum SexoAve
+  jabas    Int?
+  cantidad Int     @default(0)
+
+  promVivo        Float?
+  promBeneficiado Float?
+
+  nroGuia       String?
+  complex       String?
+  observaciones String?
+
+  tempPlataforma      Float?
+  tempPlataformaVacia Float?
+  tempCamion          Float?
+  tempAves            Float?
+  densidad            Float?
+
+  hematomasCon Int?
+  hematomasSin Int?
+
+  pigNivel0 Int @default(0)
+  pigNivel1 Int @default(0)
+  pigNivel2 Int @default(0)
+  pigNivel3 Int @default(0)
+  pigNivel4 Int @default(0)
+  pigNivel5 Int @default(0)
+  pigNivel6 Int @default(0)
+  pigNivel7 Int @default(0)
+
+  mermaAlaKg    Float?
+  mermaPiernaKg Float?
+
+  estado     String @default("BORRADOR") @db.NVarChar(20) // enum EstadoInspeccion
+  pasoActual Int    @default(1)
+
+  soloLesionPigmentacion Boolean @default(false)
+
+  defectos           DefectoRegistro[]
+  fotos              Foto[]
+  evaluacionesLesion EvaluacionLesion[]
+  hematomaDetalles   HematomaDetalle[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DefectoRegistro {
+  id String @id @default(cuid()) @db.NVarChar(36)
+
+  inspeccionId String     @db.NVarChar(36)
+  inspeccion   Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+
+  tipoDefectoId String      @db.NVarChar(36)
+  tipoDefecto   TipoDefecto @relation(fields: [tipoDefectoId], references: [id])
+
+  unidades Int   @default(0)
+  kg       Float @default(0)
+
+  @@unique([inspeccionId, tipoDefectoId])
+}
+
+model Foto {
+  id String @id @default(cuid()) @db.NVarChar(36)
+
+  inspeccionId String     @db.NVarChar(36)
+  inspeccion   Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+
+  path        String
+  descripcion String?
+  latitud     Float?
+  longitud    Float?
+
+  createdAt DateTime @default(now())
+}
+
+model HematomaDetalle {
+  id String @id @default(cuid()) @db.NVarChar(36)
+
+  inspeccionId String     @db.NVarChar(36)
+  inspeccion   Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+
+  grado     String @db.NVarChar(20) // enum GradoHematoma
+  ubicacion String @db.NVarChar(20) // enum UbicacionHematoma
+
+  cantidad Int @default(0)
+
+  @@unique([inspeccionId, grado, ubicacion])
+}
+
+model EvaluacionLesion {
+  id String @id @default(cuid()) @db.NVarChar(36)
+
+  inspeccionId String     @db.NVarChar(36)
+  inspeccion   Inspeccion @relation(fields: [inspeccionId], references: [id], onDelete: Cascade)
+
+  categoria String @db.NVarChar(20) // enum CategoriaLesion
+  sexo      String @db.NVarChar(20) // enum SexoAve
+
+  muestra   Int @default(0)
+  sinLesion Int @default(0)
+  leve      Int @default(0)
+  grave     Int @default(0)
+
+  @@unique([inspeccionId, categoria, sexo])
+}
+
+model RegistroPesoPreventa {
+  id String @id @db.NVarChar(40) // UUID v4 generado por el cliente Android
+
+  plantelId String  @db.NVarChar(36)
+  plantel   Plantel @relation(fields: [plantelId], references: [id])
+
+  campania  String?
+  galpon    String @db.NVarChar(60)
+  corral    String @db.NVarChar(60)
+  categoria String @db.NVarChar(20) // enum CategoriaAve
+
+  numeroAve  Int
+  pesoGramos Float
+  fechaHora  DateTime
+
+  complex String?
+
+  tipoMuestreo String @default("PREVENTA") @db.NVarChar(20) // enum TipoMuestreo
+
+  edad           Int?
+  linea          String?
+  lote           String?
+  nAvesPorPesada Int?
+
+  tieneHematoma         Boolean?
+  tieneDefectoSeleccion Boolean?
+  gradoPododermatitis   Int?
+  gradoRasguno          Int?
+  pigmentacion          Int?
+
+  verificadorId String @db.NVarChar(36)
+  verificador   User   @relation(fields: [verificadorId], references: [id])
+
+  syncedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([plantelId, galpon, corral, categoria])
+  @@index([verificadorId, fechaHora])
+}
+
+model PesoEstandar {
+  id         String @id @default(cuid()) @db.NVarChar(36)
+  linea      String @db.NVarChar(60)
+  sexo       String @db.NVarChar(20) // enum SexoAve
+  edadDias   Int
+  pesoGramos Float
+
+  @@unique([linea, sexo, edadDias])
+  @@index([linea, sexo])
+}
+
+model LiveWeightReading {
+  verificadorId String @id @db.NVarChar(36)
+  verificador   User   @relation(fields: [verificadorId], references: [id])
+
+  pesoGramos Float
+
+  plantelCodigo String?
+  campania      String?
+  galpon        String?
+  corral        String?
+  categoria     String? @db.NVarChar(20) // enum CategoriaAve
+  complex       String?
+
+  updatedAt DateTime @updatedAt
+}

@@ -60,3 +60,6 @@ prisma/dev.db-shm
 
 # throwaway local scripts
 /tmp-*.ts
+
+# Cliente Prisma generado del spike de SQL Server (no versionar)
+/migration-spike/generated
