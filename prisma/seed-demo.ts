@@ -76,6 +76,10 @@ export async function sembrarDemo(prisma: PrismaClient) {
     return;
   }
 
+  // En el demo, los usuarios entran directo (sin forzar cambio de clave) para que
+  // TI pueda navegar sin fricción. La clave sembrada es "demo1234".
+  await prisma.user.updateMany({ data: { mustChangePassword: false } });
+
   // Asigna zona de evaluación a los clientes (el dashboard segmenta por esto)
   for (let i = 0; i < clientes.length; i++) {
     await prisma.cliente.update({
