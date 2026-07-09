@@ -67,3 +67,5 @@ prisma/dev.db-shm
 # Base de datos de pruebas locales del seed demo
 demo-test.db
 demo-test.db-*
+basetest.db
+basetest.db-*
