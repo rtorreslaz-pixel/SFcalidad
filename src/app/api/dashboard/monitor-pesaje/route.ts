@@ -62,5 +62,19 @@ export async function GET() {
     };
   });
 
+  // Modo demo (DEMO_MODE=true, solo el despliegue de demostración): el monitor es
+  // en tiempo real, así que las lecturas sembradas se volverían "viejas" tras 2 min.
+  // Para que el demo siempre muestre básculas activas, se marca cada lectura como
+  // recién actualizada y se agrega un pequeño ruido al peso (como una celda de carga).
+  if (process.env.DEMO_MODE === "true") {
+    const ahora = new Date().toISOString();
+    const balanzasDemo = balanzas.map((b) => ({
+      ...b,
+      pesoGramos: Math.round(b.pesoGramos + (Math.random() - 0.5) * 16),
+      updatedAt: ahora,
+    }));
+    return NextResponse.json({ balanzas: balanzasDemo });
+  }
+
   return NextResponse.json({ balanzas });
 }

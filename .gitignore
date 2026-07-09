@@ -63,3 +63,7 @@ prisma/dev.db-shm
 
 # Cliente Prisma generado del spike de SQL Server (no versionar)
 /migration-spike/generated
+
+# Base de datos de pruebas locales del seed demo
+demo-test.db
+demo-test.db-*

@@ -331,6 +331,13 @@ async function main() {
   }
 
   console.log("Seed completo. (Usuarios sembrados requieren cambio de contraseña al primer ingreso.)");
+
+  // Datos de demostración SOLO para el despliegue demo (variable SEED_DEMO=true).
+  // Llena inspecciones, pesajes, monitor y trazabilidad con datos de prueba.
+  if (process.env.SEED_DEMO === "true") {
+    const { sembrarDemo } = await import("./seed-demo");
+    await sembrarDemo(prisma);
+  }
 }
 
 main()
