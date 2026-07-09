@@ -1,0 +1,14 @@
+import { chromium } from "playwright";
+import fs from "fs";
+const OUT="/tmp/claude-0/-home-user-Rommeltest/472c6376-e37b-5275-a745-eb7731133b7a/scratchpad";
+const TOKEN=fs.readFileSync(`${OUT}/token.txt`,"utf8").trim();
+const b=await chromium.launch({executablePath:"/opt/pw-browsers/chromium-1223/chrome-linux64/chrome"});
+const c=await b.newContext({viewport:{width:1440,height:820},deviceScaleFactor:1.5});
+await c.addCookies([{name:"session_token",value:TOKEN,url:"http://127.0.0.1:3000"}]);
+const p=await c.newPage();
+await p.goto("http://127.0.0.1:3000/dashboard-bi",{waitUntil:"domcontentloaded"});
+await p.waitForTimeout(4500);
+await p.screenshot({path:`${OUT}/demo-final.png`});
+const banner = await p.locator("text=Ambiente de demostración").count();
+console.log("banner visible:", banner>0);
+await b.close();

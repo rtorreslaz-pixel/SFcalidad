@@ -47,6 +47,11 @@ export default async function AppLayout({
           <NavLinks role={user.role} />
         </nav>
       </header>
+      {process.env.DEMO_MODE === "true" && (
+        <div className="bg-amber-400 px-4 py-1.5 text-center text-xs font-semibold text-amber-950 print:hidden">
+          Ambiente de demostración · datos de prueba (no reales)
+        </div>
+      )}
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 print:max-w-none print:px-0 print:py-0">
         {children}
       </main>
