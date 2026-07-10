@@ -77,7 +77,11 @@ docker compose -f migration-spike/docker-compose.yml down -v
 - `prisma.config.ts` — config de Prisma solo para el spike.
 - `docker-compose.yml` — SQL Server 2022 local desechable.
 - `smoke-test.mjs` — prueba de humo del cliente Prisma contra SQL Server.
-- `../Dockerfile`, `../.dockerignore` — contenerización de la app web.
+- `Dockerfile` (aquí, en migration-spike/) + `../.dockerignore` — contenerización
+  de la app web. Vive fuera de la raíz A PROPÓSITO: si estuviera en la raíz,
+  Railway lo usaría en vez de su builder normal y NO correría `db:setup`
+  (migraciones + seed), dejando la base sin crear. Para construir la imagen:
+  `docker build -f migration-spike/Dockerfile -t sanfernando-calidad .`
 
 ## Lo que NO cubre este spike (queda para después de la reunión)
 
