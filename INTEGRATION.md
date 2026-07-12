@@ -9,21 +9,20 @@ viven en este mismo repositorio y comparten la **misma base de datos**.
 
 | Área | Dueño |
 |------|-------|
-| UI web, dashboards, BI, reportes, formatos, preventa/engranaje | **Web** (conversación `poultry-quality-inspection`) |
+| UI web, dashboards, BI, reportes, formatos, preventa/engranaje | **Web** |
 | Esquema Prisma y **todas** las migraciones | **Web** (dueño único de la BD) |
 | Lado **servidor** de `/api/mobile/*` | **Web** |
 | Export / conexión BI | **Web** |
-| App Android (`android-scale-prototype/`), balanza Bluetooth, UI móvil | **Android** (conversación `bluetooth-scale-app`) |
+| App Android (`android-scale-prototype/`), balanza Bluetooth, UI móvil | **Android** |
 | Lado **cliente** de `/api/mobile/*` | **Android** |
 
 **Superficie compartida que hay que coordinar:** el contrato `/api/mobile/*` y el esquema de BD.
 
-## 2. Flujo de ramas
+## 2. Ramas
 
-- Web: `claude/poultry-quality-inspection-chbub6`
-- Android: `claude/bluetooth-scale-app-zzkjio`
-- Cada conversación trabaja en su rama. **La integración (fetch + merge) la lidera Web.**
-  Cuando Android llegue a un punto estable, Web hace el merge hacia su rama.
+- Todo el código (web + Android) vive en la rama **`main`** de este repositorio.
+- **La base de datos y sus migraciones las lidera Web** (ver reglas abajo). Android consume
+  el contrato `/api/mobile/*` sin tocar el esquema Prisma.
 
 ## 3. Reglas de cambio
 
@@ -172,7 +171,7 @@ celular no lo envía.
 
 ## 6. Modelos de BD compartidos
 
-Definidos en `prisma/schema.prisma`. **No editar desde la rama Android.**
+Definidos en `prisma/schema.prisma`. **No editar sin coordinar con Web (dueño de la BD).**
 
 ### `RegistroPesoPreventa`
 Registro por ave pesada en granja. Campos clave: `id` (UUID de cliente, **sin** `@default`),
