@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Báscula Ranger BT</string>
+    <string name="app_name">SF Pesaje Granja</string>
 
     <string name="status_idle">Listo. Selecciona la balanza emparejada y presiona Conectar.</string>
     <string name="no_bluetooth_adapter">Este dispositivo no tiene Bluetooth.</string>
