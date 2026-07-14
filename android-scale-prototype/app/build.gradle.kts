@@ -18,12 +18,15 @@ android {
     }
 
     buildTypes {
+        // El APK debug (el que publica CI como artefacto) apunta al ambiente DEMO:
+        // datos de prueba, sin riesgo de ensuciar producción durante las pruebas.
         debug {
-            buildConfigField("String", "API_BASE_URL", "\"https://rommeltest-production-338a.up.railway.app/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://sfcalidemo.up.railway.app/\"")
         }
+        // El APK release apunta a PRODUCCIÓN (datos reales).
         release {
             isMinifyEnabled = false
-            buildConfigField("String", "API_BASE_URL", "\"https://rommeltest-production-338a.up.railway.app/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://sfcaliprod.up.railway.app/\"")
         }
     }
 
