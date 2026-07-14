@@ -12,7 +12,8 @@ object ScaleProtocols {
     val all: List<ScaleProtocol> = listOf(
         OhausRangerProtocol(),
         GenericRegexProtocol(),
-        TScaleBwProtocol()
+        TScaleBwProtocol(),
+        BitPs40Protocol()
     )
 
     val default: ScaleProtocol = all.first()
