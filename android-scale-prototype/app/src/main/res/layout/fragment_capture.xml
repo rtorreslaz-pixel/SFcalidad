@@ -24,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/action_change_selection"
-            android:textColor="#1565C0"
+            android:textColor="@color/sf_blue"
             android:clickable="true"
             android:focusable="true" />
     </LinearLayout>
@@ -204,7 +204,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="@string/action_open_diagnostic"
-        android:textColor="#1565C0"
+        android:textColor="@color/sf_blue"
         android:clickable="true"
         android:focusable="true" />
 

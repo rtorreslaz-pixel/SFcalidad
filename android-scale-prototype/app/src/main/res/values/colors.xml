@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Paleta corporativa San Fernando: mismos valores que la app web (src/app/globals.css). -->
+<resources>
+    <color name="sf_blue">#0B4EA2</color>
+    <color name="sf_blue_deep">#002F86</color>
+    <color name="sf_blue_container">#E3ECF8</color>
+    <color name="sf_cyan">#A6DCEA</color>
+    <color name="sf_red">#E2231A</color>
+    <color name="sf_red_dark">#FF4A3D</color>
+    <color name="sf_white">#FFFFFF</color>
+    <!-- Variante clara del azul para modo oscuro (contraste sobre superficies oscuras). -->
+    <color name="sf_blue_light">#8FB7E8</color>
+</resources>

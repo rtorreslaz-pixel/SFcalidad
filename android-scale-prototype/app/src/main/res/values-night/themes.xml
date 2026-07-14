@@ -1,0 +1,17 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Modo oscuro: azul aclarado para mantener contraste sobre superficies oscuras
+         (mismo criterio que la web, que aclara marca y rojo en dark). -->
+    <style name="Theme.BasculaRangerTest" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/sf_blue_light</item>
+        <item name="colorOnPrimary">@color/sf_blue_deep</item>
+        <item name="colorPrimaryContainer">@color/sf_blue_deep</item>
+        <item name="colorOnPrimaryContainer">@color/sf_blue_container</item>
+        <item name="colorSecondary">@color/sf_cyan</item>
+        <item name="colorOnSecondary">@color/sf_blue_deep</item>
+        <item name="colorSecondaryContainer">@color/sf_blue_deep</item>
+        <item name="colorOnSecondaryContainer">@color/sf_cyan</item>
+        <item name="colorError">@color/sf_red_dark</item>
+        <item name="android:statusBarColor">@color/sf_blue_deep</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">false</item>
+    </style>
+</resources>
