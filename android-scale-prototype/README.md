@@ -47,6 +47,11 @@ Tests unitarios (parsers de básculas, DTOs, DAO): `./gradlew testDebugUnitTest`
 - **Cola offline** (Room, `scale-prototype.db`): cada registro queda local con
   `synced=false`; un worker los sube por lotes a `/api/mobile/registros` (idempotente
   por UUID) y publica el peso en vivo a `/api/mobile/live-weight` para el monitor web.
+  El catálogo de planteles se cachea para poder configurar la jornada sin señal, y el
+  badge de la pantalla de captura confirma el cierre del ciclo ("✓ Todo sincronizado").
+- **Alertas operativas**: aviso al entrar si hay registros sin subir hace más de 12 h
+  (la única copia vive en el teléfono), y advertencia en el login si hay pendientes de
+  OTRO verificador (el servidor los atribuiría a quien esté logueado al subirlos).
 - **Diagnóstico Bluetooth**: muestra cada línea cruda que envía la báscula (y su
   versión en hexadecimal) — es la herramienta para capturar el formato real de una
   báscula nueva y afinar su parser. Botón "Copiar registro" para compartir el log.
