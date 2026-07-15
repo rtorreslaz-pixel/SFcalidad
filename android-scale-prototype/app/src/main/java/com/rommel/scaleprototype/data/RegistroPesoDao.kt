@@ -20,6 +20,27 @@ interface RegistroPesoDao {
     @Query("SELECT COUNT(*) FROM registro_peso WHERE synced = 0")
     fun countUnsyncedFlow(): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM registro_peso WHERE synced = 0")
+    suspend fun countUnsynced(): Int
+
+    @Query("SELECT MIN(createdAtEpochMillis) FROM registro_peso WHERE synced = 0")
+    suspend fun oldestUnsyncedEpochMillis(): Long?
+
+    // Pendientes creados por OTRO usuario (los NULL son de versiones viejas de la app:
+    // dueño desconocido, no cuentan). Ver advertencia de atribución en LoginFragment.
+    @Query(
+        "SELECT COUNT(*) FROM registro_peso " +
+            "WHERE synced = 0 AND verificadorId IS NOT NULL AND verificadorId != :verificadorId"
+    )
+    suspend fun countUnsyncedFromOtherUser(verificadorId: String): Int
+
+    @Query(
+        "SELECT verificadorNombre FROM registro_peso " +
+            "WHERE synced = 0 AND verificadorId IS NOT NULL AND verificadorId != :verificadorId " +
+            "ORDER BY createdAtEpochMillis DESC LIMIT 1"
+    )
+    suspend fun latestOtherUserNombre(verificadorId: String): String?
+
     // El "siguiente número de ave" siempre se calcula desde lo persistido (nunca un
     // contador en memoria), para que un crash a mitad de corral no duplique números.
     // Escopado también por campania: el mismo corral físico se reutiliza entre campañas,

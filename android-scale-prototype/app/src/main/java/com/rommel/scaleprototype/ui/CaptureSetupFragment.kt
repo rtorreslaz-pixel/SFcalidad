@@ -10,6 +10,8 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.rommel.scaleprototype.data.AppDatabase
 import com.rommel.scaleprototype.R
 import com.rommel.scaleprototype.auth.AuthRepository
 import com.rommel.scaleprototype.databinding.FragmentCaptureSetupBinding
@@ -40,7 +42,33 @@ class CaptureSetupFragment : Fragment() {
             (1..10).toList(),
         )
         loadPlanteles()
+        warnIfStalePendingRecords()
         binding?.buttonStartCapture?.setOnClickListener { onStartCaptureClicked() }
+    }
+
+    /**
+     * Disciplina operativa: si hay registros sin subir desde hace más de 12 horas, se
+     * alerta al entrar — la única copia está en este teléfono hasta que sincronice.
+     */
+    private fun warnIfStalePendingRecords() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val dao = AppDatabase.getInstance(requireContext()).registroPesoDao()
+            val count = dao.countUnsynced()
+            if (count == 0) return@launch
+            val oldest = dao.oldestUnsyncedEpochMillis() ?: return@launch
+            val horas = (System.currentTimeMillis() - oldest) / MILLIS_PER_HOUR
+            if (horas < STALE_PENDING_THRESHOLD_HOURS) return@launch
+            val antiguedad = if (horas >= 24) {
+                resources.getQuantityString(R.plurals.stale_pending_days, (horas / 24).toInt(), horas / 24)
+            } else {
+                getString(R.string.stale_pending_hours, horas)
+            }
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.stale_pending_title)
+                .setMessage(getString(R.string.stale_pending_message, count, antiguedad))
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        }
     }
 
     private fun loadPlanteles() {
@@ -172,5 +200,8 @@ class CaptureSetupFragment : Fragment() {
         const val ARG_LINEA = "linea"
         const val ARG_LOTE = "lote"
         const val ARG_N_AVES_PESADA = "nAvesPorPesada"
+
+        private const val MILLIS_PER_HOUR = 3_600_000L
+        private const val STALE_PENDING_THRESHOLD_HOURS = 12L
     }
 }

@@ -13,8 +13,8 @@ android {
         applicationId = "com.rommel.scaleprototype"
         minSdk = 24
         targetSdk = 34
-        versionCode = 5
-        versionName = "1.4 (offline)"
+        versionCode = 6
+        versionName = "1.5 (alertas)"
     }
 
     buildTypes {

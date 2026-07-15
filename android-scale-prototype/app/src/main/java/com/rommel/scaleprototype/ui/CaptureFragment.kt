@@ -275,6 +275,7 @@ class CaptureFragment : Fragment() {
         ) else null
         val pigmentacion = if (evaluarCalidad) binding?.spinnerPigmentacion?.selectedItemPosition else null
 
+        val authRepository = AuthRepository(requireContext())
         viewLifecycleOwner.lifecycleScope.launch {
             val nowMillis = System.currentTimeMillis()
             val localMaxNumeroAve = dao.getMaxNumeroAve(plantelId, campania, galpon, corral, categoria) ?: 0
@@ -282,6 +283,8 @@ class CaptureFragment : Fragment() {
             dao.insert(
                 RegistroPeso(
                     id = UUID.randomUUID().toString(),
+                    verificadorId = authRepository.getVerificadorId(),
+                    verificadorNombre = authRepository.getVerificadorNombre(),
                     plantelId = plantelId,
                     plantelCodigo = plantelCodigo,
                     campania = campania,

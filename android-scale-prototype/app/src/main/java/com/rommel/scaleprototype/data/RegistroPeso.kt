@@ -26,6 +26,12 @@ data class RegistroPeso(
     val linea: String? = null,       // línea genética (Ross, Cobb, etc.)
     val lote: String? = null,        // J (Joven) / A (Adulto)
     val nAvesPorPesada: Int = 1,     // N° aves pesadas juntas en cada lectura de báscula
+    // Quién estaba logueado al CREAR el registro. El servidor atribuye cada registro a
+    // quien esté logueado al SUBIRLO, así que si otro usuario inicia sesión en este
+    // teléfono con pendientes ajenos, el login se lo advierte (ver LoginFragment).
+    // Null solo en filas creadas por versiones anteriores de la app.
+    val verificadorId: String? = null,
+    val verificadorNombre: String? = null,
     val synced: Boolean = false,
     val createdAtEpochMillis: Long,
 )

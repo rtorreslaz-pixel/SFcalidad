@@ -24,6 +24,8 @@ class AuthRepository(context: Context) {
 
     fun getToken(): String? = prefs.getString(KEY_TOKEN, null)
 
+    fun getVerificadorId(): String? = prefs.getString(KEY_VERIFICADOR_ID, null)
+
     fun getVerificadorNombre(): String? = prefs.getString(KEY_VERIFICADOR_NOMBRE, null)
 
     fun isLoggedIn(): Boolean = getToken() != null

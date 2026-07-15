@@ -61,6 +61,17 @@
     <string name="pending_count_format">%1$d pendientes de sincronizar</string>
     <string name="sync_all_done">✓ Todo sincronizado</string>
     <string name="offline_catalog_notice">Sin conexión: usando el catálogo guardado de la última sesión</string>
+    <string name="stale_pending_title">Registros sin subir</string>
+    <string name="stale_pending_message">Este teléfono tiene %1$d registros sin subir desde hace %2$s. Son la única copia: conéctate a internet para que se sincronicen.</string>
+    <string name="stale_pending_hours">%1$d horas</string>
+    <plurals name="stale_pending_days">
+        <item quantity="one">%1$d día</item>
+        <item quantity="other">%1$d días</item>
+    </plurals>
+    <string name="pending_other_user_title">Registros pendientes de otro usuario</string>
+    <string name="pending_other_user_message">Este teléfono tiene %1$d registros sin subir de %2$s. Al sincronizar, quedarán registrados a TU nombre. Si no corresponde, avisa a tu supervisor antes de continuar.</string>
+    <string name="pending_other_user_continue">Entendido, continuar</string>
+    <string name="other_user_fallback">otro verificador</string>
     <string name="status_no_saved_scale">No hay báscula guardada. Abre Ajustes de báscula para vincular una.</string>
     <string name="status_bluetooth_disabled">Bluetooth desactivado.</string>
     <string name="status_connecting">Conectando a la báscula guardada…</string>

@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.migration.Migration
 
-@Database(entities = [RegistroPeso::class], version = 4, exportSchema = true)
+@Database(entities = [RegistroPeso::class], version = 5, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun registroPesoDao(): RegistroPesoDao
@@ -47,6 +47,15 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // Quién creó cada registro (para advertir si otro usuario va a subir pendientes
+        // ajenos). Filas existentes quedan NULL: dueño desconocido, no se advierte.
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE registro_peso ADD COLUMN verificadorId TEXT")
+                db.execSQL("ALTER TABLE registro_peso ADD COLUMN verificadorNombre TEXT")
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -55,7 +64,8 @@ abstract class AppDatabase : RoomDatabase() {
                     "scale-prototype.db",
                     // Sin fallbackToDestructiveMigration(): un futuro cambio de esquema
                     // debe ir por una Migration real, no borrar la cola de un verificador.
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build().also { instance = it }
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .build().also { instance = it }
             }
         }
     }
