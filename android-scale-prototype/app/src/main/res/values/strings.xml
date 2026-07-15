@@ -59,6 +59,8 @@
     <string name="action_open_diagnostic">Ajustes de báscula</string>
     <string name="action_register_ave">Pesar</string>
     <string name="pending_count_format">%1$d pendientes de sincronizar</string>
+    <string name="sync_all_done">✓ Todo sincronizado</string>
+    <string name="offline_catalog_notice">Sin conexión: usando el catálogo guardado de la última sesión</string>
     <string name="status_no_saved_scale">No hay báscula guardada. Abre Ajustes de báscula para vincular una.</string>
     <string name="status_bluetooth_disabled">Bluetooth desactivado.</string>
     <string name="status_connecting">Conectando a la báscula guardada…</string>

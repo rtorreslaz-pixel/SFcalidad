@@ -21,6 +21,7 @@ class ApiException(val code: Int, override val message: String) : IOException(me
 class ApiClient(private val baseUrl: String, context: Context) {
 
     private val authRepository = AuthRepository(context.applicationContext)
+    private val catalogCache = CatalogCache(context.applicationContext)
     private val json = Json { ignoreUnknownKeys = true }
     private val client = OkHttpClient.Builder()
         .addInterceptor(AuthInterceptor(authRepository))
@@ -34,7 +35,19 @@ class ApiClient(private val baseUrl: String, context: Context) {
 
     suspend fun getCatalogos(): CatalogosResponse = withContext(Dispatchers.IO) {
         val request = Request.Builder().url(baseUrl + "api/mobile/catalogos").get().build()
-        execute(request) { json.decodeFromString(CatalogosResponse.serializer(), it) }
+        execute(request) { raw ->
+            val parsed = json.decodeFromString(CatalogosResponse.serializer(), raw)
+            catalogCache.save(raw) // respaldo offline: solo se guarda si parseó bien
+            parsed
+        }
+    }
+
+    /**
+     * Respaldo offline: la última respuesta buena de catálogos, o null si el teléfono
+     * nunca logró descargarla. Ver [CatalogCache].
+     */
+    fun getCatalogosOffline(): CatalogosResponse? = catalogCache.load()?.let { raw ->
+        runCatching { json.decodeFromString(CatalogosResponse.serializer(), raw) }.getOrNull()
     }
 
     suspend fun postRegistros(registros: List<RegistroDto>): RegistrosBatchResponse = withContext(Dispatchers.IO) {

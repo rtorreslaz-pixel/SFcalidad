@@ -57,15 +57,33 @@ class CaptureSetupFragment : Fragment() {
             } catch (e: ApiException) {
                 if (e.code == 401) {
                     forceReLogin()
-                } else {
+                } else if (!loadPlantelesFromCache()) {
                     showError(getString(R.string.error_load_planteles, e.message))
                 }
             } catch (e: Exception) {
-                showError(getString(R.string.error_load_planteles, e.message ?: e.javaClass.simpleName))
+                // Sin señal (típico en granja): se usa el catálogo guardado de la última
+                // sesión con internet, para poder configurar la jornada 100% offline.
+                if (!loadPlantelesFromCache()) {
+                    showError(getString(R.string.error_load_planteles, e.message ?: e.javaClass.simpleName))
+                }
             } finally {
                 setLoading(false)
             }
         }
+    }
+
+    /** Puebla el spinner con el catálogo guardado. Devuelve false si nunca se descargó uno. */
+    private fun loadPlantelesFromCache(): Boolean {
+        val cached = ApiClient.getInstance(requireContext()).getCatalogosOffline() ?: return false
+        if (cached.planteles.isEmpty()) return false
+        planteles = cached.planteles
+        binding?.spinnerPlantel?.adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            planteles.map { if (it.cliente != null) "${it.codigo} — ${it.cliente}" else it.codigo },
+        )
+        Toast.makeText(requireContext(), getString(R.string.offline_catalog_notice), Toast.LENGTH_LONG).show()
+        return true
     }
 
     private fun onStartCaptureClicked() {

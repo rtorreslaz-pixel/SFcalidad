@@ -147,7 +147,13 @@ class CaptureFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 dao.countUnsyncedFlow().collect { count ->
-                    binding?.textPendingBadge?.text = getString(R.string.pending_count_format, count)
+                    // Confirmación operativa: 0 pendientes = todo lo pesado ya está en el
+                    // servidor; el verificador puede irse/apagar tranquilo.
+                    binding?.textPendingBadge?.text = if (count == 0) {
+                        getString(R.string.sync_all_done)
+                    } else {
+                        getString(R.string.pending_count_format, count)
+                    }
                 }
             }
         }
