@@ -13,7 +13,7 @@ export default async function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 inline-flex flex-col items-center">
-            <span className="text-3xl font-extrabold tracking-tight text-brand">San Fernando</span>
+            <span className="text-2xl font-extrabold tracking-tight text-brand">Sistema de Calidad y Pesaje</span>
           </div>
           <div className="mx-auto mb-5 h-1 w-16 rounded-full bg-brand" />
           <h1 className="text-xl font-bold text-slate-900">

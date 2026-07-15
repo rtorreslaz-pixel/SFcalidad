@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Tema claro con la identidad San Fernando. Material 3 propaga estos colores a
+    <!-- Tema claro con la identidad visual de la app. Material 3 propaga estos colores a
          botones, campos de texto, spinners, checkboxes y demás controles de la app. -->
     <style name="Theme.BasculaRangerTest" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/sf_blue</item>

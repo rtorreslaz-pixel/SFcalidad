@@ -23,9 +23,9 @@ export default async function AppLayout({
       <header className="sticky top-0 z-10 bg-brand print:hidden dark:bg-[#002f86]">
         <div className="mx-auto flex h-[54px] max-w-6xl items-center justify-between px-4">
           <Link href="/dashboard" className="flex flex-col leading-none">
-            <span className="text-base font-extrabold text-white">San Fernando</span>
+            <span className="text-base font-extrabold text-white">Sistema de Calidad y Pesaje</span>
             <span className="text-[10px] font-bold uppercase tracking-wider text-white/75">
-              Calidad · Clientes Lima
+              Calidad en Cliente · Pesaje en Granja
             </span>
           </Link>
           <div className="flex items-center gap-1 text-sm">

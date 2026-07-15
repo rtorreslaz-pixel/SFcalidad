@@ -10,7 +10,7 @@ export default async function CambiarClavePage() {
     <div className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
-          <span className="text-2xl font-extrabold tracking-tight text-brand">San Fernando</span>
+          <span className="text-xl font-extrabold tracking-tight text-brand">Sistema de Calidad y Pesaje</span>
           <div className="mx-auto my-4 h-1 w-16 rounded-full bg-brand" />
           <h1 className="text-lg font-bold text-slate-900">Cambia tu contraseña</h1>
           {user.mustChangePassword ? (

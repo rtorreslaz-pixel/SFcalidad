@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Paleta corporativa San Fernando: mismos valores que la app web (src/app/globals.css). -->
+<!-- Paleta corporativa: mismos valores que la app web (src/app/globals.css). -->
 <resources>
     <color name="sf_blue">#0B4EA2</color>
     <color name="sf_blue_deep">#002F86</color>

@@ -82,7 +82,7 @@ export function FormatoAlmohadillas({ jornada }: { jornada: JornadaFormato }) {
           {/* Cabecera con código */}
           <tr>
             <td className={`${LABEL} w-[18%] text-center`} rowSpan={2}>
-              SAN FERNANDO
+              SISTEMA DE
               <br />
               CALIDAD AAVV
             </td>
@@ -238,7 +238,7 @@ export function FormatoSeleccion({
           {/* Cabecera */}
           <tr>
             <td className={`${LABEL} w-[16%] text-center`} rowSpan={2}>
-              SAN FERNANDO
+              SISTEMA DE
               <br />
               CALIDAD AAVV
             </td>
