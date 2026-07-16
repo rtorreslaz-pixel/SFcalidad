@@ -24,6 +24,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  async rewrites() {
+    // URL limpia para el prototipo interactivo público (sin login).
+    return [{ source: "/prototipo", destination: "/prototipo.html" }];
+  },
 };
 
 export default nextConfig;
