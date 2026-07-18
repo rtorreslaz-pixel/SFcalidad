@@ -1,0 +1,78 @@
+# Bitácora de contexto y decisiones
+
+> Documento de **handoff**: captura el estado, las decisiones y los "trucos" del
+> proyecto para retomar en cualquier sesión (o persona) sin depender del historial
+> de chat. Actualizar al tomar decisiones o cambiar despliegues.
+> Última actualización: 15/07/2026.
+
+## 1. Qué es el proyecto
+**Sistema de Calidad y Pesaje** (marca genérica; antes "San Fernando"): control de
+calidad del pollo en el cliente + pesaje preventa en granja. Omnicanal:
+- **Web** (Next.js 16 / React 19 / TS) — supervisión, calidad en cliente, indicadores, admin.
+- **App Android** (Kotlin, `android-scale-prototype/`) — pesaje en granja con báscula
+  Bluetooth, offline con cola de sincronización.
+- Ambas comparten base de datos y el contrato `/api/mobile/*` (ver `INTEGRATION.md`).
+
+## 2. Repositorio y ramas
+- Repo: `github.com/rtorreslaz-pixel/SFcalidad` (público).
+- **Una sola rama: `main`** (todo consolidado; las ramas `claude/*` se borraron).
+- Trabajar siempre sobre `main`. Cambios grandes → rama + ambiente staging, luego merge.
+
+## 3. Despliegues (Railway)
+| | Producción | Demo |
+|---|---|---|
+| Proyecto | `san-fernando-produccion` | `san-fernando-demo` |
+| Servicio | `web` | `web` |
+| URL | `sfcaliprod.up.railway.app` | `sfcalidemo.up.railway.app` |
+| Volumen | **Sí** (`/data`) | No |
+| `DATABASE_URL` | `file:/data/dev.db` | `file:/app/dev.db` |
+| `DISABLE_WAL` | `true` | — |
+| `SEED_DEMO` / `DEMO_MODE` | no | `true` / `true` |
+| Datos | Reales, persistentes | Prueba, se re-siembran cada deploy |
+| Ingreso | `supervisor@avicola.com` / `11223344` | `supervisor@avicola.com` / `demo1234` |
+
+- Ambos **auto-despliegan desde `main`** al hacer push.
+- Prototipo interactivo público (sin login): `…/prototipo`.
+- ⚠️ El **Trial de Railway** estuvo casi agotado ($2.41). Si se apagan los servicios, revisar el plan.
+
+## 4. "Gotchas" del despliegue (esto vale oro)
+- **Puerto 8080**: el dominio de Railway debe apuntar al puerto **8080** (el `PORT` que inyecta). Si el dominio apunta a otro (ej. 3000), da **502** aunque la app esté "Ready".
+- **No dejar `Dockerfile` en la raíz**: Railway lo usaría en vez de su builder y **saltaría `db:setup`** (migraciones + seed) → la base no se crea → `SQLITE_CANTOPEN`. El Dockerfile vive en `migration-spike/`.
+- **`DATABASE_URL` absoluta en producción** (relativa `file:./dev.db` falla con `CANTOPEN` en el build de producción de Next).
+- **`DISABLE_WAL=true`** cuando SQLite está en un **volumen** de Railway (WAL necesita archivos de memoria compartida que el volumen no soporta → `SQLITE_READONLY`).
+- El **demo es efímero** (sin volumen): se re-siembra en cada deploy — ideal para mostrar, no para datos reales.
+- **APK por CI**: workflow "Android APK" (`.github/workflows/android-apk.yml`) corre tests y publica `app-debug.apk` como artefacto en cada push que toque `android-scale-prototype/`. Debug→demo, release→prod.
+
+## 5. Trabajo local (entorno de desarrollo)
+- Si `node_modules` se corrompe: `npm install`; luego **`npx prisma generate`** (cliente en `src/generated/prisma`) y, si falla el binario nativo, `cd node_modules/better-sqlite3 && npx node-gyp rebuild --release`.
+- Para **capturas de la web**: `next build` → `next start` con `DATABASE_URL=file:./algo.db DEMO_MODE=true`, sembrar con `SEED_DEMO=true npx tsx prisma/seed.ts`, crear un token de sesión y capturar con Playwright contra `localhost` (chromium en `/opt/pw-browsers`).
+- `npm start` = `db:setup && next start`; `db:setup` = `migrate deploy && enable-wal.cjs && (seed || no-fatal)`.
+
+## 6. Decisiones clave (y el porqué)
+- **SQLite ahora → SQL Server corporativo** (validado en `migration-spike/`). Se mantiene SQLite hasta SQL Server para **no migrar dos veces** (Postgres se descartó por eso).
+- **Dos ambientes** (demo/prod) en vez de uno; el demo es el que se comparte.
+- **Monorepo** (web + Android juntos); contrato en `INTEGRATION.md`.
+- **App móvil offline-first** con **sincronización idempotente** (UUID por registro).
+- **Marca genérica** "Sistema de Calidad y Pesaje" en app + documentos (sin "San Fernando").
+- **Base de datos = archivo SQLite en volumen** en prod; lenta por ser disco de red → otra razón para SQL Server.
+
+## 7. Documentación en el repo
+- `docs/DFU-Calidad-Pesaje.docx` — Documento Funcional (con capturas).
+- `docs/PRD.md` + `docs/PRD.docx` — requisitos (RF/RNF, MoSCoW, criterios de aceptación).
+- `docs/arquitectura-tecnica.png` — diagrama de arquitectura.
+- `docs/guia-prueba-app-pesaje.md` — guía para probar la app.
+- `docs/BD-Pesaje-diccionario-y-datos-de-prueba.xlsx` — diccionario de datos.
+- `INTEGRATION.md` — contrato de la API móvil.
+- `migration-spike/` — port a SQL Server (esquema + docker-compose + hallazgos).
+- `public/prototipo.html` (`/prototipo`) — prototipo interactivo de la app móvil.
+
+## 8. App móvil — estado
+- Nombre visible: "SF Pesaje Granja". Versión iterada en `app/build.gradle.kts`.
+- Protocolos de báscula: Ohaus Ranger, Genérico, T-Scale BW, **BIT PS 4.0 IoT (provisional)**.
+- La BIT PS 4.0 IoT **no publica su trama Bluetooth**: parser heurístico provisional; validar con captura hex real o pedir protocolo a Bröring.
+- Offline: cola local (Room `scale-prototype.db`), sync por lotes, alertas de pendientes y de atribución (otro usuario).
+
+## 9. Pendientes / roadmap
+- **Fase 2 (productización)**: migrar a SQL Server, SSO/Active Directory, despliegue Docker corporativo, respaldos/SLA, Power BI corporativo.
+- **Fase 3**: integración SAP; soporte de más marcas/BLE de báscula; validar parser BIT PS con báscula física.
+- Opcionales sueltos: quitar la franja "demo" de las capturas del DFU; renombrar el repo a algo neutro; correo a TI (borrador en el historial / se puede regenerar).
