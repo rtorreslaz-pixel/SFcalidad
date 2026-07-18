@@ -5,6 +5,12 @@ Documentos de referencia del proyecto para el área usuaria y TI.
 - **`DFU-Calidad-Pesaje.docx`** — Documento Funcional de Usuario: objetivos,
   situación actual, propuesta por módulos (con capturas) y arquitectura. Es el
   documento funcional para revisión/aprobación del área usuaria.
+- **`PRD.md` / `PRD.docx`** — Product Requirements Document: requisitos
+  funcionales (RF) y no funcionales (RNF) numerados y priorizados (MoSCoW),
+  KPIs, historias de usuario, reglas de negocio, criterios de aceptación,
+  riesgos y roadmap. Es la fuente de verdad del alcance para Producto/Desarrollo
+  y TI (prescriptivo y verificable). El `.md` es el documento vivo versionable;
+  el `.docx` es para compartir/adjuntar.
 - **`arquitectura-tecnica.png`** — Diagrama de arquitectura técnica: stack actual
   (cliente, aplicación, datos) y la capa adaptable al stack corporativo
   (SQL Server, despliegue, SSO, Power BI).
