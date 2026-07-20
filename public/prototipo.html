@@ -180,7 +180,7 @@ a.weblink:hover{ text-decoration:underline; }
               <div><label class="f">Corral</label><input class="inp" value="B"></div>
               <div><label class="f">Edad (días)</label><input class="inp" value="42"></div>
             </div>
-            <div><label class="f">Línea genética</label><input class="inp" value="Ross"></div>
+            <div><label class="f">Línea genética</label><select class="sel"><option>ROSS</option><option>COBB</option></select></div>
             <div><label class="f">Lote</label>
               <div class="radios" data-radio="lote"><div class="chip on">J — Joven</div><div class="chip">A — Adulto</div></div></div>
             <div><label class="f">N° aves por pesada</label><select class="sel"><option>1</option><option>2</option><option>3</option></select></div>
@@ -191,7 +191,7 @@ a.weblink:hover{ text-decoration:underline; }
           <div class="view" id="v-capture">
             <div class="selhead">
               <div class="t">P208 · 2705 · G7 · B · Macho</div>
-              <div class="s">Edad 42 d · Ross · Lote J · 1 ave/pesada &nbsp; <button class="link" data-go="setup">Cambiar</button></div>
+              <div class="s">Edad 42 d · ROSS · Lote J · 1 ave/pesada &nbsp; <button class="link" data-go="setup">Cambiar</button></div>
             </div>
             <span class="badge done" id="syncbadge">✓ Todo sincronizado</span>
             <div class="muted" id="capstatus" style="display:flex;align-items:center;gap:7px"><span class="dot live"></span> Conectado — báscula BIT PS 4.0 IoT</div>
@@ -204,7 +204,7 @@ a.weblink:hover{ text-decoration:underline; }
             <div class="calidad" id="calidad">
               <div><label class="f">Pododermatitis</label><div class="radios" data-radio="podo"><div class="chip on">Sin lesión</div><div class="chip">Leve</div><div class="chip">Grave (G2)</div></div></div>
               <div><label class="f">Rasguños</label><div class="radios" data-radio="rasg"><div class="chip on">Sin lesión</div><div class="chip">Leve</div><div class="chip">Grave (G2)</div></div></div>
-              <div><label class="f">Pigmentación (0–7)</label><select class="sel"><option>3</option><option>4</option><option>2</option><option>5</option></select></div>
+              <div><label class="f">Pigmentación (1–6)</label><div class="radios" data-radio="pigm"><div class="chip">1</div><div class="chip">2</div><div class="chip">3</div><div class="chip">4</div><div class="chip">5</div><div class="chip">6</div></div></div>
             </div>
             <button class="btn primary" id="pesarBtn">Pesar</button>
             <div class="lastreg" id="lastreg"></div>
