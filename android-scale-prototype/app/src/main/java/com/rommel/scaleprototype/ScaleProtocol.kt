@@ -1,6 +1,12 @@
 package com.rommel.scaleprototype
 
-data class ParsedWeight(val value: Double, val unit: String?)
+/**
+ * Peso decodificado de una línea de la báscula.
+ * @param stable `true` si la báscula reporta la lectura como estabilizada. Las básculas que no
+ *   distinguen estabilidad devuelven `true` por defecto (contrato histórico); las que sí lo
+ *   informan (p. ej. BIT PS 4.0, prefijo `S`/`U`) lo propagan para poder capturar solo pesos firmes.
+ */
+data class ParsedWeight(val value: Double, val unit: String?, val stable: Boolean = true)
 
 /**
  * Decodifica el peso a partir de una línea cruda enviada por una báscula. Cada marca/

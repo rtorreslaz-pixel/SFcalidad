@@ -3,36 +3,55 @@ package com.rommel.scaleprototype
 import kotlin.math.abs
 
 /**
- * Bröring BIT PS 4.0 IoT (báscula avícola) — parser PROVISIONAL.
+ * Bröring BIT PS 4.0 IoT (báscula avícola).
  *
- * El manual oficial (EN/DE, broeringtech.com/files/manuals/BITPS_Manual_EN_DE.pdf) no publica
- * el formato de la trama Bluetooth: la báscula está pensada para la app del propio fabricante
- * (Bluetooth clásico, nombre "SCALE-<serie>", p. ej. SCALE-2023-0123) y, en la variante IoT,
- * para subir series por WiFi a un servidor. Hasta obtener el protocolo real (pedirlo a
- * appstore@broeringtech.com / info@broeringtech.com) o una captura con la pantalla
- * "Diagnóstico Bluetooth" (casilla "hex"), este parser aplica una heurística de texto más
- * estricta que [GenericRegexProtocol] y adaptada a esta báscula:
+ * Formato REAL de la trama Bluetooth SPP, confirmado con captura de la báscula física
+ * (pantalla "Diagnóstico Bluetooth", casilla hex — dispositivo `scale-2413-0214`):
  *
- *  - acepta coma decimal ("2,345 kg", formato alemán) además de punto;
- *  - prefiere el primer número CON unidad explícita (kg/g) sobre números sueltos, para no
- *    confundir contadores de muestra (p. ej. "No. 15") con el peso;
- *  - sin unidad: con decimales se asume kg; un entero >= 50 se asume gramos ("2345" -> 2.345 kg,
- *    típico en aves) y un entero < 50 se asume kg;
- *  - descarta horas/fechas/números de serie (tokens pegados a ':', '/', '-' o '.') y valores
- *    fuera de rango para pesaje avícola (|peso| > 50 kg).
+ *     <estado><peso><CR/LF>
+ *
+ * donde `<estado>` es una letra:
+ *   - `U` (0x55) = peso **inestable** (en movimiento / aún no estabilizado),
+ *   - `S` (0x53) = peso **estable** (lectura firme),
+ * y `<peso>` es un entero. Ejemplos capturados (subida de peso hasta estabilizar y bajar):
+ *     U5, U10, U45, U225, U520, U755, U1085, U1280, U1375, U1440, S1460, U105, U0, U0 …
+ * El [ScaleBluetoothClient] separa por `\r`/`\n`, así que cada trama llega como una "línea"
+ * ya sin el terminador.
+ *
+ * UNIDAD: el entero viene en **gramos** (1460 -> 1.460 kg, rango típico de un ave). Este es
+ * el valor por defecto y coincide con el rango avícola; si al comparar contra el display la
+ * báscula estuviera configurada en otra resolución, ajustar [DIVISOR_A_KG].
+ *
+ * Si la trama no coincide con `<U|S><entero>` (otra config/firmware), cae a una heurística de
+ * texto tolerante (coma decimal alemana, unidad kg/g explícita, descarta horas/fechas/series).
  *
  * Devuelve SIEMPRE kg — [com.rommel.scaleprototype.ui.CaptureFragment] asume ese contrato para
- * todos los `ScaleProtocol`.
- *
- * IMPORTANTE: al probar con la báscula física, validar en "Diagnóstico Bluetooth" que las
- * lecturas coinciden con el display; si el firmware envía otro formato (p. ej. binario),
- * capturar unas líneas en hex y ajustar este parser al formato real en vez de adivinar.
+ * todos los `ScaleProtocol`. Propaga además `stable` (S = true, U = false) para poder capturar
+ * solo lecturas estabilizadas.
  */
 class BitPs40Protocol : ScaleProtocol {
     override val id: String = "bitps-40-iot"
-    override val displayName: String = "BIT PS 4.0 IoT (Bröring, provisional)"
+    override val displayName: String = "BIT PS 4.0 IoT (Bröring)"
 
     override fun parse(line: String): ParsedWeight? {
+        parseTramaEstado(line)?.let { return it }
+        return parseHeuristico(line)
+    }
+
+    /**
+     * Trama nativa `<U|S><entero>` (formato real de la báscula). Devuelve null si la línea no
+     * tiene esa forma, para que [parse] pruebe la heurística de respaldo.
+     */
+    private fun parseTramaEstado(line: String): ParsedWeight? {
+        val m = TRAMA_ESTADO_REGEX.find(sanitize(line).trim()) ?: return null
+        val estable = m.groupValues[1].uppercase() == "S"
+        val gramos = m.groupValues[2].replace(',', '.').toDoubleOrNull() ?: return null
+        val kg = gramos / DIVISOR_A_KG
+        if (abs(kg) > MAX_KG_AVICOLA) return null
+        return ParsedWeight(kg, "kg", stable = estable)
+    }
+
+    private fun parseHeuristico(line: String): ParsedWeight? {
         val text = sanitize(line)
         val candidatos = NUMBER_REGEX.findAll(text).filter { esCandidatoAislado(text, it) }.toList()
         val elegido = candidatos.firstOrNull { unidadExplicita(text, it) != null }
@@ -84,6 +103,12 @@ class BitPs40Protocol : ScaleProtocol {
     private fun esLetraODigito(c: Char?): Boolean = c != null && c.isLetterOrDigit()
 
     companion object {
+        // Trama real: una letra de estado (S=estable, U=inestable) pegada a un entero, p. ej. "S1460".
+        private val TRAMA_ESTADO_REGEX = Regex("""^([SsUu])\s*([+-]?\d+(?:[.,]\d+)?)$""")
+
+        /** El entero de la trama viene en gramos; se divide para obtener kg. */
+        private const val DIVISOR_A_KG = 1000.0
+
         private val NUMBER_REGEX = Regex("""([+-]?\d+(?:[.,]\d+)?)""")
         // ',' NO invalida: muchas básculas separan campos con coma ("ST,GS,+2.345kg").
         private val PEGADO_ANTES = charArrayOf('.', ':', '/', '-')

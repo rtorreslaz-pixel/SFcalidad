@@ -1,17 +1,57 @@
 package com.rommel.scaleprototype
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * El formato real de la BIT PS 4.0 IoT no está publicado (ver KDoc de [BitPs40Protocol]);
- * estos casos fijan el comportamiento de la heurística provisional. Cuando exista una captura
- * real de la báscula, agregar aquí las líneas capturadas como casos canónicos.
+ * Casos canónicos de la BIT PS 4.0 IoT. Los del bloque "trama real" corresponden a una captura
+ * de la báscula física (dispositivo `scale-2413-0214`), formato `<U|S><gramos>`; el resto fija
+ * la heurística de respaldo para tramas que no coincidan con ese formato.
  */
 class BitPs40ProtocolTest {
 
     private val protocol = BitPs40Protocol()
+
+    // --- Trama real capturada: <estado><gramos>, S=estable / U=inestable ---
+
+    @Test
+    fun `stable frame parses grams to kg and marks stable`() {
+        val result = protocol.parse("S1460")
+        assertEquals(1.460, result!!.value, 0.000001)
+        assertEquals("kg", result.unit)
+        assertTrue(result.stable)
+    }
+
+    @Test
+    fun `unstable frame is parsed but marked not stable`() {
+        val result = protocol.parse("U1440")
+        assertEquals(1.440, result!!.value, 0.000001)
+        assertFalse(result.stable)
+    }
+
+    @Test
+    fun `zero frame parses to zero`() {
+        assertEquals(0.0, protocol.parse("U0")!!.value, 0.000001)
+    }
+
+    @Test
+    fun `captured ramp keeps values monotonic in kg`() {
+        // U5, U10, U45, U225, U520, U755, U1085 -> 0.005 … 1.085 kg
+        assertEquals(0.005, protocol.parse("U5")!!.value, 0.000001)
+        assertEquals(0.045, protocol.parse("U45")!!.value, 0.000001)
+        assertEquals(0.520, protocol.parse("U520")!!.value, 0.000001)
+        assertEquals(1.085, protocol.parse("U1085")!!.value, 0.000001)
+    }
+
+    @Test
+    fun `state frame tolerates trailing control chars from framing`() {
+        assertEquals(1.460, protocol.parse("S1460\r")!!.value, 0.000001)
+    }
+
+    // --- Heurística de respaldo (tramas que no son <U|S><entero>) ---
 
     @Test
     fun `parses weight with dot decimal and kg unit`() {
