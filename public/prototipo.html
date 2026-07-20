@@ -169,6 +169,8 @@ a.weblink:hover{ text-decoration:underline; }
 
           <!-- SETUP -->
           <div class="view" id="v-setup">
+            <div><label class="f">Tipo de captura</label>
+              <div class="radios" data-radio="modo"><div class="chip on">Pesaje</div><div class="chip">Solo calidad</div></div></div>
             <div><label class="f">Plantel</label><select class="sel"><option>P208 — AKIM</option><option>P054 — VALENTINA</option><option>P280 — LUCARVI</option></select></div>
             <div class="row2">
               <div><label class="f">Campaña</label><input class="inp" value="2705"></div>
@@ -195,12 +197,12 @@ a.weblink:hover{ text-decoration:underline; }
             </div>
             <span class="badge done" id="syncbadge">✓ Todo sincronizado</span>
             <div class="muted" id="capstatus" style="display:flex;align-items:center;gap:7px"><span class="dot live"></span> Conectado — báscula BIT PS 4.0 IoT</div>
-            <div class="weightcard">
+            <div class="weightcard" id="weightcard">
               <div class="k">Peso en vivo</div>
               <div class="big"><span id="wval">2.612</span><span class="u"> kg</span></div>
               <div class="std muted">Estándar del lote: <b>3.103 kg</b> · <span id="stdgap" style="color:var(--amber);font-weight:700">−0.49 kg</span></div>
             </div>
-            <div class="switchrow"><span style="font-weight:700;font-size:13.5px">Evaluar calidad de esta ave</span><div class="sw" id="calSw"></div></div>
+            <div class="switchrow" id="calrow"><span style="font-weight:700;font-size:13.5px">Evaluar calidad de esta ave</span><div class="sw" id="calSw"></div></div>
             <div class="calidad" id="calidad">
               <div><label class="f">Pododermatitis</label><div class="radios" data-radio="podo"><div class="chip on">Sin lesión</div><div class="chip">Leve</div><div class="chip">Grave (G2)</div></div></div>
               <div><label class="f">Rasguños</label><div class="radios" data-radio="rasg"><div class="chip on">Sin lesión</div><div class="chip">Leve</div><div class="chip">Grave (G2)</div></div></div>
@@ -208,7 +210,7 @@ a.weblink:hover{ text-decoration:underline; }
             </div>
             <button class="btn primary" id="pesarBtn">Pesar</button>
             <div class="lastreg" id="lastreg"></div>
-            <button class="btn ghost" data-go="scale">Ajustes de báscula</button>
+            <button class="btn ghost" data-go="scale" id="scaleBtn">Ajustes de báscula</button>
           </div>
 
           <!-- SCALE / DIAGNOSTIC -->
@@ -273,7 +275,7 @@ a.weblink:hover{ text-decoration:underline; }
   var state={ screen:'login', online:true, pending:0, aves:0, weight:2.612 };
   var titles={
     login:['Iniciar sesión','Acceso del verificador.'],
-    setup:['Configurar captura','Datos del lote que se va a pesar.'],
+    setup:['Configurar captura','Datos del lote que se va a capturar.'],
     capture:['Captura de pesaje','Peso en vivo y registro ave por ave.'],
     scale:['Ajustes de báscula','Vincular báscula y elegir su protocolo.']
   };
@@ -300,6 +302,26 @@ a.weblink:hover{ text-decoration:underline; }
     var fc=document.getElementById('exFeats'); fc.innerHTML='';
     feats[s].forEach(function(f){ fc.insertAdjacentHTML('beforeend',
       '<div class="feat"><div class="ic">'+f[0]+'</div><div><div class="t">'+f[1]+'</div><div class="d">'+f[2]+'</div></div></div>'); });
+    if(s==='capture') applyMode();
+  }
+
+  // Modo de captura: "Pesaje" (peso + calidad opcional) vs "Solo calidad" (sin báscula).
+  function isSoloCalidad(){
+    var chip=document.querySelector('[data-radio="modo"] .chip.on');
+    return !!(chip && /calidad/i.test(chip.textContent));
+  }
+  function applyMode(){
+    var solo=isSoloCalidad();
+    document.getElementById('weightcard').style.display = solo?'none':'';
+    document.getElementById('capstatus').style.display = solo?'none':'';
+    document.getElementById('calrow').style.display    = solo?'none':'';
+    document.getElementById('scaleBtn').style.display   = solo?'none':'';
+    if(solo){ document.getElementById('calidad').classList.add('show'); }
+    else{ document.getElementById('calidad').classList.toggle('show', calSw.classList.contains('on')); }
+    document.getElementById('pesarBtn').textContent = solo?'Registrar calidad':'Pesar';
+    document.getElementById('exTitle').textContent  = solo?'Captura de calidad':'Captura de pesaje';
+    document.getElementById('exSub').textContent    = solo?'Evaluación de calidad ave por ave, sin báscula.':'Peso en vivo y registro ave por ave.';
+    document.getElementById('appbarsub').textContent= solo?'Calidad':'Captura';
   }
   document.querySelectorAll('[data-go]').forEach(function(b){ b.addEventListener('click',function(){ setScreen(b.dataset.go); }); });
 
@@ -353,9 +375,10 @@ a.weblink:hover{ text-decoration:underline; }
 
   // pesar
   document.getElementById('pesarBtn').onclick=function(){
-    state.aves++; var g=(state.weight*1000).toFixed(0);
-    document.getElementById('lastreg').textContent='Ave #'+state.aves+' registrada — '+g+' g';
-    if(state.online){ showToast('Ave #'+state.aves+' pesada y enviada.'); }
+    state.aves++; var solo=isSoloCalidad();
+    if(solo){ document.getElementById('lastreg').textContent='Ave #'+state.aves+' — calidad registrada'; }
+    else{ var g=(state.weight*1000).toFixed(0); document.getElementById('lastreg').textContent='Ave #'+state.aves+' registrada — '+g+' g'; }
+    if(state.online){ showToast('Ave #'+state.aves+(solo?' — calidad enviada.':' pesada y enviada.')); }
     else{ state.pending++; renderBadge(); showToast('Ave #'+state.aves+' guardada (sin señal, queda pendiente).', true); }
   };
 
