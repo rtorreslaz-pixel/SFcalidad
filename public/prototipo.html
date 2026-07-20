@@ -211,6 +211,7 @@ a.weblink:hover{ text-decoration:underline; }
             <button class="btn primary" id="pesarBtn">Pesar</button>
             <div class="lastreg" id="lastreg"></div>
             <button class="btn ghost" data-go="scale" id="scaleBtn">Ajustes de báscula</button>
+            <button class="btn ghost" id="finBtn" style="color:var(--red);border-color:color-mix(in srgb,var(--red) 35%,#fff)">Finalizar muestreo</button>
           </div>
 
           <!-- SCALE / DIAGNOSTIC -->
@@ -380,6 +381,14 @@ a.weblink:hover{ text-decoration:underline; }
     else{ var g=(state.weight*1000).toFixed(0); document.getElementById('lastreg').textContent='Ave #'+state.aves+' registrada — '+g+' g'; }
     if(state.online){ showToast('Ave #'+state.aves+(solo?' — calidad enviada.':' pesada y enviada.')); }
     else{ state.pending++; renderBadge(); showToast('Ave #'+state.aves+' guardada (sin señal, queda pendiente).', true); }
+  };
+
+  // finalizar muestreo: cierra la sesión de captura con un resumen y vuelve a configurar.
+  document.getElementById('finBtn').onclick=function(){
+    if(state.aves===0){ showToast('Aún no registras ninguna ave en este muestreo.'); return; }
+    if(state.pending>0){ showToast('Muestreo finalizado: '+state.aves+' aves · quedan '+state.pending+' pendientes de sincronizar.', true); }
+    else{ showToast('Muestreo finalizado: '+state.aves+' aves registradas y sincronizadas.'); }
+    state.aves=0; document.getElementById('lastreg').textContent=''; setScreen('setup');
   };
 
   // online/offline
