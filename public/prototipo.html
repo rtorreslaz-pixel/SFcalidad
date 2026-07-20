@@ -78,6 +78,9 @@ label.f{ font-size:12px; font-weight:700; color:var(--scr-muted); display:block;
 .selhead{ background:#fff; border:1px solid var(--scr-line); border-radius:12px; padding:11px 13px; }
 .selhead .t{ font-weight:800; font-size:13.5px; }
 .selhead .s{ color:var(--scr-muted); font-size:11.5px; margin-top:3px; }
+.mrow{ background:#fff; border:1px solid var(--scr-line); border-radius:12px; padding:11px 13px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.mrow .t{ font-weight:800; font-size:13px; }
+.mrow .s{ color:var(--scr-muted); font-size:11.5px; margin-top:2px; }
 .badge{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; padding:5px 11px; border-radius:999px; align-self:flex-start; }
 .badge.pending{ background:#fef3c7; color:var(--amber); }
 .badge.done{ background:#dcfce7; color:var(--green); }
@@ -148,6 +151,7 @@ a.weblink:hover{ text-decoration:underline; }
     <button class="step" data-go="setup"><span class="n">2</span> Configurar</button>
     <button class="step" data-go="capture"><span class="n">3</span> Captura</button>
     <button class="step" data-go="scale"><span class="n">4</span> Ajustes de báscula</button>
+    <button class="step" data-go="registro"><span class="n">5</span> Muestreos del día</button>
   </div>
 
   <div class="layout">
@@ -224,11 +228,19 @@ a.weblink:hover{ text-decoration:underline; }
                 <div class="proto">Ohaus Ranger 3000</div>
                 <div class="proto">Genérico (cualquier marca)</div>
                 <div class="proto">T-Scale BW / BWS / CW / VW</div>
-                <div class="proto on">BIT PS 4.0 IoT (Bröring)<span class="tag">provisional</span></div>
+                <div class="proto on">BIT PS 4.0 IoT (Bröring)</div>
               </div></div>
             <div class="switchrow"><span style="font-weight:700;font-size:13.5px">Mostrar también en hexadecimal</span><div class="sw on" id="hexSw"></div></div>
             <div><label class="f">Datos crudos recibidos</label>
               <div class="loglines" id="log"></div></div>
+            <button class="btn ghost" data-go="capture">Volver a captura</button>
+          </div>
+
+          <!-- REGISTRO DE MUESTREOS DEL DÍA -->
+          <div class="view" id="v-registro">
+            <div class="selhead"><div class="t">Muestreos de hoy</div><div class="s" id="regResumen">—</div></div>
+            <div id="regList"></div>
+            <button class="btn ghost" id="regSyncBtn">Sincronizar pendientes</button>
             <button class="btn ghost" data-go="capture">Volver a captura</button>
           </div>
         </div>
@@ -273,12 +285,17 @@ a.weblink:hover{ text-decoration:underline; }
   function tick(){ var d=new Date(); document.getElementById('clock').textContent=(d.getHours()%24)+':' + String(d.getMinutes()).padStart(2,'0'); }
   tick(); setInterval(tick,10000);
 
-  var state={ screen:'login', online:true, pending:0, aves:0, weight:2.612 };
+  var state={ screen:'login', online:true, pending:0, aves:0, weight:2.612,
+    muestreos:[
+      {lote:'P054 · 2705 · G3 · A', tipo:'Pesaje', aves:48, pend:0},
+      {lote:'P280 · 2705 · G1 · B', tipo:'Solo calidad', aves:20, pend:4}
+    ] };
   var titles={
     login:['Iniciar sesión','Acceso del verificador.'],
     setup:['Configurar captura','Datos del lote que se va a capturar.'],
     capture:['Captura de pesaje','Peso en vivo y registro ave por ave.'],
-    scale:['Ajustes de báscula','Vincular báscula y elegir su protocolo.']
+    scale:['Ajustes de báscula','Vincular báscula y elegir su protocolo.'],
+    registro:['Muestreos del día','Control de lo capturado y lo que falta enviar.']
   };
   var feats={
     login:[['🔒','Sesión persistente','La credencial queda guardada y cifrada en el teléfono; el verificador no reingresa cada día y puede arrancar la jornada sin señal.']],
@@ -288,7 +305,10 @@ a.weblink:hover{ text-decoration:underline; }
       ['🔬','Calidad opcional por ave','Hematoma, defecto de selección, pododermatitis, rasguños y pigmentación sobre una muestra de aves.'],
       ['🔁','Offline con cola','Sin señal, cada registro queda pendiente en el teléfono y se sincroniza solo al reconectar. Nunca duplica.']],
     scale:[['📡','Multi-báscula','Varias marcas soportadas (Ohaus, T-Scale, genérico y BIT PS 4.0 IoT). Agregar una marca nueva no toca la conexión.'],
-      ['🧪','Diagnóstico hex','Muestra los datos crudos de la báscula para afinar el formato de una marca nueva con una captura real.']]
+      ['🧪','Diagnóstico hex','Muestra los datos crudos de la báscula para afinar el formato de una marca nueva con una captura real.'],
+      ['🔗','Conexión persistente','La báscula se conecta una vez y queda enlazada durante toda la jornada; al volver a pesar el peso aparece de inmediato, sin reconectar.']],
+    registro:[['📋','Control del día','Cada lote muestreado con su estado: completo o con registros pendientes de enviar.'],
+      ['📤','Pendientes visibles','El verificador ve exactamente qué le falta sincronizar antes de cerrar la jornada.']]
   };
 
   function setScreen(s){
@@ -296,7 +316,7 @@ a.weblink:hover{ text-decoration:underline; }
     document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
     document.getElementById('v-'+s).classList.add('active');
     document.querySelectorAll('.step').forEach(function(st){ st.setAttribute('aria-current', st.dataset.go===s?'true':'false'); });
-    var sub={login:'Pesaje preventa en granja',setup:'Configurar captura',capture:'Captura',scale:'Ajustes de báscula'};
+    var sub={login:'Pesaje preventa en granja',setup:'Configurar captura',capture:'Captura',scale:'Ajustes de báscula',registro:'Muestreos del día'};
     document.getElementById('appbarsub').textContent=sub[s];
     document.getElementById('exTitle').textContent=titles[s][0];
     document.getElementById('exSub').textContent=titles[s][1];
@@ -304,6 +324,22 @@ a.weblink:hover{ text-decoration:underline; }
     feats[s].forEach(function(f){ fc.insertAdjacentHTML('beforeend',
       '<div class="feat"><div class="ic">'+f[0]+'</div><div><div class="t">'+f[1]+'</div><div class="d">'+f[2]+'</div></div></div>'); });
     if(s==='capture') applyMode();
+    if(s==='registro') renderRegistro();
+  }
+
+  // Registro de muestreos del día: control de completos vs pendientes de enviar.
+  function renderRegistro(){
+    var list=document.getElementById('regList'); if(!list) return;
+    var totAves=0, totPend=0;
+    list.innerHTML = state.muestreos.map(function(m){
+      totAves+=m.aves; totPend+=m.pend;
+      var badge = m.pend>0
+        ? '<span class="badge pending">⏳ '+m.pend+' por enviar</span>'
+        : '<span class="badge done">✓ Completo</span>';
+      return '<div class="mrow"><div><div class="t">'+m.lote+'</div><div class="s">'+m.tipo+' · '+m.aves+' aves</div></div>'+badge+'</div>';
+    }).join('');
+    document.getElementById('regResumen').textContent =
+      state.muestreos.length+' muestreos · '+totAves+' aves · '+(totPend===0?'todo sincronizado':totPend+' pendientes de enviar');
   }
 
   // Modo de captura: "Pesaje" (peso + calidad opcional) vs "Solo calidad" (sin báscula).
@@ -371,7 +407,8 @@ a.weblink:hover{ text-decoration:underline; }
   }
   function doSync(){
     if(state.pending===0){ showToast('No hay registros pendientes.'); return; }
-    var n=state.pending; state.pending=0; renderBadge(); showToast('Sincronizados '+n+' registros con el servidor.');
+    var n=state.pending; state.pending=0; state.muestreos.forEach(function(m){m.pend=0;});
+    renderBadge(); renderRegistro(); showToast('Sincronizados '+n+' registros con el servidor.');
   }
 
   // pesar
@@ -386,7 +423,10 @@ a.weblink:hover{ text-decoration:underline; }
   // finalizar muestreo: cierra la sesión de captura con un resumen y vuelve a configurar.
   document.getElementById('finBtn').onclick=function(){
     if(state.aves===0){ showToast('Aún no registras ninguna ave en este muestreo.'); return; }
-    if(state.pending>0){ showToast('Muestreo finalizado: '+state.aves+' aves · quedan '+state.pending+' pendientes de sincronizar.', true); }
+    var tipo=isSoloCalidad()?'Solo calidad':'Pesaje';
+    // El muestreo se cierra y pasa al registro del día; los pendientes se siguen enviando solos.
+    state.muestreos.unshift({lote:'P208 · 2705 · G7 · B', tipo:tipo, aves:state.aves, pend:state.pending});
+    if(state.pending>0){ showToast('Muestreo finalizado: '+state.aves+' aves · '+state.pending+' se enviarán al reconectar.', true); }
     else{ showToast('Muestreo finalizado: '+state.aves+' aves registradas y sincronizadas.'); }
     state.aves=0; document.getElementById('lastreg').textContent=''; setScreen('setup');
   };
@@ -399,6 +439,12 @@ a.weblink:hover{ text-decoration:underline; }
   offB.onclick=function(){ state.online=false; offB.classList.add('active'); onB.classList.remove('active');
     showToast('Modo sin señal: los registros quedarán en el teléfono.', true); };
   document.getElementById('syncBtn').onclick=doSync;
+  document.getElementById('regSyncBtn').onclick=function(){
+    var pend=state.muestreos.reduce(function(a,m){return a+m.pend;},0);
+    if(pend===0){ showToast('No hay registros pendientes.'); return; }
+    state.muestreos.forEach(function(m){m.pend=0;}); state.pending=0;
+    renderBadge(); renderRegistro(); showToast('Sincronizados '+pend+' registros con el servidor.');
+  };
 
   setScreen('login'); renderBadge();
 })();
