@@ -68,8 +68,16 @@ calidad del pollo en el cliente + pesaje preventa en granja. Omnicanal:
 
 ## 8. App móvil — estado
 - Nombre visible: "SF Pesaje Granja". Versión iterada en `app/build.gradle.kts`.
-- Protocolos de báscula: Ohaus Ranger, Genérico, T-Scale BW, **BIT PS 4.0 IoT (provisional)**.
-- La BIT PS 4.0 IoT **no publica su trama Bluetooth**: parser heurístico provisional; validar con captura hex real o pedir protocolo a Bröring.
+- Protocolos de báscula: Ohaus Ranger, Genérico, T-Scale BW, **BIT PS 4.0 IoT**.
+- **BIT PS 4.0 IoT — trama confirmada** con captura hex de la báscula física
+  (`scale-2413-0214`): SPP envía `<estado><peso>` + CR/LF, con estado `U`=inestable /
+  `S`=estable y peso **entero en gramos** (`S1460` = 1.460 kg). El parser ya la decodifica
+  (con la heurística de texto como respaldo). **Pendiente menor**: confirmar contra el
+  display físico que 1460 = 1.460 kg (unidad/decimal); si difiere, ajustar `DIVISOR_A_KG`.
+- Otra unidad (`scale-2313-4001`) dio `read failed / socket timeout` al conectar: es a nivel
+  Bluetooth (báscula ocupada/dormida/fuera de alcance o tomada por otra app), no de la app —
+  otra báscula conectó bien. Solución: apagar/encender la báscula, desemparejar de la app de
+  Bröring, re-emparejar y reintentar.
 - Offline: cola local (Room `scale-prototype.db`), sync por lotes, alertas de pendientes y de atribución (otro usuario).
 
 ## 9. Pendientes / roadmap
