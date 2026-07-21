@@ -97,12 +97,18 @@
             android:inputType="number"
             android:layout_marginBottom="12dp" />
 
-        <EditText
-            android:id="@+id/editLinea"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/label_linea"
-            android:inputType="text"
+            android:text="@string/label_linea"
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <Spinner
+            android:id="@+id/spinnerLinea"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="12dp" />
 
         <TextView

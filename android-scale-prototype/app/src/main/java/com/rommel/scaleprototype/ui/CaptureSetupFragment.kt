@@ -41,6 +41,11 @@ class CaptureSetupFragment : Fragment() {
             android.R.layout.simple_spinner_dropdown_item,
             (1..10).toList(),
         )
+        binding?.spinnerLinea?.adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            LINEAS_GENETICAS,
+        )
         loadPlanteles()
         warnIfStalePendingRecords()
         binding?.buttonStartCapture?.setOnClickListener { onStartCaptureClicked() }
@@ -121,10 +126,10 @@ class CaptureSetupFragment : Fragment() {
         val galpon = b.editGalpon.text.toString().trim()
         val corral = b.editCorral.text.toString().trim()
         val edadStr = b.editEdad.text.toString().trim()
-        val linea = b.editLinea.text.toString().trim()
+        val linea = LINEAS_GENETICAS.getOrNull(b.spinnerLinea.selectedItemPosition) ?: LINEAS_GENETICAS.first()
 
         if (plantel == null || campania.isEmpty() || galpon.isEmpty() || corral.isEmpty()
-            || edadStr.isEmpty() || linea.isEmpty()) {
+            || edadStr.isEmpty()) {
             showError(getString(R.string.error_setup_fields_required))
             return
         }
@@ -200,6 +205,9 @@ class CaptureSetupFragment : Fragment() {
         const val ARG_LINEA = "linea"
         const val ARG_LOTE = "lote"
         const val ARG_N_AVES_PESADA = "nAvesPorPesada"
+
+        /** Líneas genéticas disponibles (desplegable). Se guarda el texto tal cual en el registro. */
+        val LINEAS_GENETICAS = listOf("ROSS", "COBB")
 
         private const val MILLIS_PER_HOUR = 3_600_000L
         private const val STALE_PENDING_THRESHOLD_HOURS = 12L

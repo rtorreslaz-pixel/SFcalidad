@@ -93,6 +93,14 @@ export default function MonitorPesaje() {
             Reintentando conexión…
           </span>
         )}
+        {/* Descarga de la base de datos de la toma de muestras (registros de preventa) */}
+        <a
+          href="/api/dashboard/monitor-pesaje/export"
+          download
+          className="ml-auto rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          Descargar base de datos de la toma de muestras
+        </a>
       </div>
 
       {visibles.length === 0 ? (

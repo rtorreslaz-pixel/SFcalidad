@@ -21,9 +21,8 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import com.rommel.scaleprototype.R
-import com.rommel.scaleprototype.ScaleBluetoothClient
+import com.rommel.scaleprototype.ScaleConnectionManager
 import com.rommel.scaleprototype.ScaleEvent
 import com.rommel.scaleprototype.ScaleProtocols
 import com.rommel.scaleprototype.databinding.FragmentBluetoothDiagnosticBinding
@@ -39,8 +38,8 @@ class BluetoothDiagnosticFragment : Fragment() {
     private var binding: FragmentBluetoothDiagnosticBinding? = null
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bondedDevices: List<BluetoothDevice> = emptyList()
-    private var scaleClient: ScaleBluetoothClient? = null
-    private var isConnected = false
+    private var lastSelectedDevice: BluetoothDevice? = null
+    private val scaleListener: (ScaleEvent) -> Unit = { event -> handleScaleEvent(event) }
     private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
 
     private val requestBluetoothConnect = registerForActivityResult(
@@ -87,12 +86,26 @@ class BluetoothDiagnosticFragment : Fragment() {
         restoreSavedProtocolSelection()
 
         ensurePermissionThenRefresh()
+
+        // Refleja la conexión que ya vive en el gestor (persiste entre pantallas).
+        ScaleConnectionManager.addListener(scaleListener)
+        syncConnectButton()
+        if (ScaleConnectionManager.isConnected()) setStatus(getString(R.string.connected))
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        scaleClient?.disconnect()
+        // NO se desconecta la báscula al salir: la conexión debe seguir viva para pesar.
+        ScaleConnectionManager.removeListener(scaleListener)
         binding = null
+    }
+
+    private fun syncConnectButton() {
+        val b = binding ?: return
+        b.buttonConnect.isEnabled = true
+        b.buttonConnect.text = getString(
+            if (ScaleConnectionManager.isConnected()) R.string.action_disconnect else R.string.action_connect
+        )
     }
 
     private fun hasBluetoothConnectPermission(): Boolean {
@@ -141,8 +154,8 @@ class BluetoothDiagnosticFragment : Fragment() {
 
     private fun onConnectClicked() {
         val b = binding ?: return
-        if (isConnected) {
-            scaleClient?.disconnect()
+        if (ScaleConnectionManager.state != ScaleConnectionManager.State.DISCONNECTED) {
+            ScaleConnectionManager.disconnect()
             return
         }
         if (!hasBluetoothConnectPermission()) {
@@ -156,32 +169,28 @@ class BluetoothDiagnosticFragment : Fragment() {
             return
         }
 
-        scaleClient = ScaleBluetoothClient(viewLifecycleOwner.lifecycleScope) { event ->
-            activity?.runOnUiThread { handleScaleEvent(event, device) }
-        }
+        lastSelectedDevice = device
+        // Se guarda ya la selección para que Captura pueda reconectar aunque se navegue rápido.
+        saveLastScaleSelection(device)
         b.buttonConnect.isEnabled = false
-        scaleClient?.connect(device)
+        ScaleConnectionManager.connect(device, b.spinnerProtocol.selectedItemPosition)
     }
 
-    private fun handleScaleEvent(event: ScaleEvent, device: BluetoothDevice) {
+    private fun handleScaleEvent(event: ScaleEvent) {
         val b = binding ?: return
         when (event) {
             is ScaleEvent.Status -> setStatus(event.message)
             is ScaleEvent.Connected -> {
-                isConnected = true
-                b.buttonConnect.isEnabled = true
-                b.buttonConnect.text = getString(R.string.action_disconnect)
+                syncConnectButton()
                 setStatus(getString(R.string.connected))
-                saveLastScaleSelection(device)
+                lastSelectedDevice?.let { saveLastScaleSelection(it) }
             }
             is ScaleEvent.Disconnected -> {
-                isConnected = false
-                b.buttonConnect.isEnabled = true
-                b.buttonConnect.text = getString(R.string.action_connect)
+                syncConnectButton()
                 setStatus(getString(R.string.disconnected))
             }
             is ScaleEvent.Error -> {
-                b.buttonConnect.isEnabled = true
+                syncConnectButton()
                 setStatus(getString(R.string.error_format, event.message))
                 appendLog("⚠ ${event.message}")
             }

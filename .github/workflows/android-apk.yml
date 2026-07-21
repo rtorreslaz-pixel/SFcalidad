@@ -40,12 +40,22 @@ jobs:
       - name: Tests unitarios
         run: ./gradlew --no-daemon testDebugUnitTest
 
-      - name: Construir APK debug
+      - name: Construir APK debug (apunta al demo)
         run: ./gradlew --no-daemon assembleDebug
 
-      - name: Publicar APK como artefacto
+      - name: Construir APK release (apunta a producción)
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: Publicar APK debug como artefacto
         uses: actions/upload-artifact@v4
         with:
           name: bit-scale-app-debug
           path: android-scale-prototype/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - name: Publicar APK release (producción) como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: bit-scale-app-release
+          path: android-scale-prototype/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error

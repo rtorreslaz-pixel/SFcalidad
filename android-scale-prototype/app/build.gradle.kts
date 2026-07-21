@@ -13,8 +13,8 @@ android {
         applicationId = "com.rommel.scaleprototype"
         minSdk = 24
         targetSdk = 34
-        versionCode = 7
-        versionName = "1.6 (BIT PS)"
+        versionCode = 8
+        versionName = "1.7 (prod)"
     }
 
     buildTypes {
@@ -27,6 +27,11 @@ android {
         release {
             isMinifyEnabled = false
             buildConfigField("String", "API_BASE_URL", "\"https://sfcaliprod.up.railway.app/\"")
+            // Firmado con la clave debug para que el release sea INSTALABLE sin manejar
+            // secretos en el CI. Es suficiente para distribución interna por APK (no Play Store).
+            // Para producción formal: generar un keystore propio y reemplazar esta línea por
+            // un signingConfig dedicado (la firma propia hará que haya que reinstalar la app).
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 

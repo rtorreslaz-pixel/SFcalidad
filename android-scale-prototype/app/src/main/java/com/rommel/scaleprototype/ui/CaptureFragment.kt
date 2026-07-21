@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -19,8 +18,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.rommel.scaleprototype.R
-import com.rommel.scaleprototype.ScaleBluetoothClient
+import com.rommel.scaleprototype.ScaleConnectionManager
 import com.rommel.scaleprototype.ScaleEvent
 import com.rommel.scaleprototype.ScaleProtocols
 import com.rommel.scaleprototype.auth.AuthRepository
@@ -36,9 +36,11 @@ import java.util.UUID
 class CaptureFragment : Fragment() {
 
     private var binding: FragmentCaptureBinding? = null
-    private var scaleClient: ScaleBluetoothClient? = null
+    private val scaleListener: (ScaleEvent) -> Unit = { event -> handleScaleEvent(event) }
     private var latestWeightGramos: Double? = null
     private var lastLiveWeightSentAtMillis = 0L
+    // Aves registradas en esta sesión de captura (para el resumen de "Finalizar muestreo").
+    private var avesRegistradasSesion = 0
 
     // Piso traído del servidor para el corral actual: si la app se reinstaló o se borró su
     // storage, Room local arranca en 0 pero el servidor ya tiene aves sincronizadas de antes
@@ -96,18 +98,15 @@ class CaptureFragment : Fragment() {
             findNavController().navigate(R.id.action_capture_to_diagnostic)
         }
         binding?.buttonRegisterAve?.setOnClickListener { onRegisterAveClicked() }
+        binding?.buttonFinalizar?.setOnClickListener { onFinalizarClicked() }
 
-        binding?.spinnerPigmentacion?.adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
-            (0..7).toList(),
-        )
         binding?.switchEvaluarCalidad?.setOnCheckedChangeListener { _, checked ->
             binding?.layoutCalidad?.visibility = if (checked) View.VISIBLE else View.GONE
         }
 
         observePendingCount()
         fetchServerNumeroAveBaseline()
+        ScaleConnectionManager.addListener(scaleListener)
         ensurePermissionThenConnect()
     }
 
@@ -137,8 +136,8 @@ class CaptureFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        scaleClient?.disconnect()
-        scaleClient = null
+        // La conexión NO se cierra al salir: el gestor la mantiene viva para el siguiente lote.
+        ScaleConnectionManager.removeListener(scaleListener)
         binding = null
     }
 
@@ -176,6 +175,13 @@ class CaptureFragment : Fragment() {
 
     @SuppressLint("MissingPermission") // hasBluetoothConnectPermission() ya fue verificado arriba
     private fun connectToSavedScale() {
+        // Si el gestor ya tiene una báscula conectada (p. ej. recién vinculada en Ajustes de
+        // báscula), no se reconecta: el peso ya empieza a llegar por el listener.
+        if (ScaleConnectionManager.isConnected()) {
+            setStatus(getString(R.string.connected))
+            return
+        }
+
         val prefs = requireContext().getSharedPreferences(SCALE_PREFS_NAME, Context.MODE_PRIVATE)
         val address = prefs.getString(KEY_LAST_DEVICE_ADDRESS, null)
         if (address == null) {
@@ -183,8 +189,8 @@ class CaptureFragment : Fragment() {
             return
         }
 
-        val manager = requireContext().getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        val adapter = manager.adapter
+        val btManager = requireContext().getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val adapter = btManager.adapter
         if (adapter == null || !adapter.isEnabled) {
             setStatus(getString(R.string.status_bluetooth_disabled))
             return
@@ -196,11 +202,9 @@ class CaptureFragment : Fragment() {
             return
         }
 
+        val protocolIndex = prefs.getInt(KEY_LAST_PROTOCOL_INDEX, -1)
         setStatus(getString(R.string.status_connecting))
-        scaleClient = ScaleBluetoothClient(viewLifecycleOwner.lifecycleScope) { event ->
-            activity?.runOnUiThread { handleScaleEvent(event) }
-        }
-        scaleClient?.connect(device)
+        ScaleConnectionManager.connect(device, protocolIndex)
     }
 
     private fun handleScaleEvent(event: ScaleEvent) {
@@ -218,7 +222,8 @@ class CaptureFragment : Fragment() {
 
     private fun updateWeightFromLine(line: String) {
         val prefs = requireContext().getSharedPreferences(SCALE_PREFS_NAME, Context.MODE_PRIVATE)
-        val protocolIndex = prefs.getInt(KEY_LAST_PROTOCOL_INDEX, -1)
+        val protocolIndex = ScaleConnectionManager.protocolIndex.takeIf { it >= 0 }
+            ?: prefs.getInt(KEY_LAST_PROTOCOL_INDEX, -1)
         val protocol = ScaleProtocols.all.getOrNull(protocolIndex) ?: ScaleProtocols.default
         val parsed = protocol.parse(line) ?: return
         setWeight(parsed.value)
@@ -273,7 +278,7 @@ class CaptureFragment : Fragment() {
         val gradoRasguno = if (evaluarCalidad) gradoFromRadioGroup(
             binding?.radioGroupRasguno?.checkedRadioButtonId, R.id.radioRasgLeve, R.id.radioRasgGrave
         ) else null
-        val pigmentacion = if (evaluarCalidad) binding?.spinnerPigmentacion?.selectedItemPosition else null
+        val pigmentacion = if (evaluarCalidad) pigmentacionSeleccionada() else null
 
         val authRepository = AuthRepository(requireContext())
         viewLifecycleOwner.lifecycleScope.launch {
@@ -307,7 +312,45 @@ class CaptureFragment : Fragment() {
                 )
             )
             SyncScheduler.scheduleSyncNow(requireContext())
+            avesRegistradasSesion++
             binding?.textLastRegistered?.text = getString(R.string.last_registered_format, numeroAve, pesoGramos)
+        }
+    }
+
+    /** Pigmentación 1–6 (botones): devuelve null si no se seleccionó ninguno. */
+    private fun pigmentacionSeleccionada(): Int? = when (binding?.togglePigmentacion?.checkedButtonId) {
+        R.id.pig1 -> 1
+        R.id.pig2 -> 2
+        R.id.pig3 -> 3
+        R.id.pig4 -> 4
+        R.id.pig5 -> 5
+        R.id.pig6 -> 6
+        else -> null
+    }
+
+    private fun onFinalizarClicked() {
+        if (avesRegistradasSesion == 0) {
+            Toast.makeText(requireContext(), getString(R.string.finalizar_empty), Toast.LENGTH_SHORT).show()
+            return
+        }
+        val dao = AppDatabase.getInstance(requireContext()).registroPesoDao()
+        viewLifecycleOwner.lifecycleScope.launch {
+            val pendientes = dao.countUnsynced()
+            val mensaje = if (pendientes > 0) {
+                getString(R.string.finalizar_message_pending, avesRegistradasSesion, pendientes)
+            } else {
+                getString(R.string.finalizar_message, avesRegistradasSesion)
+            }
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.finalizar_title)
+                .setMessage(mensaje)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.finalizar_confirm) { _, _ ->
+                    // Vuelve a configurar un lote nuevo. Los pendientes siguen subiéndose solos
+                    // (WorkManager); la báscula queda conectada para el siguiente muestreo.
+                    findNavController().navigate(R.id.action_capture_to_captureSetup)
+                }
+                .show()
         }
     }
 

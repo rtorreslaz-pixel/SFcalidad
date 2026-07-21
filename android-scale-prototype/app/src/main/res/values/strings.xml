@@ -44,7 +44,7 @@
     <string name="categoria_mediano">Mediano</string>
     <string name="action_start_capture">Comenzar captura</string>
     <string name="label_edad">Edad (días)</string>
-    <string name="label_linea">Línea genética (ej. Ross, Cobb)</string>
+    <string name="label_linea">Línea genética</string>
     <string name="label_lote">Lote</string>
     <string name="lote_j">J — Joven</string>
     <string name="lote_a">A — Adulto</string>
@@ -58,6 +58,12 @@
     <string name="action_change_selection">Cambiar</string>
     <string name="action_open_diagnostic">Ajustes de báscula</string>
     <string name="action_register_ave">Pesar</string>
+    <string name="action_finalizar_muestreo">Finalizar muestreo</string>
+    <string name="finalizar_title">Finalizar muestreo</string>
+    <string name="finalizar_message">%1$d aves registradas en este muestreo.</string>
+    <string name="finalizar_message_pending">%1$d aves registradas · %2$d aún sin sincronizar (se enviarán solas al reconectar).</string>
+    <string name="finalizar_confirm">Finalizar</string>
+    <string name="finalizar_empty">Aún no registras ninguna ave en este muestreo.</string>
     <string name="pending_count_format">%1$d pendientes de sincronizar</string>
     <string name="sync_all_done">✓ Todo sincronizado</string>
     <string name="offline_catalog_notice">Sin conexión: usando el catálogo guardado de la última sesión</string>
@@ -82,7 +88,7 @@
     <string name="label_defecto_seleccion">Defecto de selección</string>
     <string name="label_pododermatitis">Pododermatitis</string>
     <string name="label_rasguno">Rasguños</string>
-    <string name="label_pigmentacion">Pigmentación (0–7)</string>
+    <string name="label_pigmentacion">Pigmentación (1–6)</string>
     <string name="grado_sano">Sin lesión</string>
     <string name="grado_leve">Leve</string>
     <string name="grado_grave">Grave (G2)</string>
