@@ -152,6 +152,7 @@ class CaptureSetupFragment : Fragment() {
         }
 
         val nAvesPorPesada = b.spinnerNAvesPesada.selectedItemPosition + 1
+        val soloCalidad = b.radioGroupModo.checkedRadioButtonId == R.id.radioModoCalidad
 
         findNavController().navigate(
             R.id.action_captureSetup_to_capture,
@@ -166,6 +167,7 @@ class CaptureSetupFragment : Fragment() {
                 ARG_LINEA to linea,
                 ARG_LOTE to lote,
                 ARG_N_AVES_PESADA to nAvesPorPesada,
+                ARG_SOLO_CALIDAD to soloCalidad,
             ),
         )
     }
@@ -205,6 +207,7 @@ class CaptureSetupFragment : Fragment() {
         const val ARG_LINEA = "linea"
         const val ARG_LOTE = "lote"
         const val ARG_N_AVES_PESADA = "nAvesPorPesada"
+        const val ARG_SOLO_CALIDAD = "soloCalidad"
 
         /** Líneas genéticas disponibles (desplegable). Se guarda el texto tal cual en el registro. */
         val LINEAS_GENETICAS = listOf("ROSS", "COBB")

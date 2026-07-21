@@ -45,6 +45,9 @@
     <string name="action_start_capture">Comenzar captura</string>
     <string name="label_edad">Edad (días)</string>
     <string name="label_linea">Línea genética</string>
+    <string name="label_tipo_captura">Tipo de captura</string>
+    <string name="modo_pesaje">Pesaje</string>
+    <string name="modo_solo_calidad">Solo calidad</string>
     <string name="label_lote">Lote</string>
     <string name="lote_j">J — Joven</string>
     <string name="lote_a">A — Adulto</string>
@@ -58,6 +61,7 @@
     <string name="action_change_selection">Cambiar</string>
     <string name="action_open_diagnostic">Ajustes de báscula</string>
     <string name="action_register_ave">Pesar</string>
+    <string name="action_register_calidad">Registrar calidad</string>
     <string name="action_finalizar_muestreo">Finalizar muestreo</string>
     <string name="finalizar_title">Finalizar muestreo</string>
     <string name="finalizar_message">%1$d aves registradas en este muestreo.</string>
@@ -82,6 +86,7 @@
     <string name="status_bluetooth_disabled">Bluetooth desactivado.</string>
     <string name="status_connecting">Conectando a la báscula guardada…</string>
     <string name="last_registered_format">Ave #%1$d registrada — %2$.1f g</string>
+    <string name="last_registered_calidad_format">Ave #%1$d — calidad registrada</string>
 
     <string name="switch_evaluar_calidad">Evaluar calidad de esta ave</string>
     <string name="label_hematoma">Hematoma</string>
@@ -94,6 +99,18 @@
     <string name="grado_grave">Grave (G2)</string>
 
     <string name="title_diagnostic">Ajustes de báscula</string>
+
+    <string name="action_muestreos_dia">Muestreos del día</string>
+    <string name="title_muestreos_dia">Muestreos de hoy</string>
+    <string name="muestreos_resumen_format">%1$d muestreos · %2$d aves · %3$s</string>
+    <string name="muestreos_todo_sincronizado">todo sincronizado</string>
+    <string name="muestreos_pendientes_format">%1$d pendientes de enviar</string>
+    <string name="muestreo_item_detalle">%1$d aves</string>
+    <string name="muestreo_completo">✓ Completo</string>
+    <string name="muestreo_por_enviar_format">⏳ %1$d por enviar</string>
+    <string name="muestreos_vacio">Aún no hay muestreos registrados hoy.</string>
+    <string name="action_sync_pendientes">Sincronizar pendientes</string>
+    <string name="action_volver">Volver</string>
 
     <string name="session_revoked_message">Tu sesión fue cerrada por el administrador. Vuelve a iniciar sesión.</string>
 </resources>

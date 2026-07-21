@@ -316,7 +316,7 @@ model RegistroPesoPreventa {
   categoria CategoriaAve
 
   numeroAve  Int
-  pesoGramos Float
+  pesoGramos Float? // null en muestreos de solo calidad (sin pesaje)
   fechaHora  DateTime // momento de captura en campo (hora del celular), no de sync
 
   // Plantel-Campaña-Galpón-Categoría-Corral, mismo formato que Inspeccion.complex,

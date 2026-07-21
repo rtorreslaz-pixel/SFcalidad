@@ -13,7 +13,10 @@ data class RegistroPeso(
     val corral: String,
     val categoria: String,
     val numeroAve: Int,
+    // En muestreos de solo calidad no hay peso: se guarda 0 localmente y se envía null al
+    // servidor (ver SyncWorker.toDto). El tipoMuestreo distingue PREVENTA (pesaje) de CALIDAD.
     val pesoGramos: Double,
+    val tipoMuestreo: String = "PREVENTA",
     val fechaHoraEpochMillis: Long,
     // Calidad evaluada opcionalmente sobre esta misma ave (null = no evaluada en esta ave).
     val tieneHematoma: Boolean? = null,

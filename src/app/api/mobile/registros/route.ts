@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireMobileUser } from "@/lib/auth";
-import { CategoriaAve } from "@/generated/prisma/enums";
+import { CategoriaAve, TipoMuestreo } from "@/generated/prisma/enums";
 import { buildComplexEntity } from "@/lib/complex-entity";
 
 type RegistroInput = {
@@ -12,7 +12,9 @@ type RegistroInput = {
   corral: string;
   categoria: string;
   numeroAve: number;
-  pesoGramos: number;
+  // null/ausente solo en muestreos de solo calidad (tipoMuestreo = CALIDAD).
+  pesoGramos?: number | null;
+  tipoMuestreo?: string | null;
   fechaHora: string;
   edad?: number | null;
   linea?: string | null;
@@ -29,9 +31,18 @@ function isValidGrado(v: unknown): v is number | null | undefined {
   return v === undefined || v === null || (typeof v === "number" && [0, 1, 2].includes(v));
 }
 
+function isValidTipoMuestreo(v: unknown): v is string | null | undefined {
+  return v === undefined || v === null || Object.values(TipoMuestreo).includes(v as TipoMuestreo);
+}
+
 function isValidRegistro(r: unknown): r is RegistroInput {
   if (typeof r !== "object" || r === null) return false;
   const v = r as Record<string, unknown>;
+  // El peso es obligatorio salvo en muestreos de solo calidad (CALIDAD).
+  const esCalidad = v.tipoMuestreo === "CALIDAD";
+  const pesoValido = esCalidad
+    ? v.pesoGramos === undefined || v.pesoGramos === null || typeof v.pesoGramos === "number"
+    : typeof v.pesoGramos === "number";
   return (
     typeof v.id === "string" &&
     typeof v.plantelId === "string" &&
@@ -40,8 +51,9 @@ function isValidRegistro(r: unknown): r is RegistroInput {
     typeof v.corral === "string" &&
     typeof v.categoria === "string" &&
     Object.values(CategoriaAve).includes(v.categoria as CategoriaAve) &&
+    isValidTipoMuestreo(v.tipoMuestreo) &&
     typeof v.numeroAve === "number" &&
-    typeof v.pesoGramos === "number" &&
+    pesoValido &&
     typeof v.fechaHora === "string" &&
     !Number.isNaN(Date.parse(v.fechaHora)) &&
     (v.tieneHematoma === undefined || v.tieneHematoma === null || typeof v.tieneHematoma === "boolean") &&
@@ -96,7 +108,8 @@ export async function POST(request: NextRequest) {
           corral: r.corral,
           categoria: r.categoria as CategoriaAve,
           numeroAve: r.numeroAve,
-          pesoGramos: r.pesoGramos,
+          pesoGramos: r.pesoGramos ?? null,
+          tipoMuestreo: (r.tipoMuestreo as TipoMuestreo | null | undefined) ?? TipoMuestreo.PREVENTA,
           fechaHora: new Date(r.fechaHora),
           edad: r.edad ?? null,
           linea: r.linea ?? null,

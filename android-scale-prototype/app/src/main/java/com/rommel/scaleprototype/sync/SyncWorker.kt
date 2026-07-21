@@ -62,7 +62,9 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             corral = corral,
             categoria = categoria,
             numeroAve = numeroAve,
-            pesoGramos = pesoGramos,
+            // En solo calidad no se envía peso (el servidor lo acepta null para tipo CALIDAD).
+            pesoGramos = if (tipoMuestreo == "CALIDAD") null else pesoGramos,
+            tipoMuestreo = tipoMuestreo,
             fechaHora = isoFormat.format(Date(fechaHoraEpochMillis)),
             edad = edad,
             linea = linea,

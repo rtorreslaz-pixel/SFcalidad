@@ -5,6 +5,17 @@ import androidx.room.Insert
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
+/** Resumen de un muestreo (lote) del día: cuántas aves y cuántas quedan por sincronizar. */
+data class MuestreoDiaResumen(
+    val plantelCodigo: String,
+    val campania: String,
+    val galpon: String,
+    val corral: String,
+    val categoria: String,
+    val total: Int,
+    val pendientes: Int,
+)
+
 @Dao
 interface RegistroPesoDao {
 
@@ -25,6 +36,19 @@ interface RegistroPesoDao {
 
     @Query("SELECT MIN(createdAtEpochMillis) FROM registro_peso WHERE synced = 0")
     suspend fun oldestUnsyncedEpochMillis(): Long?
+
+    // Muestreos del día agrupados por lote (plantel-campaña-galpón-corral-categoría), con el
+    // total de aves y cuántas quedan sin sincronizar. Sirve para que el verificador controle
+    // qué muestreos están completos y cuáles le faltan enviar.
+    @Query(
+        "SELECT plantelCodigo, campania, galpon, corral, categoria, " +
+            "COUNT(*) AS total, " +
+            "SUM(CASE WHEN synced = 0 THEN 1 ELSE 0 END) AS pendientes " +
+            "FROM registro_peso WHERE createdAtEpochMillis >= :desdeEpochMillis " +
+            "GROUP BY plantelCodigo, campania, galpon, corral, categoria " +
+            "ORDER BY MAX(createdAtEpochMillis) DESC"
+    )
+    suspend fun muestreosDelDia(desdeEpochMillis: Long): List<MuestreoDiaResumen>
 
     // Pendientes creados por OTRO usuario (los NULL son de versiones viejas de la app:
     // dueño desconocido, no cuentan). Ver advertencia de atribución en LoginFragment.

@@ -27,7 +27,8 @@ export async function GET() {
   const registrosHoy =
     verificadorIds.length > 0
       ? await prisma.registroPesoPreventa.findMany({
-          where: { verificadorId: { in: verificadorIds }, fechaHora: { gte: hoyInicio } },
+          // Solo registros con peso (los de solo calidad no aportan al promedio de pesaje).
+          where: { verificadorId: { in: verificadorIds }, fechaHora: { gte: hoyInicio }, pesoGramos: { not: null } },
           select: { verificadorId: true, complex: true, pesoGramos: true },
         })
       : [];
@@ -38,7 +39,7 @@ export async function GET() {
     const key = `${r.verificadorId}||${r.complex ?? ""}`;
     const e = agg.get(key) ?? { count: 0, sumaPeso: 0 };
     e.count += 1;
-    e.sumaPeso += r.pesoGramos;
+    e.sumaPeso += r.pesoGramos ?? 0;
     agg.set(key, e);
   }
 

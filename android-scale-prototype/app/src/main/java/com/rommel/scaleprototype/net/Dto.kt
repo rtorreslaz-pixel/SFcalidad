@@ -30,7 +30,9 @@ data class RegistroDto(
     val corral: String,
     val categoria: String,
     val numeroAve: Int,
-    val pesoGramos: Double,
+    // null en muestreos de solo calidad (tipoMuestreo = CALIDAD).
+    val pesoGramos: Double? = null,
+    val tipoMuestreo: String = "PREVENTA",
     val fechaHora: String,
     // Metadatos del lote -- null en registros anteriores a este campo.
     val edad: Int? = null,

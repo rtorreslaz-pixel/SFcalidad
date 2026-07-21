@@ -42,6 +42,9 @@
             android:id="@+id/action_capture_to_diagnostic"
             app:destination="@id/bluetoothDiagnosticFragment" />
         <action
+            android:id="@+id/action_capture_to_muestreos"
+            app:destination="@id/muestreosDiaFragment" />
+        <action
             android:id="@+id/action_capture_to_login"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/nav_graph"
@@ -52,5 +55,10 @@
         android:id="@+id/bluetoothDiagnosticFragment"
         android:name="com.rommel.scaleprototype.ui.BluetoothDiagnosticFragment"
         android:label="@string/title_diagnostic" />
+
+    <fragment
+        android:id="@+id/muestreosDiaFragment"
+        android:name="com.rommel.scaleprototype.ui.MuestreosDiaFragment"
+        android:label="@string/title_muestreos_dia" />
 
 </navigation>

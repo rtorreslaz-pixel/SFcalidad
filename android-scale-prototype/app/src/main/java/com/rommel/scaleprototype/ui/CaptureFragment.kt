@@ -57,6 +57,7 @@ class CaptureFragment : Fragment() {
     private lateinit var linea: String
     private lateinit var lote: String
     private var nAvesPorPesada: Int = 1
+    private var soloCalidad: Boolean = false
 
     private val requestBluetoothConnect = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -85,6 +86,7 @@ class CaptureFragment : Fragment() {
         linea = args.getString(CaptureSetupFragment.ARG_LINEA) ?: ""
         lote = args.getString(CaptureSetupFragment.ARG_LOTE) ?: "J"
         nAvesPorPesada = args.getInt(CaptureSetupFragment.ARG_N_AVES_PESADA, 1)
+        soloCalidad = args.getBoolean(CaptureSetupFragment.ARG_SOLO_CALIDAD, false)
 
         binding?.textSelectionHeader?.text =
             getString(R.string.capture_header_format, plantelCodigo, campania, galpon, categoria, corral)
@@ -97,6 +99,9 @@ class CaptureFragment : Fragment() {
         binding?.textOpenDiagnostic?.setOnClickListener {
             findNavController().navigate(R.id.action_capture_to_diagnostic)
         }
+        binding?.textMuestreos?.setOnClickListener {
+            findNavController().navigate(R.id.action_capture_to_muestreos)
+        }
         binding?.buttonRegisterAve?.setOnClickListener { onRegisterAveClicked() }
         binding?.buttonFinalizar?.setOnClickListener { onFinalizarClicked() }
 
@@ -104,10 +109,29 @@ class CaptureFragment : Fragment() {
             binding?.layoutCalidad?.visibility = if (checked) View.VISIBLE else View.GONE
         }
 
+        applyCaptureMode()
+
         observePendingCount()
         fetchServerNumeroAveBaseline()
-        ScaleConnectionManager.addListener(scaleListener)
-        ensurePermissionThenConnect()
+        // En "solo calidad" no hay báscula: no se conecta ni se escucha peso.
+        if (!soloCalidad) {
+            ScaleConnectionManager.addListener(scaleListener)
+            ensurePermissionThenConnect()
+        }
+    }
+
+    /** Ajusta la pantalla según el modo: en solo calidad se oculta el peso/báscula. */
+    private fun applyCaptureMode() {
+        val b = binding ?: return
+        if (soloCalidad) {
+            b.textCaptureWeight.visibility = View.GONE
+            b.textCaptureStatus.visibility = View.GONE
+            b.switchEvaluarCalidad.visibility = View.GONE
+            b.textOpenDiagnostic.visibility = View.GONE
+            b.layoutCalidad.visibility = View.VISIBLE
+            b.buttonRegisterAve.text = getString(R.string.action_register_calidad)
+            b.buttonRegisterAve.isEnabled = true
+        }
     }
 
     // Best-effort: si falla (sin red al entrar), simplemente se usa solo el máximo local,
@@ -269,9 +293,20 @@ class CaptureFragment : Fragment() {
     }
 
     private fun onRegisterAveClicked() {
-        val pesoGramos = latestWeightGramos ?: return
+        // En pesaje se requiere peso; en solo calidad no hay peso (se guarda 0 y tipo CALIDAD).
+        val pesoGramos: Double
+        val tipoMuestreo: String
+        val evaluarCalidad: Boolean
+        if (soloCalidad) {
+            pesoGramos = 0.0
+            tipoMuestreo = "CALIDAD"
+            evaluarCalidad = true
+        } else {
+            pesoGramos = latestWeightGramos ?: return
+            tipoMuestreo = "PREVENTA"
+            evaluarCalidad = binding?.switchEvaluarCalidad?.isChecked == true
+        }
         val dao = AppDatabase.getInstance(requireContext()).registroPesoDao()
-        val evaluarCalidad = binding?.switchEvaluarCalidad?.isChecked == true
         val gradoPododermatitis = if (evaluarCalidad) gradoFromRadioGroup(
             binding?.radioGroupPododermatitis?.checkedRadioButtonId, R.id.radioPodoLeve, R.id.radioPodoGrave
         ) else null
@@ -298,6 +333,7 @@ class CaptureFragment : Fragment() {
                     categoria = categoria,
                     numeroAve = numeroAve,
                     pesoGramos = pesoGramos,
+                    tipoMuestreo = tipoMuestreo,
                     fechaHoraEpochMillis = nowMillis,
                     edad = edad,
                     linea = linea,
@@ -313,7 +349,11 @@ class CaptureFragment : Fragment() {
             )
             SyncScheduler.scheduleSyncNow(requireContext())
             avesRegistradasSesion++
-            binding?.textLastRegistered?.text = getString(R.string.last_registered_format, numeroAve, pesoGramos)
+            binding?.textLastRegistered?.text = if (soloCalidad) {
+                getString(R.string.last_registered_calidad_format, numeroAve)
+            } else {
+                getString(R.string.last_registered_format, numeroAve, pesoGramos)
+            }
         }
     }
 

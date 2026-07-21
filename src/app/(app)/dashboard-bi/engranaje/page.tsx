@@ -307,8 +307,12 @@ export default async function EngranajePage({
       continue;
     }
     const entry = granjaEntry(matched.key, matched.label);
-    entry.avesPesadas += 1;
-    entry.sumaPesoGramos += r.pesoGramos;
+    // Los muestreos de solo calidad no tienen peso: aportan a los indicadores de calidad
+    // de abajo, pero no al promedio de peso ni al conteo de aves pesadas.
+    if (r.pesoGramos != null) {
+      entry.avesPesadas += 1;
+      entry.sumaPesoGramos += r.pesoGramos;
+    }
     if (r.tieneHematoma !== null) {
       entry.hemEvalGranja += 1;
       if (r.tieneHematoma) entry.hemConGranja += 1;

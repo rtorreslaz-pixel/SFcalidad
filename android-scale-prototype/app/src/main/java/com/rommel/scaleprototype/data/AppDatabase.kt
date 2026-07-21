@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.migration.Migration
 
-@Database(entities = [RegistroPeso::class], version = 5, exportSchema = true)
+@Database(entities = [RegistroPeso::class], version = 6, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun registroPesoDao(): RegistroPesoDao
@@ -56,6 +56,14 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // Tipo de muestreo: PREVENTA (pesaje) o CALIDAD (solo calidad, sin peso). Filas
+        // existentes quedan como PREVENTA, que es lo que eran.
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE registro_peso ADD COLUMN tipoMuestreo TEXT NOT NULL DEFAULT 'PREVENTA'")
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -64,7 +72,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "scale-prototype.db",
                     // Sin fallbackToDestructiveMigration(): un futuro cambio de esquema
                     // debe ir por una Migration real, no borrar la cola de un verificador.
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .build().also { instance = it }
             }
         }

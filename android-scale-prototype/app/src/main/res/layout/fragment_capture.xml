@@ -281,6 +281,17 @@
         android:clickable="true"
         android:focusable="true" />
 
+    <TextView
+        android:id="@+id/textMuestreos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="8dp"
+        android:text="@string/action_muestreos_dia"
+        android:textColor="@color/sf_blue"
+        android:clickable="true"
+        android:focusable="true" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonFinalizar"
         style="?attr/materialButtonOutlinedStyle"
