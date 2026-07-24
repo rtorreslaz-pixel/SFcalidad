@@ -25,8 +25,12 @@ const nextConfig: NextConfig = {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
   async rewrites() {
-    // URL limpia para el prototipo interactivo público (sin login).
-    return [{ source: "/prototipo", destination: "/prototipo.html" }];
+    return [
+      // URL limpia para el prototipo interactivo público (sin login).
+      { source: "/prototipo", destination: "/prototipo.html" },
+      // URL limpia para el deck gerencial "Tercios Pollo Vivo 2026" (estático en public/tercios).
+      { source: "/tercios", destination: "/tercios/index.html" },
+    ];
   },
 };
 

@@ -1,0 +1,108 @@
+/* ============================================================
+   Colors — extracted from the app's Tailwind usage.
+   Base palette = slate (neutral) + emerald (brand) + teal
+   (secondary data) + red/amber (semantic). Plus the mobile
+   capture app's Material blue accent.
+   ============================================================ */
+:root {
+  /* ---- Brand: emerald (primary actions, active nav, "ok") ---- */
+  --emerald-50: #ecfdf5;
+  --emerald-100: #d1fae5;
+  --emerald-500: #10b981;
+  --emerald-600: #059669; /* primary button / active nav fill */
+  --emerald-700: #047857; /* primary hover, links */
+  --emerald-800: #065f46;
+
+  /* ---- Secondary data viz: teal ---- */
+  --teal-500: #14b8a6;
+  --teal-600: #0d9488; /* second bar series in charts */
+
+  /* ---- Neutral: slate ---- */
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0; /* card ring / borders */
+  --slate-300: #cbd5e1; /* input borders */
+  --slate-400: #94a3b8; /* muted / placeholder */
+  --slate-500: #64748b; /* secondary text / labels */
+  --slate-600: #475569; /* body-ish, button text */
+  --slate-700: #334155;
+  --slate-800: #1e293b; /* dark "filter" button */
+  --slate-900: #0f172a; /* headings, strong text */
+
+  /* ---- Semantic ---- */
+  --red-50: #fef2f2;
+  --red-100: #fee2e2;
+  --red-600: #dc2626;
+  --red-700: #b91c1c;
+  --sky-700: #0369a1;   /* azul cielo — ok opción B */
+  --sky-50:  #e0f2fe;
+  --rose-800: #9f1239;
+  --rose-900: #4c0519;
+  --green-800: #166534;
+  --green-50:  #f0fdf4;
+  --orange-800: #92400e; /* burnt umber — warn opción D */
+  --orange-50:  #fff7ed;
+
+  /* ---- Mobile capture app (Material) ---- */
+  --blue-700: #1565c0; /* tappable links in the Android UI */
+  --material-error: #d32f2f;
+
+  /* ---- San Fernando corporate brand (de sanfernando.com.pe + ficha de marca) ----
+     Identidad LIDERADA POR AZUL; el rojo es color de CTA ("Comprar aquí"); cian
+     claro como fondo suave; blanco. (Hex muestreados del sitio — ajustar al manual.) */
+  --sf-blue: #0b4ea2;       /* azul primario — header, footer, chrome */
+  --sf-blue-deep: #002f86;  /* navy profundo (ficha de marca) */
+  --sf-cyan: #a6dcea;       /* cian claro — fondos suaves */
+  --sf-red: #e2231a;        /* rojo de CTA / acento del logo */
+  --sf-red-dark: #ff4a3d;   /* rojo levantado para fondos oscuros */
+  /* NOTE: the consumer brand is blue-led & playful (emoji, script type). The internal
+     QA app ships emerald as its functional action color (red stays = defect/danger).
+     See readme "Marca" for how brand chrome (blue) + functional action combine. */
+
+  /* ---- App canvas ---- */
+  --background: #f5f6f8; /* page background */
+  --foreground: #1a1a1a; /* default text on canvas */
+  --surface: #ffffff; /* cards, header, inputs */
+
+  /* ============================================================
+     Semantic aliases — prefer these in components
+     ============================================================ */
+  --color-bg: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--slate-50);
+
+  --text-strong: var(--slate-900);
+  --text-body: var(--foreground);
+  --text-muted: var(--slate-500);
+  --text-faint: var(--slate-400);
+  --text-on-brand: #ffffff;
+  --text-link: var(--sf-blue);
+
+  --border-default: var(--slate-200);
+  --border-strong: var(--slate-300);
+  --divider: var(--slate-100);
+
+  --brand: var(--sf-blue);         /* SF azul — acciones primarias, nav activo */
+  --brand-hover: var(--sf-blue-deep);
+  --brand-soft-bg: #eff6ff;          /* azul suave (blue-50 equiv) */
+  --brand-soft-text: var(--sf-blue);
+
+  --accent-data-1: var(--emerald-600); /* esmeralda solo para gráficos de datos */
+  --accent-data-2: var(--teal-600);
+  --accent-meta: var(--red-600);
+
+  --danger: var(--red-600);          /* rojo clásico alta visibilidad (C) */
+  --danger-soft-bg: var(--red-100);
+  --danger-soft-text: var(--red-700);
+  --ok: var(--sky-700);              /* azul cielo — armoniza con SF (B) */
+  --ok-soft-bg: var(--sky-50);
+  --ok-soft-text: var(--sky-700);
+  --warn: var(--orange-800);         /* burnt umber (D) */
+  --warn-soft-bg: var(--orange-50);
+  --warn-soft-text: var(--orange-800);
+
+  --focus-ring: var(--sf-blue);
+
+  --neutral-strong-bg: var(--sf-blue-deep); /* botón utility navy */
+  --neutral-strong-bg-hover: #001a52;
+}

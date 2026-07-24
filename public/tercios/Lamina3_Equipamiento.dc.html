@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/colors.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/typography.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/radius-elevation.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/styles.css">
+<script src="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/_ds_bundle.js"></script>
+<style>
+  :root{--sf-navy:#004b93;--sf-blue:#0055B8;--sf-red:#D6001C;--sf-green:#009A44;--sf-amber:#F2A900;--sf-gray:#C6CEDD;--sf-bg:#EEF2F8;--sf-border:#DCE4F0}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  a{color:var(--sf-blue);text-decoration:none}
+  a:hover{color:var(--sf-navy)}
+  .scy{overflow:auto}
+  .scy::-webkit-scrollbar{width:9px;height:9px}
+  .scy::-webkit-scrollbar-thumb{background:#c3cee0;border-radius:6px}
+</style>
+</helmet>
+<div style="height:100vh;width:100%;display:flex;flex-direction:column;font-family:var(--font-sans);background:var(--sf-bg);color:var(--sf-navy)">
+
+  <header style="background:var(--sf-navy);color:#fff;padding:16px 40px 0;flex-shrink:0">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:158px;height:42px;border-radius:6px;overflow:hidden;flex-shrink:0"><img src="uploads/san-fernando-logo-png_seeklogo-212281.png" alt="San Fernando" style="width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(1.22)"></div>
+        <div style="line-height:1.12">
+          <div style="font-size:14px;letter-spacing:2px;text-transform:uppercase;color:#8EA6D6;font-weight:600">Lámina 03 · Tercios Pollo Vivo 2026</div>
+          <div style="font-size:26px;font-weight:800;letter-spacing:-.4px">Equipamiento · 9 sistemas</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-shrink:0">
+        <div style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.20);border-radius:9px;padding:9px 24px;text-align:center;min-width:172px;display:flex;flex-direction:column;justify-content:center"><div style="font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#9DB2DC;font-weight:600">Evaluados</div><div style="font-size:25px;font-weight:800;margin-top:2px">1 de 9 <span style="font-size:16px;font-weight:600;opacity:.85">sistemas</span></div></div>
+      </div>
+    </div>
+    <nav style="display:flex;gap:4px;margin-top:14px">
+      <sc-for list="{{ nav }}" as="t" hint-placeholder-count="5">
+        <a href="{{ t.href }}" style="padding:8px 15px;border-radius:8px 8px 0 0;font-size:16px;font-weight:600;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</a>
+      </sc-for>
+    </nav>
+  </header>
+
+  <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:18px 40px 0;min-height:0">
+
+    <div style="display:grid;grid-template-columns:340px 1fr;gap:16px;flex-shrink:0;margin-bottom:16px">
+      <div style="background:linear-gradient(135deg,#D6001C 0%,#A50016 100%);color:#fff;border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;justify-content:center">
+        <div style="font-size:14px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;opacity:.85">Enfriamiento de agua</div>
+        <div style="display:flex;align-items:baseline;gap:10px;margin:6px 0 4px"><span style="font-family:var(--font-mono);font-weight:800;font-size:52px;line-height:.9">51/51</span></div>
+        <div style="font-size:17px;font-weight:700">planteles en CRÍTICO</div>
+        <div style="font-size:15px;opacity:.9;margin-top:6px;line-height:1.35">26 del 1er tercio + 25 del 3er tercio · el único sistema evaluado hasta ahora.</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--sf-border);border-radius:12px;padding:16px 24px;display:flex;align-items:center;gap:24px;box-shadow:0 1px 2px rgba(0,40,110,.05)">
+        <div style="font-family:var(--font-mono);font-weight:800;font-size:52px;line-height:.9;color:var(--sf-amber)">89%</div>
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--sf-navy)">Indicadores sin datos</div>
+          <div style="font-size:15px;color:#6B7A99;font-weight:500;margin-top:3px">8 de 9 sistemas pendientes de evaluación</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;margin-bottom:10px">
+      <div style="font-size:15px;font-weight:600;color:#6B7A99">Matriz de sistemas por plantel</div>
+      <div style="display:flex;gap:8px">
+        <button onClick="{{ openAll }}" style="border:1px solid var(--sf-border);background:#fff;color:var(--sf-navy);font-family:var(--font-sans);font-weight:600;font-size:15px;padding:7px 13px;border-radius:7px;cursor:pointer">Expandir todo</button>
+        <button onClick="{{ closeAll }}" style="border:1px solid var(--sf-border);background:#fff;color:var(--sf-navy);font-family:var(--font-sans);font-weight:600;font-size:15px;padding:7px 13px;border-radius:7px;cursor:pointer">Contraer todo</button>
+      </div>
+    </div>
+
+    <div class="scy" style="flex:1;min-height:0;padding-bottom:14px">
+      <sc-for list="{{ tercios }}" as="tc" hint-placeholder-count="2">
+        <section style="background:#fff;border:1px solid var(--sf-border);border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,40,110,.05)">
+          <div style="background:{{ tc.band }};color:#fff;padding:10px 16px;font-size:18.5px;font-weight:800">{{ tc.title }} <span style="font-size:15px;font-weight:500;opacity:.85">· {{ tc.count }} planteles</span></div>
+          <div style="width:100%;overflow-x:auto">
+            <div style="min-width:830px">
+              <div style="display:grid;grid-template-columns:158px repeat(9,minmax(60px,1fr));background:#F3F6FB;border-bottom:1px solid var(--sf-border)">
+                <div style="padding:8px 12px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#6B7A99;position:sticky;left:0;background:#F3F6FB;z-index:2">Subzona / Plantel</div>
+                <sc-for list="{{ sistemas }}" as="it" hint-placeholder-count="9">
+                  <div style="padding:7px 3px;font-size:13px;font-weight:700;color:{{ it.hc }};text-align:center;line-height:1.15;display:flex;align-items:center;justify-content:center;border-left:1px solid #EAEFF6">{{ it.short }}</div>
+                </sc-for>
+              </div>
+              <sc-for list="{{ tc.subzonas }}" as="s" hint-placeholder-count="4">
+                <div>
+                  <div onClick="{{ s.toggle }}" style="display:grid;grid-template-columns:158px repeat(9,minmax(60px,1fr));cursor:pointer;border-bottom:1px solid #EEF2F8;background:{{ s.rowBg }}">
+                    <div style="padding:7px 12px;font-size:15.5px;font-weight:700;color:var(--sf-navy);display:flex;align-items:center;gap:6px;position:sticky;left:0;background:{{ s.rowBg }};z-index:1"><span style="width:11px;color:#9AA7BF;font-size:13px">{{ s.caret }}</span>{{ s.name }} <span style="font-weight:500;color:#9AA7BF;font-size:14px">({{ s.count }})</span></div>
+                    <sc-for list="{{ s.agg }}" as="a" hint-placeholder-count="9">
+                      <div style="display:flex;align-items:center;justify-content:center;border-left:1px solid #EEF2F8"><span style="min-width:22px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:14px;font-weight:700;border-radius:5px;background:{{ a.bg }};color:{{ a.fg }};padding:0 5px">{{ a.txt }}</span></div>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ s.open }}" hint-placeholder-val="{{ false }}">
+                    <div style="background:#FAFBFE">
+                      <sc-for list="{{ s.planteles }}" as="p" hint-placeholder-count="2">
+                        <div style="display:grid;grid-template-columns:158px repeat(9,minmax(60px,1fr));border-bottom:1px solid #F1F4F9">
+                          <div style="padding:5px 12px 5px 30px;font-family:var(--font-mono);font-size:14.5px;font-weight:600;color:#42506B;position:sticky;left:0;background:#FAFBFE;z-index:1">{{ p.id }}</div>
+                          <sc-for list="{{ p.cells }}" as="c" hint-placeholder-count="9">
+                            <div style="display:flex;align-items:center;justify-content:center;padding:3px;border-left:1px solid #F1F4F9"><span style="width:24px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:14px;font-weight:700;border-radius:5px;background:{{ c.bg }};color:{{ c.fg }}">{{ c.ch }}</span></div>
+                          </sc-for>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </section>
+      </sc-for>
+    </div>
+  </div>
+
+  <footer style="flex-shrink:0;background:#fff;border-top:1px solid var(--sf-border);padding:10px 40px;display:flex;align-items:center;justify-content:space-between;font-size:14.5px;color:#6B7A99">
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-weight:600;color:var(--sf-navy)">Leyenda</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:16px;border-radius:4px;background:var(--sf-red);color:#fff;font-family:var(--font-mono);font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">C</span> Crítico</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:16px;border-radius:4px;background:#E4E9F1;color:#A9B4C6;font-family:var(--font-mono);font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">–</span> Sin dato (pendiente de evaluación)</span>
+    </div>
+    <div>Fuente: Tercios 2026 · hoja Equipamiento</div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { open: {} };
+  sistemas(){
+    return [
+      ["Comederos",0],["Bebederos",0],["Ventiladores",0],["Nebulizad.",0],["Calefacción",0],["Iluminación",0],["Malacates (Conv.)",0],["Presión neg. (Clim.)",0],["Enfriam. agua",1],
+    ];
+  }
+  D(){
+    return [
+      { title:"1er Tercio · Referentes", band:"#004b93", count:26, subzonas:[
+        ["Esquivel",["P500"]],
+        ["Canta",["P120","P121","P123"]],
+        ["Santa Rosa",["P502","P504","P501","P503","P201"]],
+        ["Ocucaje",["P370","P393","P402"]],
+        ["Cab Toro",["P801","P806","P805","P807","P804","P810","P357","P358"]],
+        ["Medio Mundo",["P257"]],
+        ["Huayan",["P300","P302","P301"]],
+        ["Buena Vista",["P700"]],
+        ["Margaret",["P701"]],
+      ]},
+      { title:"3er Tercio · Críticos", band:"#D6001C", count:25, subzonas:[
+        ["Chilca",["P155"]],
+        ["Ocucaje",["P387","P385","P384","P386"]],
+        ["Trigales",["P280"]],
+        ["Asia",["P057","P126","P127","P054","P051","P052","P055","P124","P056","P058"]],
+        ["Playa Grande",["P260","P261","P238","P264","P263","P278"]],
+        ["Huanchaco",["P272"]],
+        ["Rio Seco",["P265"]],
+        ["Hatillo",["P267"]],
+      ]},
+    ];
+  }
+  keys(){ const ks=[]; this.D().forEach((tc,ti)=>tc.subzonas.forEach((s,si)=>ks.push(ti+'-'+si))); return ks; }
+  toggle(k){ this.setState(s=>({ open:{...s.open,[k]:!s.open[k]} })); }
+  renderVals(){
+    const sysEval = this.sistemas().map(s=>s[1]); // 1 = evaluado (crítico), 0 = sin dato
+    const dash = { ch:'–', bg:'#E4E9F1', fg:'#A9B4C6' };
+    const crit = { ch:'C', bg:'#D6001C', fg:'#fff' };
+    const rowCells = sysEval.map(e=> e? crit : dash);
+    const tercios = this.D().map((tc,ti)=>({
+      title:tc.title, band:tc.band, count:tc.count,
+      subzonas: tc.subzonas.map((s,si)=>{
+        const k=ti+'-'+si; const open=!!this.state.open[k]; const n=s[1].length;
+        return {
+          name:s[0], count:n, open, caret:open?'▾':'▸', rowBg:open?'#F5F8FD':'#fff',
+          toggle:()=>this.toggle(k),
+          agg: sysEval.map(e=> e? {txt:String(n),bg:'#D6001C',fg:'#fff'} : {txt:'–',bg:'#E4E9F1',fg:'#A9B4C6'}),
+          planteles: s[1].map(id=>({ id, cells: rowCells })),
+        };
+      }),
+    }));
+    return {
+      tercios,
+      sistemas: this.sistemas().map(s=>({short:s[0], hc: s[1]? '#D6001C':'#5C6B85'})),
+      nav: (()=>{const items=[["Portada","Portada.dc.html"],["Tendencias","Lamina4_Tendencias.dc.html"],["Indicadores","Lamina1_Indicadores.dc.html"],["Ítems de Crianza","Lamina2_ItemsCrianza.dc.html"],["Equipamiento","Lamina3_Equipamiento.dc.html"]];return items.map((it,i)=>({label:it[0],href:it[1],bg:i===4?'#EEF2F8':'rgba(255,255,255,0.08)',fg:i===4?'#00286E':'#C6D4EE'}));})(),
+      openAll:()=>{const o={};this.keys().forEach(k=>o[k]=true);this.setState({open:o});},
+      closeAll:()=>this.setState({open:{}}),
+    };
+  }
+}
+</script>
+</body>
+</html>

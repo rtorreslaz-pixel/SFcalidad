@@ -1,0 +1,14 @@
+/* ============================================================
+   Fonts — Plus Jakarta Sans (brand UI) + IBM Plex Mono (datos)
+   Plus Jakarta Sans: geométrica moderna, no saturada, excelente
+   para dashboards ejecutivos y uso de campo nocturno.
+   IBM Plex Mono: dígitos tabulares precisos para KPIs y pesos.
+   El sitio consumer de SF usa Dancing Script para displays;
+   esa fuente NO se usa en la app interna.
+   ============================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+:root {
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+}

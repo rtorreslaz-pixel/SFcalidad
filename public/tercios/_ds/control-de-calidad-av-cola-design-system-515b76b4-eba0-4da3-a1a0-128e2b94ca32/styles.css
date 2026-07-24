@@ -1,0 +1,10 @@
+/* ============================================================
+   Control de Calidad Avícola — Design System
+   Root stylesheet. IMPORTS ONLY — no rules live here.
+   Consumers link this single file.
+   ============================================================ */
+@import "./tokens/fonts.css";
+@import "./tokens/colors.css";
+@import "./tokens/typography.css";
+@import "./tokens/spacing.css";
+@import "./tokens/radius-elevation.css";

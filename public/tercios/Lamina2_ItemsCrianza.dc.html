@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/colors.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/typography.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/radius-elevation.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/styles.css">
+<script src="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/_ds_bundle.js"></script>
+<style>
+  :root{--sf-navy:#004b93;--sf-blue:#0055B8;--sf-red:#D6001C;--sf-green:#009A44;--sf-amber:#F2A900;--sf-gray:#C6CEDD;--sf-bg:#EEF2F8;--sf-border:#DCE4F0}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  a{color:var(--sf-blue);text-decoration:none}
+  a:hover{color:var(--sf-navy)}
+  .scy{overflow:auto}
+  .scy::-webkit-scrollbar{width:9px;height:9px}
+  .scy::-webkit-scrollbar-thumb{background:#c3cee0;border-radius:6px}
+</style>
+</helmet>
+<div style="height:100vh;width:100%;display:flex;flex-direction:column;font-family:var(--font-sans);background:var(--sf-bg);color:var(--sf-navy)">
+
+  <header style="background:var(--sf-navy);color:#fff;padding:16px 40px 0;flex-shrink:0">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:158px;height:42px;border-radius:6px;overflow:hidden;flex-shrink:0"><img src="uploads/san-fernando-logo-png_seeklogo-212281.png" alt="San Fernando" style="width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(1.22)"></div>
+        <div style="line-height:1.12">
+          <div style="font-size:14px;letter-spacing:2px;text-transform:uppercase;color:#8EA6D6;font-weight:600">Lámina 02 · Tercios Pollo Vivo 2026</div>
+          <div style="font-size:26px;font-weight:800;letter-spacing:-.4px">Ítems de Crianza · 14 ítems evaluados</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-shrink:0">
+        <div style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.18);border-radius:8px;padding:7px 13px;text-align:center"><div style="font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#9DB2DC;font-weight:600">Escala</div><div style="font-size:16px;font-weight:700">Bueno · Regular · Crítico</div></div>
+      </div>
+    </div>
+    <nav style="display:flex;gap:4px;margin-top:14px">
+      <sc-for list="{{ nav }}" as="t" hint-placeholder-count="5">
+        <a href="{{ t.href }}" style="padding:8px 15px;border-radius:8px 8px 0 0;font-size:16px;font-weight:600;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</a>
+      </sc-for>
+    </nav>
+  </header>
+
+
+  <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:16px 40px 0;min-height:0">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;flex-shrink:0;margin-bottom:14px">
+      <sc-for list="{{ resumen }}" as="r" hint-placeholder-count="2">
+        <div style="background:#fff;border:1px solid var(--sf-border);border-left:5px solid {{ r.band }};border-radius:12px;padding:13px 16px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 2px rgba(0,40,110,.05)">
+          <div style="flex-shrink:0"><div style="font-size:17px;font-weight:800;color:var(--sf-navy)">{{ r.title }}</div><div style="font-size:14px;color:#6B7A99;font-weight:500">{{ r.count }} planteles</div></div>
+          <div style="display:flex;gap:14px">
+            <div style="text-align:center"><div style="font-family:var(--font-mono);font-weight:700;font-size:24.5px;color:var(--sf-green)">{{ r.b }}</div><div style="font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:#6B7A99;font-weight:600">Bueno</div></div>
+            <div style="text-align:center"><div style="font-family:var(--font-mono);font-weight:700;font-size:24.5px;color:var(--sf-amber)">{{ r.r }}</div><div style="font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:#6B7A99;font-weight:600">Regular</div></div>
+            <div style="text-align:center"><div style="font-family:var(--font-mono);font-weight:700;font-size:24.5px;color:var(--sf-red)">{{ r.c }}</div><div style="font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:#6B7A99;font-weight:600">Crítico</div></div>
+          </div>
+          <div style="flex:1;font-size:14px;color:#42506B;line-height:1.35;border-left:1px solid var(--sf-border);padding-left:16px"><span style="font-weight:600;color:#6B7A99">Más críticos: </span>{{ r.crit }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;margin-bottom:10px">
+      <div style="font-size:15px;font-weight:600;color:#6B7A99">Matriz de estados por plantel</div>
+      <div style="display:flex;gap:8px">
+        <button onClick="{{ openAll }}" style="border:1px solid var(--sf-border);background:#fff;color:var(--sf-navy);font-family:var(--font-sans);font-weight:600;font-size:15px;padding:7px 13px;border-radius:7px;cursor:pointer">Expandir todo</button>
+        <button onClick="{{ closeAll }}" style="border:1px solid var(--sf-border);background:#fff;color:var(--sf-navy);font-family:var(--font-sans);font-weight:600;font-size:15px;padding:7px 13px;border-radius:7px;cursor:pointer">Contraer todo</button>
+      </div>
+    </div>
+
+    <div class="scy" style="flex:1;min-height:0;padding-bottom:14px">
+      <sc-for list="{{ tercios }}" as="tc" hint-placeholder-count="2">
+        <section style="background:#fff;border:1px solid var(--sf-border);border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,40,110,.05)">
+          <div style="background:{{ tc.band }};color:#fff;padding:12px 16px;font-size:23px;font-weight:800">{{ tc.title }} <span style="font-size:17px;font-weight:500;opacity:.85">· {{ tc.count }} planteles</span></div>
+          <div style="width:100%;overflow-x:auto">
+            <div style="min-width:830px;font-size:17px">
+              <div style="display:grid;grid-template-columns:158px repeat(14,minmax(46px,1fr));background:#F3F6FB;border-bottom:1px solid var(--sf-border)">
+                <div style="padding:8px 12px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#6B7A99;position:sticky;left:0;background:#F3F6FB;z-index:2">Subzona / Plantel</div>
+                <sc-for list="{{ items }}" as="it" hint-placeholder-count="14">
+                  <div title="{{ it.full }}" style="padding:6px 3px;font-size:12.5px;font-weight:700;color:#2A3956;text-align:center;line-height:1.1;display:flex;align-items:center;justify-content:center;border-left:1px solid #EAEFF6;cursor:help">{{ it.short }}</div>
+                </sc-for>
+              </div>
+              <sc-for list="{{ tc.subzonas }}" as="s" hint-placeholder-count="4">
+                <div>
+                  <div onClick="{{ s.toggle }}" style="display:grid;grid-template-columns:158px repeat(14,minmax(46px,1fr));cursor:pointer;border-bottom:1px solid #EEF2F8;background:{{ s.rowBg }}">
+                    <div style="padding:7px 12px;font-size:15.5px;font-weight:700;color:var(--sf-navy);display:flex;align-items:center;gap:6px;position:sticky;left:0;background:{{ s.rowBg }};z-index:1"><span style="width:11px;color:#9AA7BF;font-size:13px">{{ s.caret }}</span>{{ s.name }} <span style="font-weight:500;color:#9AA7BF;font-size:14px">({{ s.count }})</span></div>
+                    <sc-for list="{{ s.agg }}" as="a" hint-placeholder-count="14">
+                      <div style="display:flex;align-items:center;justify-content:center;border-left:1px solid #EEF2F8"><span style="min-width:22px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:14px;font-weight:700;border-radius:5px;background:{{ a.bg }};color:{{ a.fg }};padding:0 5px">{{ a.txt }}</span></div>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ s.open }}" hint-placeholder-val="{{ false }}">
+                    <div style="background:#FAFBFE">
+                      <sc-for list="{{ s.planteles }}" as="p" hint-placeholder-count="2">
+                        <div style="display:grid;grid-template-columns:158px repeat(14,minmax(46px,1fr));border-bottom:1px solid #F1F4F9">
+                          <div style="padding:5px 12px 5px 30px;font-family:var(--font-mono);font-size:14.5px;font-weight:600;color:#42506B;position:sticky;left:0;background:#FAFBFE;z-index:1">{{ p.id }}</div>
+                          <sc-for list="{{ p.cells }}" as="c" hint-placeholder-count="14">
+                            <div style="display:flex;align-items:center;justify-content:center;padding:3px;border-left:1px solid #F1F4F9"><span style="width:24px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:14px;font-weight:700;border-radius:5px;background:{{ c.bg }};color:{{ c.fg }}">{{ c.ch }}</span></div>
+                          </sc-for>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </section>
+      </sc-for>
+    </div>
+  </div>
+
+  <footer style="flex-shrink:0;background:#fff;border-top:1px solid var(--sf-border);padding:10px 40px;display:flex;align-items:center;justify-content:space-between;font-size:14.5px;color:#6B7A99">
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-weight:600;color:var(--sf-navy)">Leyenda</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:16px;border-radius:4px;background:var(--sf-green);color:#fff;font-family:var(--font-mono);font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">B</span> Bueno</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:16px;border-radius:4px;background:var(--sf-amber);color:#5A4300;font-family:var(--font-mono);font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">R</span> Regular</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:16px;border-radius:4px;background:var(--sf-red);color:#fff;font-family:var(--font-mono);font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">C</span> Crítico</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:16px;border-radius:4px;background:#E4E9F1;color:#A9B4C6;font-family:var(--font-mono);font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">–</span> Sin dato</span>
+    </div>
+    <div>La fila de subzona resume por ítem: nº en crítico (rojo) / regular (ámbar) / ✓ si todos bien · Fuente: Tercios 2026</div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { open: {} };
+  items(){
+    return [
+      ["Días de venta > 5 días · Edad de liquidación > 45 días","Días de venta > 5 días · Edad de liquidación > 45 días"],
+      ["Vacío sanitario total ≥ 16 días","Vacío sanitario total ≥ 16 días"],
+      ["LYD checklist > 85%","LYD checklist > 85%"],
+      ["Humedad de cama < 21% · Temperatura de la ruma > 63 °C","Humedad de cama < 21% · Temperatura de la ruma > 63 °C"],
+      ["Alphitobius","Alphitobius"],
+      ["Galpón ideal > 85%","Galpón ideal > 85%"],
+      ["Rotación Personal GJA","Rotación Personal GJA"],
+      ["Recepción de pollo BB checklist > 85%","Recepción de pollo BB checklist > 85%"],
+      ["T° Cloacal > 85%","T° Cloacal > 85%"],
+      ["Llenado Buche 24h > 98%","Llenado Buche 24h > 98%"],
+      ["Calidad de agua","Calidad de agua"],
+      ["Presión y caudal de agua","Presión y caudal de agua"],
+      ["Tasa de crecimiento ≥ 4.5%","Tasa de crecimiento ≥ 4.5%"],
+      ["%CV 7 días < 10.8%","%CV 7 días < 10.8%"],
+    ];
+  }
+  D(){
+    // row: [id, "14-char state string"]  B/R/C/-
+    return [
+      { title:"1er Tercio · Referentes", band:"#004b93", count:26, subzonas:[
+        ["Esquivel",[["P500","BBBBRRB-CCRBBR"]]],
+        ["Canta",[["P120","BBBBRRB--CRBRB"],["P121","BBBBRRB--CRBBB"],["P123","BBBBRRB--CRBRB"]]],
+        ["Santa Rosa",[["P502","RRBBCRB--BRBRR"],["P504","BRBBRRB--CRBBB"],["P501","BRBBRRB--CRBRB"],["P503","RRBBCRB--CRBRR"],["P201","CCRBCRCRCCRBRC"]]],
+        ["Ocucaje",[["P370","RRRBCRCB-CRBRR"],["P393","BRRBCRCB-CRBRB"],["P402","RRRBCRCB-CRBRR"]]],
+        ["Cab Toro",[["P801","BRBBBRB--CRBRB"],["P806","CRBBBRB--CRBRB"],["P805","CRBBBRB--CRBRB"],["P807","CRBBBRB--CRBRR"],["P804","BRBBBRB--CRBRB"],["P810","CRBBBRB--CRBBB"],["P357","BRBBBRB--CRBRB"],["P358","BRBBBRB--CRBBB"]]],
+        ["Medio Mundo",[["P257","BRBBCRB--CRBBB"]]],
+        ["Huayan",[["P300","RCRBRRBRCCRBRC"],["P302","RCRBRRBRCCRBRC"],["P301","RCRBRRBBCCRBRC"]]],
+        ["Buena Vista",[["P700","RCBBRRBBRCRBCR"]]],
+        ["Margaret",[["P701","BRBBCRBRBCRBCC"]]],
+      ]},
+      { title:"3er Tercio · Críticos", band:"#D6001C", count:25, subzonas:[
+        ["Chilca",[["P155","RCRBRRB--CRRRR"]]],
+        ["Ocucaje",[["P387","RRRBCRCB-CRCRB"],["P385","RRRBCRC--CRCRB"],["P384","RRRBCRCC-CRCCB"],["P386","RRRBCRCC-RRCRB"]]],
+        ["Trigales",[["P280","RRRBRRCRRCRRRC"]]],
+        ["Asia",[["P057","CCRBCRC--CRRCR"],["P126","RCRBCRBB-CRRRB"],["P127","RRRBCRBR-CRRRR"],["P054","CCRBCRCR-RRRCR"],["P051","RRRCCRCB-CRRCB"],["P052","RRRBCRCR-CRRCB"],["P055","CCRBCRCR-CRRCB"],["P124","RRRBCRBR-CRRRC"],["P056","RRRBCRC--CRRCB"],["P058","RRRBCRC--CRRCR"]]],
+        ["Playa Grande",[["P260","CRRBRRRBRCRRRC"],["P261","CRRBRRRBRCRRCB"],["P238","CRRBRRRB-CRRRC"],["P264","RRRBRRR-RCRRRC"],["P263","RRRBRRRBRCRRRB"],["P278","RRRBRRR-CCRRRB"]]],
+        ["Huanchaco",[["P272","RRRBCRC-RCRRCR"]]],
+        ["Rio Seco",[["P265","CCRBCRRBCCRRRB"]]],
+        ["Hatillo",[["P267","CRRBCRCBRCRRRR"]]],
+      ]},
+    ];
+  }
+  keys(){ const ks=[]; this.D().forEach((tc,ti)=>tc.subzonas.forEach((s,si)=>ks.push(ti+'-'+si))); return ks; }
+  toggle(k){ this.setState(s=>({ open:{...s.open,[k]:!s.open[k]} })); }
+  cell(ch){
+    const M={B:['#009A44','#fff'],R:['#F2A900','#5A4300'],C:['#D6001C','#fff'],'-':['#E4E9F1','#A9B4C6']};
+    const m=M[ch]||M['-']; return { ch: ch==='-'?'–':ch, bg:m[0], fg:m[1] };
+  }
+  agg(planteles){
+    const out=[];
+    for(let i=0;i<14;i++){
+      let c=0,r=0,b=0,d=0;
+      planteles.forEach(p=>{ const ch=p[1][i]; if(ch==='C')c++; else if(ch==='R')r++; else if(ch==='B')b++; else d++; });
+      if(c>0) out.push({txt:String(c),bg:'#D6001C',fg:'#fff'});
+      else if(r>0) out.push({txt:String(r),bg:'#F2A900',fg:'#5A4300'});
+      else if(b>0) out.push({txt:'✓',bg:'#009A44',fg:'#fff'});
+      else out.push({txt:'–',bg:'#E4E9F1',fg:'#A9B4C6'});
+    }
+    return out;
+  }
+  renderVals(){
+    const tercios = this.D().map((tc,ti)=>({
+      title:tc.title, band:tc.band, count:tc.count,
+      subzonas: tc.subzonas.map((s,si)=>{
+        const k=ti+'-'+si; const open=!!this.state.open[k];
+        return {
+          name:s[0], count:s[1].length, open, caret:open?'▾':'▸', rowBg:open?'#F5F8FD':'#fff',
+          toggle:()=>this.toggle(k),
+          agg:this.agg(s[1]),
+          planteles: s[1].map(p=>({ id:p[0], cells:p[1].split('').map(ch=>this.cell(ch)) })),
+        };
+      }),
+    }));
+    return {
+      tercios,
+      items: this.items().map(it=>({short:it[0],full:it[1]})),
+      resumen:[
+        {title:"1er Tercio · Referentes",band:"#004b93",count:26,b:"44%",r:"38%",c:"18%",crit:"Buche 24h (25 pl.) · Alphitobius (8 pl.) · Días venta / Edad liq. (5 pl.)"},
+        {title:"3er Tercio · Críticos",band:"#D6001C",count:25,b:"15%",r:"56%",c:"28%",crit:"Buche 24h (23 pl.) · Alphitobius (17 pl.) · Rotación GJA (14 pl.)"},
+      ],
+      nav: (()=>{const items=[["Portada","Portada.dc.html"],["Tendencias","Lamina4_Tendencias.dc.html"],["Indicadores","Lamina1_Indicadores.dc.html"],["Ítems de Crianza","Lamina2_ItemsCrianza.dc.html"],["Equipamiento","Lamina3_Equipamiento.dc.html"]];return items.map((it,i)=>({label:it[0],href:it[1],bg:i===3?'#EEF2F8':'rgba(255,255,255,0.08)',fg:i===3?'#00286E':'#C6D4EE'}));})(),
+      openAll:()=>{const o={};this.keys().forEach(k=>o[k]=true);this.setState({open:o});},
+      closeAll:()=>this.setState({open:{}}),
+    };
+  }
+}
+</script>
+</body>
+</html>

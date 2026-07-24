@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/colors.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/typography.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/tokens/radius-elevation.css">
+<link rel="stylesheet" href="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/styles.css">
+<script src="_ds/control-de-calidad-av-cola-design-system-515b76b4-eba0-4da3-a1a0-128e2b94ca32/_ds_bundle.js"></script>
+<style>
+  :root{--sf-navy:#004b93;--sf-blue:#0055B8;--sf-red:#D6001C;--sf-green:#009A44;--sf-amber:#F2A900;--sf-gray:#C6CEDD;--sf-bg:#EEF2F8;--sf-border:#DCE4F0}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  a{color:var(--sf-blue);text-decoration:none}
+  a:hover{color:var(--sf-navy)}
+  input[type=range]{accent-color:#00286E;height:4px}
+</style>
+</helmet>
+<div style="height:100vh;width:100%;display:flex;flex-direction:column;font-family:var(--font-sans);background:var(--sf-bg);color:var(--sf-navy)">
+
+  <header style="background:var(--sf-navy);color:#fff;padding:16px 40px 0;flex-shrink:0">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:158px;height:42px;border-radius:6px;overflow:hidden;flex-shrink:0"><img src="uploads/san-fernando-logo-png_seeklogo-212281.png" alt="San Fernando" style="width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(1.22)"></div>
+        <div style="line-height:1.12">
+          <div style="font-size:14px;letter-spacing:2px;text-transform:uppercase;color:#8EA6D6;font-weight:600">Lámina 04 · Tercios Pollo Vivo 2026</div>
+          <div style="font-size:26px;font-weight:800;letter-spacing:-.4px">Tendencias Semanales · 2026</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;flex-shrink:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.16);border-radius:10px;padding:8px 16px">
+        <div style="min-width:96px">
+          <div style="font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#9DB2DC;font-weight:600">Rango</div>
+          <div style="font-size:18.5px;font-weight:700;font-family:var(--font-mono)">Sem {{ wStart }}–{{ wEnd }}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;width:190px">
+          <input type="range" min="1" max="30" value="{{ wStart }}" onChange="{{ setStart }}">
+          <input type="range" min="1" max="30" value="{{ wEnd }}" onChange="{{ setEnd }}">
+        </div>
+        <button onClick="{{ full }}" style="border:1px solid rgba(255,255,255,0.28);background:rgba(255,255,255,0.10);color:#fff;font-family:var(--font-sans);font-weight:600;font-size:15px;padding:7px 12px;border-radius:7px;cursor:pointer;white-space:nowrap">Ver año completo</button>
+      </div>
+    </div>
+    <nav style="display:flex;gap:4px;margin-top:14px">
+      <sc-for list="{{ nav }}" as="t" hint-placeholder-count="5">
+        <a href="{{ t.href }}" style="padding:8px 15px;border-radius:8px 8px 0 0;font-size:16px;font-weight:600;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</a>
+      </sc-for>
+    </nav>
+  </header>
+
+  <div style="background:#F3F6FB;border-bottom:1px solid var(--sf-border);padding:12px 40px;font-size:19.5px;color:#42506B;flex-shrink:0">
+    Puntos <span style="color:var(--sf-green);font-weight:700">●</span> en objetivo / <span style="color:var(--sf-red);font-weight:700">●</span> fuera · línea roja punteada = objetivo/ref · <span style="font-family:var(--font-mono)">~</span> valor aprox.
+  </div>
+
+  <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1.12fr;grid-template-rows:1fr 1.32fr;gap:14px;padding:14px 40px 18px">
+
+    <sc-for list="{{ lineCharts }}" as="c" hint-placeholder-count="3">
+      <div style="background:#fff;border:1px solid var(--sf-border);border-radius:12px;padding:10px 14px 4px;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(0,40,110,.05);min-height:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+          <span style="font-size:20.5px;font-weight:700">{{ c.name }}</span>
+          <div style="display:flex;align-items:center;gap:9px">
+            <span style="font-size:16px;font-weight:600;color:#6B7A99;background:var(--sf-bg);padding:3px 9px;border-radius:5px">Obj. {{ c.obj }}</span>
+            <span style="font-size:16px;font-weight:600;color:#42506B">Prom. <b style="font-family:var(--font-mono);color:var(--sf-navy)">{{ c.avg }}</b></span>
+            <span style="font-size:16px;font-weight:700;font-family:var(--font-mono);color:#fff;background:{{ c.badgeBg }};padding:3px 9px;border-radius:5px">{{ c.count }}/{{ c.total }}</span>
+          </div>
+        </div>
+        <svg viewBox="0 0 {{ c.viewW }} {{ c.viewH }}" preserveAspectRatio="xMidYMid meet" style="width:100%;flex:1;min-height:0" onMouseLeave="{{ clearFocus }}">
+          {{ c.axisG }}
+          <line x1="{{ c.padL }}" y1="{{ c.objY }}" x2="{{ c.x2 }}" y2="{{ c.objY }}" stroke="#D6001C" stroke-width="1.2" stroke-dasharray="5 4" opacity="0.75"></line>
+          {{ c.objValG }}
+          <polyline points="{{ c.poly }}" fill="none" stroke="#0055B8" stroke-width="2" stroke-linejoin="round"></polyline>
+          <sc-for list="{{ c.pts }}" as="p" hint-placeholder-count="12">
+            <circle cx="{{ p.x }}" cy="{{ p.y }}" r="{{ p.r }}" fill="{{ p.fill }}" stroke="#fff" stroke-width="{{ p.sw }}"></circle>
+          </sc-for>
+          {{ c.labelG }}
+          <sc-if value="{{ c.guideOn }}" hint-placeholder-val="{{ false }}">
+            <line x1="{{ c.guideX }}" y1="{{ c.padT }}" x2="{{ c.guideX }}" y2="{{ c.plotBottom }}" stroke="#00286E" stroke-width="1" stroke-dasharray="3 3" opacity="0.55"></line>
+            <circle cx="{{ c.guideX }}" cy="{{ c.fy }}" r="4.5" fill="none" stroke="#00286E" stroke-width="1.6"></circle>
+            <rect x="{{ c.tipX }}" y="4" width="{{ c.tipW }}" height="28" rx="5" fill="#00286E"></rect>
+            {{ c.tipTextG }}
+          </sc-if>
+          <sc-for list="{{ c.hovers }}" as="h" hint-placeholder-count="12">
+            <rect x="{{ h.x }}" y="{{ c.padT }}" width="{{ h.w }}" height="{{ c.plotH }}" fill="transparent" onMouseEnter="{{ h.onEnter }}" style="cursor:crosshair"></rect>
+          </sc-for>
+        </svg>
+      </div>
+    </sc-for>
+
+    <div style="background:#fff;border:1px solid var(--sf-border);border-radius:12px;padding:10px 14px 4px;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(0,40,110,.05);min-height:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+        <span style="font-size:20.5px;font-weight:700">{{ podo.name }}</span>
+        <div style="display:flex;align-items:center;gap:9px">
+          <span style="display:flex;gap:10px;font-size:16px;font-weight:600">
+            <span style="color:var(--sf-green)">■ G0</span><span style="color:var(--sf-amber)">■ G1</span><span style="color:var(--sf-red)">■ G2</span>
+          </span>
+          <span style="font-size:16px;font-weight:600;color:#42506B">G2 prom. <b style="font-family:var(--font-mono);color:var(--sf-navy)">{{ podo.avg }}</b></span>
+          <span style="font-size:16px;font-weight:700;font-family:var(--font-mono);color:#fff;background:{{ podo.badgeBg }};padding:3px 9px;border-radius:5px">{{ podo.count }}/{{ podo.total }}</span>
+        </div>
+      </div>
+      <svg viewBox="0 0 {{ podo.viewW }} {{ podo.viewH }}" preserveAspectRatio="xMidYMid meet" style="width:100%;flex:1;min-height:0" onMouseLeave="{{ clearFocus }}">
+        {{ podo.axisG }}
+        <sc-for list="{{ podo.bars }}" as="b" hint-placeholder-count="12">
+          <g>
+            <sc-for list="{{ b.segs }}" as="sg" hint-placeholder-count="3">
+              <rect x="{{ b.x }}" y="{{ sg.y }}" width="{{ b.w }}" height="{{ sg.h }}" fill="{{ sg.fill }}" opacity="{{ b.op }}"></rect>
+            </sc-for>
+          </g>
+        </sc-for>
+        <line x1="{{ podo.padL }}" y1="{{ podo.objY }}" x2="{{ podo.x2 }}" y2="{{ podo.objY }}" stroke="#00286E" stroke-width="2" stroke-dasharray="5 4" opacity="1"></line>
+        <text x="{{ podo.padL }}" y="{{ podo.objLabelY }}" font-family="var(--font-mono)" font-size="13.5" font-weight="700" fill="#00286E" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="start">Obj. G2 19%</text>
+        <sc-if value="{{ podo.guideOn }}" hint-placeholder-val="{{ false }}">
+          {{ podo.fsegG }}
+          <rect x="{{ podo.tipX }}" y="4" width="30" height="15" rx="4" fill="#00286E"></rect>
+          {{ podo.tipTextG }}
+        </sc-if>
+        <sc-for list="{{ podo.hovers }}" as="h" hint-placeholder-count="12">
+          <rect x="{{ h.x }}" y="{{ podo.padT }}" width="{{ h.w }}" height="{{ podo.plotH }}" fill="transparent" onMouseEnter="{{ h.onEnter }}" style="cursor:crosshair"></rect>
+        </sc-for>
+      </svg>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { wStart:1, wEnd:30, focus:null };
+  geom(){ return { viewW:540, viewH:212, padL:16, padR:16, padT:34, padB:26, get plotW(){return this.viewW-this.padL-this.padR;}, get plotH(){return this.viewH-this.padT-this.padB;} }; }
+  data(){
+    return {
+      pm:[4.3,4.5,3.7,1.6,5.4,7.9,8.5,6.4,6.9,4.8,11.4,10.1,6.5,7.7,7.2,5.7,4.0,7.0,7.8,4.8,5.2,4.4,4.4,9.9,6.1,9.1,8.5,11.5,8.6],
+      peso:[2.838,2.756,2.723,2.791,2.721,2.658,2.618,2.744,2.548,2.624,2.526,2.488,2.380,2.522,2.498,2.833,2.902,2.749,2.596,2.728,2.790,2.775,2.720,2.592,2.685,2.693,2.617,2.601,2.576],
+      cv:[10.9,11.4,11.3,10.2,10.9,11.5,10.7,11.0,10.3,9.0,10.4,10.5,10.7,11.2,11.7,10.9,11.7,11.5,12.0,10.3,10.2,9.8,10.5,11.7,12.0,11.5,13.1,12.7,11.6],
+      podo:[[49,34,17],[27,51,22],[25,49,25],[40,42,19],[40,35,25],[36,37,27],[34,36,30],[48,31,21],[51,27,22],[56,28,16],[34,37,29],[69,21,10],[63,22,15],[48,36,16],[39,34,26],[58,28,14],[62,27,11],[56,29,15],[53,28,18],[46,33,21],[55,26,19],[39,36,26],[37,32,31],[28,45,27],[24,46,29],[30,44,26],[36,37,27],[39,37,24],[41,30,29],[37,37,26]],
+      pesoAprox:[22,25], cvAprox:[3,11,18,20],
+    };
+  }
+  setFocus(w){ if(this.state.focus!==w) this.setState({focus:w}); }
+  clearFocus(){ if(this.state.focus!==null) this.setState({focus:null}); }
+  lineChart(name,obj,series,min,max,thr,cmp,fmt,aprox){
+    const g=this.geom(); const {wStart,wEnd,focus}=this.state;
+    const b=Math.min(wEnd,series.length); const sel=[];
+    for(let w=wStart;w<=b;w++) if(w>=1&&w<=series.length) sel.push(w);
+    const n=sel.length;
+    const X=i=> g.padL+(n>1? i/(n-1):0.5)*g.plotW;
+    const Y=v=> g.padT+(1-(v-min)/(max-min))*g.plotH;
+    const pts=sel.map((w,i)=>{ const v=series[w-1]; const good=cmp(v); const aprx=aprox.includes(w); const above=i%2===0; const x=+X(i).toFixed(1), y=+Y(v).toFixed(1);
+      return {x,y,val:v,week:w, fill:good?'#009A44':'#D6001C', r:aprx?2.6:3, sw:aprx?1.4:1, labelX:x, labelY:above? y-11 : y+19, labelText:fmt(v)+(aprx?'~':''), showLabel: focus===null && (n<=15 || i%2===0) }; });
+    const poly=pts.map(p=>p.x+','+p.y).join(' ');
+    const vals=sel.map(w=>series[w-1]); const avg=vals.reduce((a,c)=>a+c,0)/(vals.length||1);
+    const cnt=vals.filter(cmp).length;
+    let guideOn=false,guideX=0,fy=0,fweek=0,fval='';
+    if(focus!==null){ const idx=sel.indexOf(focus); if(idx>=0){ guideOn=true; guideX=pts[idx].x; fy=pts[idx].y; fweek=focus; fval=fmt(pts[idx].val)+(aprox.includes(focus)?'~':''); } }
+    const tipW=Math.max(34, fval.length*7+14); let tipX=guideX-tipW/2; tipX=Math.max(g.padL, Math.min(tipX, g.viewW-g.padR-tipW));
+    const slot=g.plotW/Math.max(n,1);
+    const hovers=pts.map(p=>({x:+(p.x-slot/2).toFixed(1), w:+slot.toFixed(1), onEnter:()=>this.setFocus(p.week)}));
+    const cx=+(tipX+tipW/2).toFixed(1); const mono='var(--font-mono)';
+    const labelG=React.createElement('g',null,(focus===null?pts:[]).filter(p=>p.showLabel).map((p,i)=>React.createElement('text',{key:i,x:p.labelX,y:p.labelY,textAnchor:'middle',style:{fontFamily:mono,fontSize:'11px',fontWeight:700,fill:'#2A3956',stroke:'#fff',strokeWidth:'2.6px',paintOrder:'stroke'}},p.labelText)));
+    const plotBottom=g.padT+g.plotH;
+    const objValG=React.createElement('text',{x:+(g.viewW-g.padR).toFixed(1),y:+(Y(thr)-4).toFixed(1),textAnchor:'end',style:{fontFamily:mono,fontSize:'12px',fontWeight:700,fill:'#D6001C',stroke:'#fff',strokeWidth:'3px',paintOrder:'stroke'}},obj);
+    const axisG=React.createElement('g',null,[React.createElement('line',{key:'b',x1:g.padL,y1:plotBottom,x2:g.viewW-g.padR,y2:plotBottom,stroke:'#E4E9F1',strokeWidth:1})].concat(pts.filter((p,i)=>n<=20||i%2===0).map((p,i)=>React.createElement('text',{key:i,x:p.x,y:plotBottom+14,textAnchor:'middle',style:{fontFamily:mono,fontSize:'12px',fontWeight:700,fill:'#6B7A99'}},String(p.week)))));
+    let tipTextG=null;
+    if(guideOn){ tipTextG=React.createElement('g',null,[
+      React.createElement('text',{key:'w',x:cx,y:15,textAnchor:'middle',style:{fontFamily:'var(--font-mono)',fontSize:'12px',fill:'#9DB2DC'}},'S'+fweek),
+      React.createElement('text',{key:'v',x:cx,y:27,textAnchor:'middle',style:{fontFamily:'var(--font-mono)',fontSize:'16px',fontWeight:700,fill:'#fff'}},fval),
+    ]); }
+    return { name,obj, viewW:g.viewW,viewH:g.viewH,padL:g.padL,padT:g.padT,plotH:g.plotH, x2:g.viewW-g.padR, plotBottom:g.padT+g.plotH,
+      objY:+Y(thr).toFixed(1), objLabelY:+(Y(thr)-3).toFixed(1), poly, pts, hovers,
+      avg:fmt(avg), count:cnt, total:n, badgeBg:'#009A44', labelG, tipTextG, objValG, axisG,
+      guideOn, guideX, fy, fweek, fval, tipX:+tipX.toFixed(1), tipW, tipTextX:cx };
+  }
+  renderVals(){
+    const d=this.data(); const g=this.geom(); const {wStart,wEnd,focus}=this.state;
+    const pct=v=>v.toFixed(1)+'%'; const kg=v=>v.toFixed(3);
+    const badge=(c,t)=> c/ (t||1) >= 0.5 ? '#009A44' : (c>0?'#F2A900':'#D6001C');
+    // line charts
+    const mk=(name,obj,series,min,max,thr,cmp,fmt,aprox)=>{ const o=this.lineChart(name,obj,series,min,max,thr,cmp,fmt,aprox); o.badgeBg=badge(o.count,o.total); return o; };
+    const lineCharts=[
+      mk('% de Pollo Mediano','< 4%',d.pm,0,13,4,v=>v<4,pct,[]),
+      mk('Peso Semanal (kg)','ref 2.700',d.peso,2.35,2.95,2.700,v=>v>=2.700,kg,d.pesoAprox),
+      mk('% Coef. Variación 35 días','< 10.8%',d.cv,8.5,13.5,10.8,v=>v<10.8,pct,d.cvAprox),
+    ];
+    // podo bars
+    const b=Math.min(wEnd,30); const sel=[]; for(let w=wStart;w<=b;w++) sel.push(w);
+    const n=sel.length; const slot=g.plotW/Math.max(n,1); const bw=slot*0.62;
+    const colY=v=>g.padT+(v/100)*g.plotH;
+    const bars=sel.map((w,i)=>{ const [g0,g1,g2]=d.podo[w-1]; const x=+(g.padL+i*slot+(slot-bw)/2).toFixed(1);
+      const hG2=g.plotH*g2/100, hG1=g.plotH*g1/100, hG0=g.plotH*g0/100;
+      const yG2=g.padT, yG1=g.padT+hG2, yG0=g.padT+hG2+hG1;
+      return { x, w:+bw.toFixed(1), op: focus===null?1:(focus===w?1:0.28),
+        segs:[ {y:+yG2.toFixed(1),h:+hG2.toFixed(1),fill:'#D6001C'}, {y:+yG1.toFixed(1),h:+hG1.toFixed(1),fill:'#F2A900'}, {y:+yG0.toFixed(1),h:+hG0.toFixed(1),fill:'#009A44'} ],
+        _c:{g0,g1,g2,cx:x+bw/2,yG2,yG1,yG0,hG2,hG1,hG0,w} }; });
+    const g2vals=sel.map(w=>d.podo[w-1][2]); const g2avg=g2vals.reduce((a,c)=>a+c,0)/(g2vals.length||1);
+    const g2cnt=g2vals.filter(v=>v<19).length;
+    let podoGuide=false,fsegs=[],ftextX=0,ptipX=0,ptipTextX=0,pfweek=0;
+    if(focus!==null){ const idx=sel.indexOf(focus); if(idx>=0){ podoGuide=true; const c=bars[idx]._c; ftextX=+c.cx.toFixed(1); pfweek=focus;
+      fsegs=[ {val:c.g2+'%',fg:'#fff',ty:+(c.yG2+c.hG2/2+3).toFixed(1)}, {val:c.g1+'%',fg:'#5A4300',ty:+(c.yG1+c.hG1/2+3).toFixed(1)}, {val:c.g0+'%',fg:'#fff',ty:+(c.yG0+c.hG0/2+3).toFixed(1)} ];
+      ptipX=Math.max(g.padL,Math.min(c.cx-15,g.viewW-g.padR-30)); ptipTextX=+(ptipX+15).toFixed(1); } }
+    const hovers=sel.map((w,i)=>({x:+(g.padL+i*slot).toFixed(1), w:+slot.toFixed(1), onEnter:()=>this.setFocus(w)}));
+    const podoAxisG=React.createElement('g',null,[React.createElement('line',{key:'b',x1:g.padL,y1:g.padT+g.plotH,x2:g.viewW-g.padR,y2:g.padT+g.plotH,stroke:'#E4E9F1',strokeWidth:1})].concat(sel.filter((w,i)=>n<=20||i%2===0).map((w)=>React.createElement('text',{key:w,x:+(g.padL+sel.indexOf(w)*slot+slot/2).toFixed(1),y:g.padT+g.plotH+14,textAnchor:'middle',style:{fontFamily:'var(--font-mono)',fontSize:'12px',fontWeight:700,fill:'#42506B'}},String(w)))));
+    const podoFsegG = podoGuide ? React.createElement('g',null, fsegs.map((t,i)=>React.createElement('text',{key:i,x:ftextX,y:t.ty,textAnchor:'middle',style:{fontFamily:'var(--font-mono)',fontSize:'14px',fontWeight:700,fill:t.fg,stroke:t.fg==='#fff'?'rgba(0,0,0,0.35)':'#fff',strokeWidth:2.4,paintOrder:'stroke'}},t.val))) : null;
+    const podoTipG = podoGuide ? React.createElement('text',{x:ptipTextX,y:14.5,textAnchor:'middle',style:{fontFamily:'var(--font-mono)',fontSize:'12px',fill:'#fff'}},'S'+pfweek) : null;
+    const podo={ name:'Pododermatitis G0 / G1 / G2', avg:pct(g2avg), count:g2cnt, total:n, badgeBg:badge(g2cnt,n),
+      viewW:g.viewW,viewH:g.viewH,padL:g.padL,padT:g.padT,plotH:g.plotH,x2:g.viewW-g.padR,
+      objY:+colY(19).toFixed(1), objLabelY:+(colY(19)-3).toFixed(1), bars, hovers,
+      guideOn:podoGuide, fsegG:podoFsegG, tipTextG:podoTipG, axisG:podoAxisG, tipX:+ptipX.toFixed(1), fweek:pfweek };
+    return {
+      lineCharts, podo, wStart, wEnd,
+      setStart:(e)=>{ const v=+e.target.value; this.setState({wStart:Math.min(v,this.state.wEnd)}); },
+      setEnd:(e)=>{ const v=+e.target.value; this.setState({wEnd:Math.max(v,this.state.wStart)}); },
+      full:()=>this.setState({wStart:1,wEnd:30}),
+      clearFocus:()=>this.clearFocus(),
+      nav: (()=>{const items=[["Portada","Portada.dc.html"],["Tendencias","Lamina4_Tendencias.dc.html"],["Indicadores","Lamina1_Indicadores.dc.html"],["Ítems de Crianza","Lamina2_ItemsCrianza.dc.html"],["Equipamiento","Lamina3_Equipamiento.dc.html"]];return items.map((it,i)=>({label:it[0],href:it[1],bg:i===1?'#EEF2F8':'rgba(255,255,255,0.08)',fg:i===1?'#00286E':'#C6D4EE'}));})(),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+/* ============================================================
+   Radius & Elevation
+   The app's signature surface is: white card, rounded-xl,
+   shadow-sm + a 1px slate-200 ring (ring, not border).
+   Controls (buttons/inputs/badges) use rounded-md.
+   ============================================================ */
+:root {
+  /* ---- Corner radius ---- */
+  --radius-none: 0;
+  --radius-sm: 0.25rem; /* 4px */
+  --radius-md: 0.375rem; /* 6px — buttons, inputs, badges, nav pills */
+  --radius-lg: 0.5rem; /* 8px */
+  --radius-xl: 0.75rem; /* 12px — cards, KPI tiles, panels */
+  --radius-2xl: 1rem; /* 16px */
+  --radius-full: 9999px; /* dots, avatars, status pills */
+
+  /* ---- Shadows (Tailwind shadow-sm / shadow) ---- */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* ---- Rings (the 1px hairline that defines every card) ---- */
+  --ring-default: 0 0 0 1px var(--slate-200);
+  --ring-strong: 0 0 0 1px var(--slate-300);
+  --ring-focus: 0 0 0 1px var(--focus-ring);
+
+  /* ---- Semantic surface recipes ---- */
+  --card-radius: var(--radius-xl);
+  --card-shadow: var(--shadow-xs);
+  --card-ring: var(--ring-default);
+  --control-radius: var(--radius-md);
+}
