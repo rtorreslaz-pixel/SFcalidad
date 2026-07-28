@@ -152,6 +152,8 @@ a.weblink:hover{ text-decoration:underline; }
     <button class="step" data-go="capture"><span class="n">3</span> Captura</button>
     <button class="step" data-go="scale"><span class="n">4</span> Ajustes de báscula</button>
     <button class="step" data-go="registro"><span class="n">5</span> Muestreos del día</button>
+    <button class="step" data-go="saca-setup"><span class="n">6</span> Saca · configurar</button>
+    <button class="step" data-go="saca-capture"><span class="n">7</span> Saca · pesadas</button>
   </div>
 
   <div class="layout">
@@ -167,8 +169,17 @@ a.weblink:hover{ text-decoration:underline; }
               <div class="muted">Ingresa con tu usuario de verificador.</div></div>
             <div class="field"><label class="f">Correo</label><input class="inp" value="verificador1@avicola.com"></div>
             <div class="field"><label class="f">Contraseña</label><input class="inp" type="password" value="demo1234"></div>
-            <button class="btn primary" data-go="setup">Ingresar</button>
+            <button class="btn primary" data-go="home">Ingresar</button>
             <div class="muted center">La sesión queda guardada en el teléfono: no hay que reingresar cada día.</div>
+          </div>
+
+          <!-- HOME / SELECTOR DE TIPO DE TRABAJO -->
+          <div class="view" id="v-home">
+            <div class="muted">¿Qué vas a registrar hoy?</div>
+            <button class="btn primary" data-go="setup">⚖️ Pesaje preventa / calidad</button>
+            <div class="muted center" style="font-size:11.5px">Muestreo en granja a ~35 días (aves individuales) o solo calidad.</div>
+            <button class="btn ghost" data-go="saca-setup">📦 Pesaje de saca</button>
+            <div class="muted center" style="font-size:11.5px">Muestreo de jabas antes de la saca (~40+ días).</div>
           </div>
 
           <!-- SETUP -->
@@ -244,6 +255,42 @@ a.weblink:hover{ text-decoration:underline; }
             <button class="btn ghost" id="regSyncBtn">Sincronizar pendientes</button>
             <button class="btn ghost" data-go="capture">Volver a captura</button>
           </div>
+
+          <!-- SACA · CONFIGURAR -->
+          <div class="view" id="v-saca-setup">
+            <div><label class="f">Plantel</label><select class="sel"><option>P208 — AKIM</option><option>P054 — VALENTINA</option><option>P280 — LUCARVI</option></select></div>
+            <div class="row2">
+              <div><label class="f">Campaña</label><input class="inp" value="2705"></div>
+              <div><label class="f">Galpón</label><input class="inp" value="7"></div>
+            </div>
+            <div><label class="f">Sexo</label>
+              <div class="radios" data-radio="sacaSexo"><div class="chip on">Macho</div><div class="chip">Hembra</div><div class="chip">Mediano</div></div></div>
+            <div class="row2">
+              <div><label class="f">Edad (días)</label><input class="inp" value="42"></div>
+              <div><label class="f">Aves por jaba</label><input class="inp" id="setAvesJaba" type="number" value="10"></div>
+            </div>
+            <div><label class="f">Tara por jaba (kg)</label><input class="inp" id="setTara" type="number" value="2.0"></div>
+            <button class="btn primary" data-go="saca-capture">Comenzar saca</button>
+          </div>
+
+          <!-- SACA · CAPTURA POR PESADAS -->
+          <div class="view" id="v-saca-capture">
+            <div class="selhead">
+              <div class="t">P208 · 2705 · G7 · Macho</div>
+              <div class="s" id="sacaSub">Edad 42 d · 10 aves/jaba · tara 2.0 kg/jaba &nbsp; <button class="link" data-go="saca-setup">Cambiar</button></div>
+            </div>
+            <div class="muted" style="display:flex;align-items:center;gap:7px"><span class="dot live"></span> Conectado — báscula BIT PS 4.0 IoT</div>
+            <div class="weightcard">
+              <div class="k">Peso bruto en vivo</div>
+              <div class="big"><span id="sacaW">24.600</span><span class="u"> kg</span></div>
+              <div class="std muted">Neto estimado (− tara): <b id="sacaNeto">—</b></div>
+            </div>
+            <div><label class="f">N° de jabas en la balanza</label><input class="inp" id="sacaJabas" type="number" value="6"></div>
+            <button class="btn primary" id="sacaRegBtn">Registrar pesada</button>
+            <div class="selhead"><div class="t">Pesadas del muestreo</div><div class="s" id="sacaResumen">—</div></div>
+            <div id="sacaList"></div>
+            <button class="btn ghost" data-go="saca-setup">Cambiar lote</button>
+          </div>
         </div>
 
         <div class="toast" id="toast"></div>
@@ -290,13 +337,17 @@ a.weblink:hover{ text-decoration:underline; }
     muestreos:[
       {lote:'P054 · 2705 · G3 · A', tipo:'Pesaje', aves:48, pend:0},
       {lote:'P280 · 2705 · G1 · B', tipo:'Solo calidad', aves:20, pend:4}
-    ] };
+    ],
+    saca:{ avesPorJaba:10, taraKg:2.0, bruto:24.6, pesadas:[] } };
   var titles={
     login:['Iniciar sesión','Acceso del verificador.'],
+    home:['¿Qué vas a registrar?','Elige el tipo de trabajo del día.'],
     setup:['Configurar captura','Datos del lote que se va a capturar.'],
     capture:['Captura de pesaje','Peso en vivo y registro ave por ave.'],
     scale:['Ajustes de báscula','Vincular báscula y elegir su protocolo.'],
-    registro:['Muestreos del día','Control de lo capturado y lo que falta enviar.']
+    registro:['Muestreos del día','Control de lo capturado y lo que falta enviar.'],
+    'saca-setup':['Configurar saca','Lote y parámetros del muestreo de jabas.'],
+    'saca-capture':['Pesaje de saca','Muestreo de jabas por pesadas (~40+ días).']
   };
   var feats={
     login:[['🔒','Sesión persistente','La credencial queda guardada y cifrada en el teléfono; el verificador no reingresa cada día y puede arrancar la jornada sin señal.']],
@@ -309,7 +360,13 @@ a.weblink:hover{ text-decoration:underline; }
       ['🧪','Diagnóstico hex','Muestra los datos crudos de la báscula para afinar el formato de una marca nueva con una captura real.'],
       ['🔗','Conexión persistente','La báscula se conecta una vez y queda enlazada durante toda la jornada; al volver a pesar el peso aparece de inmediato, sin reconectar.']],
     registro:[['📋','Control del día','Cada lote muestreado con su estado: completo o con registros pendientes de enviar.'],
-      ['📤','Pendientes visibles','El verificador ve exactamente qué le falta sincronizar antes de cerrar la jornada.']]
+      ['📤','Pendientes visibles','El verificador ve exactamente qué le falta sincronizar antes de cerrar la jornada.']],
+    home:[['⚖️','Preventa / calidad','Muestreo de aves individuales en granja (~35 días) o solo calidad en cliente.'],
+      ['📦','Pesaje de saca','Muestreo de jabas que hace el equipo de saca antes de la saca diaria (~40+ días).']],
+    'saca-setup':[['🔗','Ligado al lote','Se ata por plantel-campaña-galpón-categoría (mismo lote que la preventa) para comparar estimado vs real.'],
+      ['📦','Aves por jaba y tara','Se establecen una vez y valen para todas las pesadas del muestreo.']],
+    'saca-capture':[['⚖️','Neto por pesada','Se pesan varias jabas juntas; el neto = bruto − tara×jabas y el promedio por ave sale solo.'],
+      ['🔁','Offline con cola','Cada pesada queda pendiente si no hay señal y sincroniza sola al reconectar.']]
   };
 
   function setScreen(s){
@@ -317,7 +374,7 @@ a.weblink:hover{ text-decoration:underline; }
     document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
     document.getElementById('v-'+s).classList.add('active');
     document.querySelectorAll('.step').forEach(function(st){ st.setAttribute('aria-current', st.dataset.go===s?'true':'false'); });
-    var sub={login:'Pesaje preventa en granja',setup:'Configurar captura',capture:'Captura',scale:'Ajustes de báscula',registro:'Muestreos del día'};
+    var sub={login:'Pesaje preventa en granja',home:'Inicio',setup:'Configurar captura',capture:'Captura',scale:'Ajustes de báscula',registro:'Muestreos del día','saca-setup':'Configurar saca','saca-capture':'Pesaje de saca'};
     document.getElementById('appbarsub').textContent=sub[s];
     document.getElementById('exTitle').textContent=titles[s][0];
     document.getElementById('exSub').textContent=titles[s][1];
@@ -326,6 +383,30 @@ a.weblink:hover{ text-decoration:underline; }
       '<div class="feat"><div class="ic">'+f[0]+'</div><div><div class="t">'+f[1]+'</div><div class="d">'+f[2]+'</div></div></div>'); });
     if(s==='capture') applyMode();
     if(s==='registro') renderRegistro();
+    if(s==='saca-capture'){ aplicarSacaSetup(); renderSaca(); }
+  }
+
+  // Saca: toma aves/jaba y tara de la configuración y actualiza el subtítulo del lote.
+  function aplicarSacaSetup(){
+    var av=parseInt(document.getElementById('setAvesJaba').value,10); if(!isNaN(av)&&av>0) state.saca.avesPorJaba=av;
+    var ta=parseFloat(document.getElementById('setTara').value); if(!isNaN(ta)&&ta>=0) state.saca.taraKg=ta;
+    document.getElementById('sacaSub').innerHTML='Edad 42 d · '+state.saca.avesPorJaba+' aves/jaba · tara '+state.saca.taraKg.toFixed(1)+' kg/jaba &nbsp; <button class="link" data-go="saca-setup">Cambiar</button>';
+    document.querySelector('#sacaSub .link').addEventListener('click',function(){ setScreen('saca-setup'); });
+  }
+
+  function renderSaca(){
+    var list=document.getElementById('sacaList'); if(!list) return;
+    var totJabas=0, totAves=0, totNeto=0;
+    list.innerHTML = state.saca.pesadas.map(function(p,i){
+      totJabas+=p.jabas; totAves+=p.aves; totNeto+=p.neto;
+      return '<div class="mrow"><div><div class="t">Pesada '+(i+1)+' · '+p.jabas+' jabas</div>'+
+        '<div class="s">bruto '+p.bruto.toFixed(2)+' kg · neto '+p.neto.toFixed(2)+' kg</div></div>'+
+        '<span class="badge done">'+Math.round(p.prom)+' g/ave</span></div>';
+    }).join('');
+    var promGen = totAves>0 ? Math.round(totNeto*1000/totAves) : 0;
+    document.getElementById('sacaResumen').textContent = state.saca.pesadas.length>0
+      ? totJabas+' jabas · '+totAves+' aves · neto '+totNeto.toFixed(1)+' kg · prom '+promGen+' g/ave'
+      : 'Aún no registras pesadas.';
   }
 
   // Registro de muestreos del día: control de completos vs pendientes de enviar.
@@ -376,6 +457,16 @@ a.weblink:hover{ text-decoration:underline; }
   // live weight ticking
   function fmt(n){ return n.toFixed(3); }
   setInterval(function(){
+    if(state.screen==='saca-capture'){
+      // Peso bruto realista: nº jabas × (aves/jaba × ~2.75 kg a los 42 d + tara), con ruido.
+      var jab=parseInt((document.getElementById('sacaJabas')||{}).value,10)||0;
+      var jabasEff = jab>0?jab:6;
+      state.saca.bruto = jabasEff*(state.saca.avesPorJaba*2.75 + state.saca.taraKg) + (Math.random()-0.5)*4;
+      var sw=document.getElementById('sacaW'); if(sw) sw.textContent=state.saca.bruto.toFixed(3);
+      var neto=state.saca.bruto - state.saca.taraKg*jab;
+      var sn=document.getElementById('sacaNeto'); if(sn) sn.textContent = jab>0 ? neto.toFixed(2)+' kg ('+jab+' jabas)' : '—';
+      return;
+    }
     if(state.screen!=='capture' && state.screen!=='scale') return;
     state.weight = 2.45 + Math.random()*0.5;
     var w=document.getElementById('wval'); if(w) w.textContent=fmt(state.weight);
@@ -419,6 +510,20 @@ a.weblink:hover{ text-decoration:underline; }
     else{ var g=(state.weight*1000).toFixed(0); document.getElementById('lastreg').textContent='Ave #'+state.aves+' registrada — '+g+' g'; }
     if(state.online){ showToast('Ave #'+state.aves+(solo?' — calidad enviada.':' pesada y enviada.')); }
     else{ state.pending++; renderBadge(); showToast('Ave #'+state.aves+' guardada (sin señal, queda pendiente).', true); }
+  };
+
+  // saca: registrar una pesada (usa el peso bruto en vivo + nº de jabas tecleado).
+  document.getElementById('sacaRegBtn').onclick=function(){
+    var jabas=parseInt(document.getElementById('sacaJabas').value,10);
+    if(isNaN(jabas)||jabas<=0){ showToast('Indica cuántas jabas hay en la balanza.', true); return; }
+    var bruto=state.saca.bruto;
+    var aves=jabas*state.saca.avesPorJaba;
+    var neto=bruto - state.saca.taraKg*jabas;
+    var prom=aves>0 ? neto*1000/aves : 0;
+    state.saca.pesadas.push({ jabas:jabas, bruto:bruto, neto:neto, aves:aves, prom:prom });
+    renderSaca();
+    if(state.online){ showToast('Pesada registrada — '+jabas+' jabas · '+Math.round(prom)+' g/ave.'); }
+    else{ state.pending++; renderBadge(); showToast('Pesada guardada (sin señal, queda pendiente).', true); }
   };
 
   // finalizar muestreo: cierra la sesión de captura con un resumen y vuelve a configurar.
