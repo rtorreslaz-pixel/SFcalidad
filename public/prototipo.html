@@ -225,6 +225,8 @@ a.weblink:hover{ text-decoration:underline; }
             </div>
             <button class="btn primary" id="pesarBtn">Pesar</button>
             <div class="lastreg" id="lastreg"></div>
+            <div class="selhead" id="capListHead" style="display:none"><div class="t">Registrados en este muestreo</div><div class="s" id="capListResumen">—</div></div>
+            <div id="capList"></div>
             <button class="btn ghost" data-go="scale" id="scaleBtn">Ajustes de báscula</button>
             <button class="btn ghost" data-go="registro">Muestreos del día</button>
             <button class="btn ghost" id="finBtn" style="color:var(--red);border-color:color-mix(in srgb,var(--red) 35%,#fff)">Finalizar muestreo</button>
@@ -254,6 +256,14 @@ a.weblink:hover{ text-decoration:underline; }
             <div id="regList"></div>
             <button class="btn ghost" id="regSyncBtn">Sincronizar pendientes</button>
             <button class="btn ghost" data-go="capture">Volver a captura</button>
+          </div>
+
+          <!-- DETALLE DE UN MUESTREO -->
+          <div class="view" id="v-muestreo-detalle">
+            <div class="selhead"><div class="t" id="detTitle">Muestreo</div><div class="s" id="detSub">—</div></div>
+            <div id="detList"></div>
+            <div class="weightcard" style="text-align:left"><div class="k">Resumen del muestreo</div><div style="font-weight:800;font-size:15px;margin-top:4px" id="detResumen">—</div></div>
+            <button class="btn ghost" data-go="registro">Volver a muestreos</button>
           </div>
 
           <!-- SACA · CONFIGURAR -->
@@ -334,12 +344,17 @@ a.weblink:hover{ text-decoration:underline; }
   function tick(){ var d=new Date(); document.getElementById('clock').textContent=(d.getHours()%24)+':' + String(d.getMinutes()).padStart(2,'0'); }
   tick(); setInterval(tick,10000);
 
-  var state={ screen:'login', online:true, pending:0, aves:0, weight:2.612,
+  var state={ screen:'login', online:true, pending:0, aves:0, weight:2.612, capItems:[], detIdx:0,
     muestreos:[
-      {lote:'P054 · 2705 · G3 · A', tipo:'Pesaje', aves:48, pend:0},
-      {lote:'P280 · 2705 · G1 · B', tipo:'Solo calidad', aves:20, pend:4}
+      {lote:'P054 · 2705 · G3 · A', tipo:'Pesaje', aves:48, pend:0,
+        resumen:'48 aves · promedio 2.984 kg',
+        items:[{t:'Ave #1',s:'2.91 kg'},{t:'Ave #2',s:'3.02 kg'},{t:'Ave #3',s:'2.97 kg'},{t:'Ave #4',s:'3.05 kg'},{t:'…',s:'(48 en total)'}]},
+      {lote:'P280 · 2705 · G1 · B', tipo:'Solo calidad', aves:20, pend:4,
+        resumen:'20 aves evaluadas · 2 con lesión',
+        items:[{t:'Ave #1',s:'Podó Sin lesión · Pigm 3'},{t:'Ave #2',s:'Podó Leve · Pigm 4'},{t:'Ave #3',s:'Podó Sin lesión · Pigm 3'},{t:'…',s:'(20 en total)'}]}
     ],
     saca:{ avesPorJaba:10, taraKg:2.0, bruto:24.6, pesadas:[] } };
+  function chipSel(g){ var c=document.querySelector('[data-radio="'+g+'"] .chip.on'); return c?c.textContent:''; }
   var titles={
     login:['Iniciar sesión','Acceso del verificador.'],
     home:['¿Qué vas a registrar?','Elige el tipo de trabajo del día.'],
@@ -347,6 +362,7 @@ a.weblink:hover{ text-decoration:underline; }
     capture:['Captura de pesaje','Peso en vivo y registro ave por ave.'],
     scale:['Ajustes de báscula','Vincular báscula y elegir su protocolo.'],
     registro:['Muestreos del día','Control de lo capturado y lo que falta enviar.'],
+    'muestreo-detalle':['Detalle del muestreo','Cada registro de la muestra y el total.'],
     'saca-setup':['Configurar saca','Lote y parámetros del muestreo de jabas.'],
     'saca-capture':['Pesaje de saca','Muestreo de jabas por pesadas (~40+ días).']
   };
@@ -361,7 +377,10 @@ a.weblink:hover{ text-decoration:underline; }
       ['🧪','Diagnóstico hex','Muestra los datos crudos de la báscula para afinar el formato de una marca nueva con una captura real.'],
       ['🔗','Conexión persistente','La báscula se conecta una vez y queda enlazada durante toda la jornada; al volver a pesar el peso aparece de inmediato, sin reconectar.']],
     registro:[['📋','Control del día','Cada lote muestreado con su estado: completo o con registros pendientes de enviar.'],
-      ['📤','Pendientes visibles','El verificador ve exactamente qué le falta sincronizar antes de cerrar la jornada.']],
+      ['📤','Pendientes visibles','El verificador ve exactamente qué le falta sincronizar antes de cerrar la jornada.'],
+      ['🔍','Revisión del muestreo','Toca un muestreo para ver de nuevo cada registro de la muestra y su total.']],
+    'muestreo-detalle':[['🔍','Cada registro','La lista de aves/pesadas de ese muestreo, tal como se capturaron.'],
+      ['∑','Total al final','Un resumen totalizado (aves, promedio, neto) al final de la lista.']],
     home:[['⚖️','Preventa / calidad','Muestreo de aves individuales en granja (~35 días) o solo calidad en cliente.'],
       ['📦','Pesaje de saca','Muestreo de jabas que hace el equipo de saca antes de la saca diaria (~40+ días).']],
     'saca-setup':[['🔗','Ligado al lote','Se ata por plantel-campaña-galpón-categoría (mismo lote que la preventa) para comparar estimado vs real.'],
@@ -375,16 +394,39 @@ a.weblink:hover{ text-decoration:underline; }
     document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
     document.getElementById('v-'+s).classList.add('active');
     document.querySelectorAll('.step').forEach(function(st){ st.setAttribute('aria-current', st.dataset.go===s?'true':'false'); });
-    var sub={login:'Pesaje preventa en granja',home:'Inicio',setup:'Configurar captura',capture:'Captura',scale:'Ajustes de báscula',registro:'Muestreos del día','saca-setup':'Configurar saca','saca-capture':'Pesaje de saca'};
+    var sub={login:'Pesaje preventa en granja',home:'Inicio',setup:'Configurar captura',capture:'Captura',scale:'Ajustes de báscula',registro:'Muestreos del día','muestreo-detalle':'Detalle','saca-setup':'Configurar saca','saca-capture':'Pesaje de saca'};
     document.getElementById('appbarsub').textContent=sub[s];
     document.getElementById('exTitle').textContent=titles[s][0];
     document.getElementById('exSub').textContent=titles[s][1];
     var fc=document.getElementById('exFeats'); fc.innerHTML='';
     feats[s].forEach(function(f){ fc.insertAdjacentHTML('beforeend',
       '<div class="feat"><div class="ic">'+f[0]+'</div><div><div class="t">'+f[1]+'</div><div class="d">'+f[2]+'</div></div></div>'); });
-    if(s==='capture') applyMode();
+    if(s==='capture'){ applyMode(); renderCapList(); }
     if(s==='registro') renderRegistro();
     if(s==='saca-capture'){ aplicarSacaSetup(); renderSaca(); }
+  }
+
+  // Lista de registros de la muestra actual (preventa/calidad), visible durante la captura.
+  function renderCapList(){
+    var list=document.getElementById('capList'); if(!list) return;
+    document.getElementById('capListHead').style.display = state.capItems.length>0 ? '' : 'none';
+    list.innerHTML = state.capItems.map(function(it){
+      return '<div class="mrow"><div><div class="t">'+it.t+'</div></div><span class="s" style="color:var(--scr-muted)">'+it.s+'</span></div>';
+    }).join('');
+    document.getElementById('capListResumen').textContent = state.capItems.length+' registro(s)';
+  }
+
+  // Detalle de un muestreo del día: su lista de registros + resumen totalizado al final.
+  function openDetalle(i){
+    var m=state.muestreos[i]; if(!m) return;
+    state.detIdx=i;
+    document.getElementById('detTitle').textContent=m.lote;
+    document.getElementById('detSub').textContent=m.tipo;
+    document.getElementById('detList').innerHTML=(m.items||[]).map(function(it){
+      return '<div class="mrow"><div><div class="t">'+it.t+'</div></div><span class="s" style="color:var(--scr-muted)">'+it.s+'</span></div>';
+    }).join('') || '<div class="muted center">Sin registros.</div>';
+    document.getElementById('detResumen').textContent=m.resumen||(m.aves+' registros');
+    setScreen('muestreo-detalle');
   }
 
   // Saca: toma aves/jaba y tara de la configuración y actualiza el subtítulo del lote.
@@ -415,13 +457,16 @@ a.weblink:hover{ text-decoration:underline; }
   function renderRegistro(){
     var list=document.getElementById('regList'); if(!list) return;
     var totAves=0, totPend=0;
-    list.innerHTML = state.muestreos.map(function(m){
+    list.innerHTML = state.muestreos.map(function(m,idx){
       totAves+=m.aves; totPend+=m.pend;
       var badge = m.pend>0
         ? '<span class="badge pending">⏳ '+m.pend+' por enviar</span>'
         : '<span class="badge done">✓ Completo</span>';
-      return '<div class="mrow"><div><div class="t">'+m.lote+'</div><div class="s">'+m.tipo+' · '+m.aves+' aves</div></div>'+badge+'</div>';
+      return '<div class="mrow" data-idx="'+idx+'" style="cursor:pointer"><div><div class="t">'+m.lote+' ›</div><div class="s">'+m.tipo+' · '+m.aves+' aves</div></div>'+badge+'</div>';
     }).join('');
+    Array.prototype.forEach.call(list.querySelectorAll('.mrow'), function(row){
+      row.addEventListener('click', function(){ openDetalle(parseInt(row.dataset.idx,10)); });
+    });
     document.getElementById('regResumen').textContent =
       state.muestreos.length+' muestreos · '+totAves+' aves · '+(totPend===0?'todo sincronizado':totPend+' pendientes de enviar');
   }
@@ -507,11 +552,16 @@ a.weblink:hover{ text-decoration:underline; }
 
   // pesar
   document.getElementById('pesarBtn').onclick=function(){
-    state.aves++; var solo=isSoloCalidad();
-    if(solo){ document.getElementById('lastreg').textContent='Ave #'+state.aves+' — calidad registrada'; }
-    else{ var g=(state.weight*1000).toFixed(0); document.getElementById('lastreg').textContent='Ave #'+state.aves+' registrada — '+g+' g'; }
-    if(state.online){ showToast('Ave #'+state.aves+(solo?' — calidad enviada.':' pesada y enviada.')); }
-    else{ state.pending++; renderBadge(); showToast('Ave #'+state.aves+' guardada (sin señal, queda pendiente).', true); }
+    state.aves++; var solo=isSoloCalidad(); var n=state.aves;
+    var s = solo ? ('Podó '+(chipSel('podo')||'—')+' · Pigm '+(chipSel('pigm')||'—'))
+                 : (state.weight.toFixed(3)+' kg');
+    state.capItems.push({ t:'Ave #'+n, s:s, peso: solo?null:state.weight });
+    renderCapList();
+    document.getElementById('lastreg').textContent = solo
+      ? 'Ave #'+n+' — calidad registrada'
+      : 'Ave #'+n+' registrada — '+(state.weight*1000).toFixed(0)+' g';
+    if(state.online){ showToast('Ave #'+n+(solo?' — calidad enviada.':' pesada y enviada.')); }
+    else{ state.pending++; renderBadge(); showToast('Ave #'+n+' guardada (sin señal, queda pendiente).', true); }
   };
 
   // saca: registrar una pesada (usa el peso bruto en vivo + nº de jabas tecleado).
@@ -537,7 +587,9 @@ a.weblink:hover{ text-decoration:underline; }
     var totNeto=ps.reduce(function(a,p){return a+p.neto;},0);
     var prom=totAves>0?Math.round(totNeto*1000/totAves):0;
     var pend=state.online?0:ps.length;
-    state.muestreos.unshift({lote:'P208 · 2705 · G7 · Macho', tipo:'Saca ('+totJabas+' jabas)', aves:totAves, pend:pend});
+    var items=ps.map(function(p,i){ return {t:'Pesada '+(i+1)+' · '+p.jabas+' jabas', s:'neto '+p.neto.toFixed(2)+' kg · '+Math.round(p.prom)+' g/ave'}; });
+    var resumen=totJabas+' jabas · '+totAves+' aves · neto '+totNeto.toFixed(1)+' kg · promedio '+prom+' g/ave';
+    state.muestreos.unshift({lote:'P208 · 2705 · G7 · Macho', tipo:'Saca ('+totJabas+' jabas)', aves:totAves, pend:pend, resumen:resumen, items:items});
     if(pend>0){ showToast('Saca finalizada: '+totJabas+' jabas · prom '+prom+' g/ave · '+pend+' pesadas por enviar.', true); }
     else{ showToast('Saca finalizada: '+totJabas+' jabas · prom '+prom+' g/ave.'); }
     state.saca.pesadas=[]; renderSaca(); setScreen('home');
@@ -546,12 +598,20 @@ a.weblink:hover{ text-decoration:underline; }
   // finalizar muestreo: cierra la sesión de captura con un resumen y vuelve a configurar.
   document.getElementById('finBtn').onclick=function(){
     if(state.aves===0){ showToast('Aún no registras ninguna ave en este muestreo.'); return; }
-    var tipo=isSoloCalidad()?'Solo calidad':'Pesaje';
+    var solo=isSoloCalidad(); var tipo=solo?'Solo calidad':'Pesaje';
+    var items=state.capItems.slice();
+    var resumen;
+    if(solo){ resumen=state.aves+' aves evaluadas'; }
+    else {
+      var pesos=items.filter(function(x){return x.peso!=null;}).map(function(x){return x.peso;});
+      var prom=pesos.length?pesos.reduce(function(a,b){return a+b;},0)/pesos.length:0;
+      resumen=state.aves+' aves · promedio '+prom.toFixed(3)+' kg';
+    }
     // El muestreo se cierra y pasa al registro del día; los pendientes se siguen enviando solos.
-    state.muestreos.unshift({lote:'P208 · 2705 · G7 · B', tipo:tipo, aves:state.aves, pend:state.pending});
+    state.muestreos.unshift({lote:'P208 · 2705 · G7 · B', tipo:tipo, aves:state.aves, pend:state.pending, resumen:resumen, items:items});
     if(state.pending>0){ showToast('Muestreo finalizado: '+state.aves+' aves · '+state.pending+' se enviarán al reconectar.', true); }
     else{ showToast('Muestreo finalizado: '+state.aves+' aves registradas y sincronizadas.'); }
-    state.aves=0; document.getElementById('lastreg').textContent=''; setScreen('setup');
+    state.aves=0; state.capItems=[]; renderCapList(); document.getElementById('lastreg').textContent=''; setScreen('setup');
   };
 
   // online/offline
