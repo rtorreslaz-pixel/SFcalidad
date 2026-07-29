@@ -60,6 +60,8 @@ export async function sembrarDemo(prisma: PrismaClient) {
   await prisma.inspeccion.deleteMany({});
   await prisma.jornada.deleteMany({});
   await prisma.registroPesoPreventa.deleteMany({});
+  await prisma.sacaPesada.deleteMany({});
+  await prisma.sacaMuestreo.deleteMany({});
   await prisma.liveWeightReading.deleteMany({});
 
   // 2) Catálogos base (deben existir por el seed base)
@@ -225,7 +227,7 @@ export async function sembrarDemo(prisma: PrismaClient) {
           verificador: { connect: { id: lote.verificador.id } },
           campania: lote.campania, galpon: normGalpon(lote.galpon), corral: lote.corral,
           categoria: lote.sexo, numeroAve: numAve++, pesoGramos: Number(gauss(media, 90).toFixed(0)),
-          fechaHora: lote.fecha, complex, linea: "Ross", lote: "A", edad: rint(38, 46), nAvesPorPesada: 1,
+          fechaHora: lote.fecha, complex, linea: "ROSS", lote: "A", edad: rint(34, 36), nAvesPorPesada: 1,
           tieneHematoma: Math.random() < 0.09, tieneDefectoSeleccion: Math.random() < 0.06,
           gradoPododermatitis: pick([0, 0, 0, 1, 2]), gradoRasguno: pick([0, 0, 1, 2]), pigmentacion: clamp(Math.round(gauss(3.3, 1)), 0, 7),
         },
@@ -267,6 +269,58 @@ export async function sembrarDemo(prisma: PrismaClient) {
     });
   }
 
+  // 7) Muestreos de saca (~40+ días) sobre los MISMOS lotes que tienen preventa (~35 días),
+  //    para que el módulo de saca pueda comparar estimado de preventa vs real de saca.
+  console.log("  muestreos de saca (jabas)...");
+  let sacas = 0;
+  for (const lote of lotesParaPeso) {
+    if (Math.random() < 0.25) continue; // no todos los lotes llegan a tener saca registrada
+    const complexLote = [lote.plantel.codigo, lote.campania, normGalpon(lote.galpon), abbrevSexo(lote.sexo)].join("-");
+    const edadSaca = rint(41, 45);
+    // A los ~42 días el ave pesa bastante más que a los 35: el promedio de saca sube.
+    const mediaSaca = (lote.sexo === "MACHO" ? 2760 : 2450) + rint(280, 520);
+    const avesPorJaba = pick([8, 10, 12]);
+    const taraGramosPorJaba = pick([1800, 2000, 2200]);
+    const fechaSaca = new Date(lote.fecha.getTime() + rint(6, 9) * diaMs);
+    const muestreo = await prisma.sacaMuestreo.create({
+      data: {
+        id: randomUUID(),
+        plantel: { connect: { id: lote.plantel.id } },
+        verificador: { connect: { id: lote.verificador.id } },
+        campania: lote.campania,
+        galpon: normGalpon(lote.galpon),
+        categoria: lote.sexo,
+        complexLote,
+        fecha: fechaSaca,
+        edad: edadSaca,
+        avesPorJaba,
+        taraGramosPorJaba,
+        tipoJaba: pick(["Jaba estándar", "Jaba grande"]),
+      },
+    });
+    // 3 a 6 pesadas por muestreo
+    const nPesadas = rint(3, 6);
+    for (let i = 0; i < nPesadas; i++) {
+      const numJabas = rint(4, 9);
+      const avesTotal = numJabas * avesPorJaba;
+      const pesoNetoGramos = Number((avesTotal * gauss(mediaSaca, 70)).toFixed(0));
+      const pesoBrutoGramos = pesoNetoGramos + taraGramosPorJaba * numJabas;
+      await prisma.sacaPesada.create({
+        data: {
+          id: randomUUID(),
+          sacaMuestreo: { connect: { id: muestreo.id } },
+          numJabas,
+          pesoBrutoGramos,
+          pesoNetoGramos,
+          avesTotal,
+          promedioGramos: Number((pesoNetoGramos / avesTotal).toFixed(1)),
+          fechaHora: new Date(fechaSaca.getTime() + i * 7 * 60000),
+        },
+      });
+    }
+    sacas++;
+  }
+
   const totalPeso = await prisma.registroPesoPreventa.count();
-  console.log(`  demo listo: ${totalInsp} inspecciones, ${totalPeso} pesajes, ${enVivo.length} básculas en vivo.`);
+  console.log(`  demo listo: ${totalInsp} inspecciones, ${totalPeso} pesajes, ${sacas} muestreos de saca, ${enVivo.length} básculas en vivo.`);
 }

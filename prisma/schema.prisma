@@ -70,6 +70,7 @@ model User {
   jornadas              Jornada[]
   inspecciones          Inspeccion[]
   registrosPesoPreventa RegistroPesoPreventa[]
+  sacaMuestreos         SacaMuestreo[]
   liveWeightReading     LiveWeightReading?
   sessions              Session[]
 }
@@ -114,6 +115,7 @@ model Plantel {
 
   inspecciones          Inspeccion[]
   registrosPesoPreventa RegistroPesoPreventa[]
+  sacaMuestreos         SacaMuestreo[]
 }
 
 model TipoDefecto {
@@ -356,6 +358,66 @@ model RegistroPesoPreventa {
 // Tabla de pesos estándar por raza, sexo y edad. Se incluye en GET /api/mobile/catalogos
 // para que la app compare el peso en vivo contra el estándar sin llamadas adicionales.
 // Poblar con los datos de la hoja STD del Excel del cliente.
+// Muestreo de jabas que hace el equipo de saca ANTES de la saca diaria (~40+ días), a
+// diferencia del muestreo de preventa (~35 días, aves individuales). No se pesa el galpón
+// completo: se muestrean algunas jabas y de ahí sale el peso promedio por ave.
+// Se ata al mismo lote que preventa por complexLote (Plantel-Campaña-Galpón-Categoría),
+// que es el complex de preventa SIN el corral, para poder comparar estimado vs real.
+model SacaMuestreo {
+  // Id generado por el cliente Android (UUID v4) antes de sincronizar -> upsert idempotente.
+  id String @id
+
+  plantelId String
+  plantel   Plantel @relation(fields: [plantelId], references: [id])
+
+  campania  String?
+  galpon    String
+  categoria CategoriaAve
+
+  // Plantel-Campaña-Galpón-Categoría (nivel galpón, sin corral): clave de cruce con preventa.
+  complexLote String?
+
+  fecha DateTime // momento del muestreo en campo (hora del celular)
+  edad  Int? // días de vida del lote al momento de la saca (~40+)
+
+  // Parámetros del muestreo: se establecen una vez y valen para todas las pesadas.
+  avesPorJaba       Int
+  taraGramosPorJaba Float
+  tipoJaba          String? // etiqueta opcional del tipo de jaba
+
+  verificadorId String
+  verificador   User @relation(fields: [verificadorId], references: [id])
+
+  pesadas SacaPesada[]
+
+  syncedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([plantelId, galpon, categoria])
+  @@index([complexLote])
+  @@index([verificadorId, fecha])
+}
+
+// Cada pesada = varias jabas puestas juntas en la balanza. El neto descuenta la tara de
+// las jabas; el promedio por ave sale de dividir el neto entre las aves de esas jabas.
+model SacaPesada {
+  id String @id
+
+  sacaMuestreoId String
+  sacaMuestreo   SacaMuestreo @relation(fields: [sacaMuestreoId], references: [id], onDelete: Cascade)
+
+  numJabas        Int
+  pesoBrutoGramos Float // lo que marcó la balanza
+  pesoNetoGramos  Float // bruto - tara*numJabas (calculado al registrar)
+  avesTotal       Int // numJabas * avesPorJaba
+  promedioGramos  Float // pesoNetoGramos / avesTotal
+
+  fechaHora DateTime
+  createdAt DateTime @default(now())
+
+  @@index([sacaMuestreoId])
+}
+
 model PesoEstandar {
   id         String  @id @default(cuid())
   linea      String  // "Ross", "Cobb", "Hubbard", etc.

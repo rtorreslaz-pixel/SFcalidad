@@ -4,10 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Role } from "@/generated/prisma/enums";
 
-export default function NavLinks({ role }: { role: Role }) {
+// showSaca: el módulo de saca está en evaluación y por ahora se muestra solo en el
+// despliegue demo (DEMO_MODE=true); el layout lo resuelve en el servidor.
+export default function NavLinks({ role, showSaca = false }: { role: Role; showSaca?: boolean }) {
   const pathname = usePathname();
 
-  const links =
+  const baseLinks =
     role === "SUPERVISOR"
       ? [
           { href: "/dashboard-bi", label: "Dashboard" },
@@ -30,6 +32,9 @@ export default function NavLinks({ role }: { role: Role }) {
               { href: "/dashboard-bi", label: "Dashboard" },
               { href: "/dashboard-bi/engranaje", label: "Engranaje granja-clientes" },
             ];
+
+  // El módulo de saca se agrega al final de la barra cuando está habilitado.
+  const links = showSaca ? [...baseLinks, { href: "/saca", label: "Pesaje de saca" }] : baseLinks;
 
   return (
     <div className="flex gap-1 overflow-x-auto pb-2 text-sm">

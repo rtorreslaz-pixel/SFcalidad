@@ -24,6 +24,32 @@ export function buildComplexEntity(parts: {
   return piezas.join("-");
 }
 
+/**
+ * Complex a NIVEL LOTE: Plantel-Campaña-Galpón-Categoría (el complex de preventa SIN el
+ * corral). Es la clave con la que se cruza el muestreo de saca (que se toma del galpón)
+ * contra los registros de preventa (que bajan hasta corral): basta recortarles el corral.
+ */
+export function buildComplexLote(parts: {
+  plantelCodigo: string | null;
+  campania: string | null;
+  galpon: string | null;
+  categoria: CategoriaAve | null;
+}): string | null {
+  const { plantelCodigo, campania, galpon, categoria } = parts;
+  const categoriaAbrev = categoria ? CATEGORIA_ABREV[categoria] : "";
+  const piezas = [plantelCodigo ?? "", campania ?? "", normGalpon(galpon), categoriaAbrev];
+  if (piezas.every((p) => !p)) return null;
+  return piezas.join("-");
+}
+
+/** Recorta el corral de un complex de preventa para obtener su complex de lote. */
+export function complexLoteFromComplex(complex: string | null): string | null {
+  if (!complex) return null;
+  const piezas = complex.split("-");
+  if (piezas.length < 5) return complex;
+  return piezas.slice(0, 4).join("-");
+}
+
 // Normaliza el galpón para el cruce: quita ceros a la izquierda si es numérico
 // ("09" -> "9"), de modo que preventa (granja) y calidad (cliente) generen el MISMO
 // complex aunque los orígenes formateen distinto el número de galpón.
