@@ -290,6 +290,7 @@ a.weblink:hover{ text-decoration:underline; }
             <div class="selhead"><div class="t">Pesadas del muestreo</div><div class="s" id="sacaResumen">—</div></div>
             <div id="sacaList"></div>
             <button class="btn ghost" data-go="saca-setup">Cambiar lote</button>
+            <button class="btn ghost" id="sacaFinBtn" style="color:var(--red);border-color:color-mix(in srgb,var(--red) 35%,#fff)">Finalizar saca</button>
           </div>
         </div>
 
@@ -399,8 +400,9 @@ a.weblink:hover{ text-decoration:underline; }
     var totJabas=0, totAves=0, totNeto=0;
     list.innerHTML = state.saca.pesadas.map(function(p,i){
       totJabas+=p.jabas; totAves+=p.aves; totNeto+=p.neto;
+      var tara=state.saca.taraKg*p.jabas;
       return '<div class="mrow"><div><div class="t">Pesada '+(i+1)+' · '+p.jabas+' jabas</div>'+
-        '<div class="s">bruto '+p.bruto.toFixed(2)+' kg · neto '+p.neto.toFixed(2)+' kg</div></div>'+
+        '<div class="s">bruto '+p.bruto.toFixed(2)+' · tara '+tara.toFixed(1)+' · neto '+p.neto.toFixed(2)+' kg</div></div>'+
         '<span class="badge done">'+Math.round(p.prom)+' g/ave</span></div>';
     }).join('');
     var promGen = totAves>0 ? Math.round(totNeto*1000/totAves) : 0;
@@ -524,6 +526,21 @@ a.weblink:hover{ text-decoration:underline; }
     renderSaca();
     if(state.online){ showToast('Pesada registrada — '+jabas+' jabas · '+Math.round(prom)+' g/ave.'); }
     else{ state.pending++; renderBadge(); showToast('Pesada guardada (sin señal, queda pendiente).', true); }
+  };
+
+  // finalizar saca: cierra el muestreo de jabas, lo agrega a "Muestreos del día" y vuelve al inicio.
+  document.getElementById('sacaFinBtn').onclick=function(){
+    var ps=state.saca.pesadas;
+    if(ps.length===0){ showToast('Aún no registras pesadas.'); return; }
+    var totJabas=ps.reduce(function(a,p){return a+p.jabas;},0);
+    var totAves=ps.reduce(function(a,p){return a+p.aves;},0);
+    var totNeto=ps.reduce(function(a,p){return a+p.neto;},0);
+    var prom=totAves>0?Math.round(totNeto*1000/totAves):0;
+    var pend=state.online?0:ps.length;
+    state.muestreos.unshift({lote:'P208 · 2705 · G7 · Macho', tipo:'Saca ('+totJabas+' jabas)', aves:totAves, pend:pend});
+    if(pend>0){ showToast('Saca finalizada: '+totJabas+' jabas · prom '+prom+' g/ave · '+pend+' pesadas por enviar.', true); }
+    else{ showToast('Saca finalizada: '+totJabas+' jabas · prom '+prom+' g/ave.'); }
+    state.saca.pesadas=[]; renderSaca(); setScreen('home');
   };
 
   // finalizar muestreo: cierra la sesión de captura con un resumen y vuelve a configurar.
