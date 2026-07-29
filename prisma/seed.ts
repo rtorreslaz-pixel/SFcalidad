@@ -199,6 +199,85 @@ const VERIFICADORES = [
 
 const DEFAULT_PASSWORD = "demo1234";
 
+// Catálogo de ítems del instructivo IICYB003 (apilamiento y ventilación de jabas en local
+// del cliente). permiteVn: ítems del ventilador, que se resuelven como "ventilación natural"
+// cuando el local no tiene ventilador. permiteNa: solo la descarga (si ya había concluido).
+const APILAMIENTO_ITEMS = [
+  {
+    codigo: "APV-01",
+    bloque: "DESCARGA" as const,
+    orden: 1,
+    descripcion: "La descarga de jabas se realiza sin causar golpes a los pollos.",
+    referenciaInstructivo: "2.1",
+    permiteNa: true,
+    permiteVn: false,
+  },
+  {
+    codigo: "APV-02",
+    bloque: "APILAMIENTO" as const,
+    orden: 2,
+    descripcion: "La distancia entre columnas de jabas es no menor a 10 cm.",
+    referenciaInstructivo: "2.2",
+    permiteNa: false,
+    permiteVn: false,
+  },
+  {
+    codigo: "APV-03",
+    bloque: "APILAMIENTO" as const,
+    orden: 3,
+    descripcion: "Las columnas de jabas están ubicadas de forma ordenada y en sentido a la corriente de aire.",
+    referenciaInstructivo: "2.3",
+    permiteNa: false,
+    permiteVn: false,
+  },
+  {
+    codigo: "APV-04",
+    bloque: "APILAMIENTO" as const,
+    orden: 4,
+    descripcion:
+      "La zona de descarga está libre de objetos (jabas vacías, tinas, pallets, etc.) que impidan el flujo de aire.",
+    referenciaInstructivo: "2.4",
+    permiteNa: false,
+    permiteVn: false,
+  },
+  {
+    codigo: "APV-05",
+    bloque: "VENTILACION" as const,
+    orden: 5,
+    descripcion: "El ventilador funciona durante todo el tiempo que hay jabas en la zona de descarga.",
+    referenciaInstructivo: "2.5",
+    permiteNa: false,
+    permiteVn: true,
+  },
+  {
+    codigo: "APV-06",
+    bloque: "VENTILACION" as const,
+    orden: 6,
+    descripcion: "El ventilador está próximo a las primeras columnas de jabas ordenadas.",
+    referenciaInstructivo: "2.6",
+    permiteNa: false,
+    permiteVn: true,
+  },
+  {
+    codigo: "APV-07",
+    bloque: "VENTILACION" as const,
+    orden: 7,
+    descripcion: "El ventilador está ubicado frente a la separación de las columnas de jabas.",
+    referenciaInstructivo: "2.7",
+    permiteNa: false,
+    permiteVn: true,
+  },
+  {
+    codigo: "APV-08",
+    bloque: "VENTILACION" as const,
+    orden: 8,
+    descripcion: "El flujo de aire permite confort al ave; no se observan signos de jadeo, asfixia o estrés térmico.",
+    referenciaInstructivo: "2.8",
+    permiteNa: false,
+    permiteVn: false,
+  },
+];
+
 // Pesos estándar Ross 308 (fuente: Aviagen Ross 308 Broiler Performance Objectives 2022)
 // Base diaria interpolada linealmente entre los valores semanales oficiales.
 // Reemplazar con la tabla STD del cliente una vez disponible.
@@ -327,6 +406,25 @@ async function main() {
       where: { linea_sexo_edadDias: { linea: p.linea, sexo: p.sexo, edadDias: p.edadDias } },
       update: { pesoGramos: p.pesoGramos },
       create: p,
+    });
+  }
+
+  // Catálogo de ítems del módulo de apilamiento y ventilación. Se actualiza el texto y los
+  // flags en cada deploy (el instructivo puede cambiar de redacción) sin tocar los registros.
+  console.log("Sembrando ítems de apilamiento y ventilación...");
+  for (const item of APILAMIENTO_ITEMS) {
+    await prisma.apilamientoItem.upsert({
+      where: { codigo: item.codigo },
+      update: {
+        bloque: item.bloque,
+        orden: item.orden,
+        descripcion: item.descripcion,
+        referenciaInstructivo: item.referenciaInstructivo,
+        permiteNa: item.permiteNa,
+        permiteVn: item.permiteVn,
+        activo: true,
+      },
+      create: item,
     });
   }
 

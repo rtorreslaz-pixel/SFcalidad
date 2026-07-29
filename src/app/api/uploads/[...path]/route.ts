@@ -12,6 +12,13 @@ const CONTENT_TYPES: Record<string, string> = {
   ".webp": "image/webp",
   ".heic": "image/heic",
   ".heif": "image/heif",
+  // Videos cortos de evidencia del módulo de apilamiento: con el content-type correcto el
+  // navegador los reproduce en línea en vez de descargarlos.
+  ".mp4": "video/mp4",
+  ".mov": "video/quicktime",
+  ".webm": "video/webm",
+  ".3gp": "video/3gpp",
+  ".mkv": "video/x-matroska",
 };
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {

@@ -96,9 +96,10 @@ model Cliente {
   // no del plantel: el filtro del dashboard segmenta por esta.
   zonaEvaluacion String?
 
-  planteles    Plantel[]
-  jornadas     Jornada[]
-  inspecciones Inspeccion[]
+  planteles            Plantel[]
+  jornadas             Jornada[]
+  inspecciones         Inspeccion[]
+  apilamientoRegistros ApilamientoRegistro[]
 }
 
 model Plantel {
@@ -416,6 +417,189 @@ model SacaPesada {
   createdAt DateTime @default(now())
 
   @@index([sacaMuestreoId])
+}
+
+// ---------------------------------------------------------------------------------------
+// Módulo de Verificación de Apilamiento y Ventilación de Jabas (instructivo IICYB003).
+// El verificador registra en el local del cliente el cumplimiento de 8 ítems (APV-01..08),
+// con observaciones y evidencia (fotos y videos cortos), y las acciones correctivas de los
+// incumplimientos. El registro se hace desde un enlace con token (sin sesión); la consulta
+// y el reporte se hacen con login.
+// ---------------------------------------------------------------------------------------
+
+enum ApilamientoBloque {
+  DESCARGA
+  APILAMIENTO
+  VENTILACION
+}
+
+enum ApilamientoResultado {
+  C // Conforme
+  NC // No conforme
+  NA // No aplica (solo APV-01, exige observación)
+  VN // Ventilación natural (ítems del ventilador APV-05..07)
+}
+
+enum TipoVentilacion {
+  MECANICA
+  NATURAL
+}
+
+enum SexoApilamiento {
+  MACHO
+  HEMBRA
+  MIXTO
+}
+
+enum EstadoApilamiento {
+  BORRADOR
+  FINALIZADO
+}
+
+enum SemaforoApilamiento {
+  VERDE
+  AMBAR
+  ROJO
+  NA // sin ítems evaluables
+}
+
+enum EstadoAccionApilamiento {
+  PENDIENTE
+  CERRADA
+}
+
+enum TipoMediaApilamiento {
+  FOTO
+  VIDEO
+}
+
+// Catálogo maestro de los 8 ítems (seed). Versionable con `activo` sin borrar histórico.
+model ApilamientoItem {
+  codigo                String            @id // APV-01 .. APV-08
+  bloque                ApilamientoBloque
+  orden                 Int
+  descripcion           String
+  referenciaInstructivo String? // ítem del IICYB003 (2.1 .. 2.8)
+  permiteNa             Boolean           @default(false)
+  permiteVn             Boolean           @default(false)
+  activo                Boolean           @default(true)
+
+  detalles ApilamientoDetalle[]
+  acciones ApilamientoAccion[]
+}
+
+model ApilamientoRegistro {
+  id             String @id // UUID generado en el cliente
+  codigoRegistro String @unique // APV-{AAAA}-{secuencia 5 dígitos}
+
+  fechaEvaluacion DateTime // no se admite fecha futura (validado en la API)
+  horaDescarga    String // "HH:MM"
+
+  clienteId String
+  cliente   Cliente @relation(fields: [clienteId], references: [id])
+  local     String? // local/sede del cliente (texto libre)
+
+  // Con el enlace público no hay sesión: el verificador se identifica por nombre.
+  verificadorNombre String
+
+  plantel        String
+  galpon         String?
+  placaVehiculo  String
+  cantidadJabas  Int
+  sexo           SexoApilamiento
+  densidadJaba   Int // aves por jaba (1..20)
+
+  tipoVentilacion      TipoVentilacion
+  cantidadVentiladores Int? // obligatorio >= 1 si MECANICA, nulo si NATURAL
+
+  // Calculados al guardar (ver lib/apilamiento.ts)
+  itemsConformes         Int                 @default(0)
+  itemsNoConformes       Int                 @default(0)
+  itemsNa                Int                 @default(0)
+  itemsVn                Int                 @default(0)
+  porcentajeCumplimiento Float? // null si no hay ítems evaluables
+  semaforo               SemaforoApilamiento @default(NA)
+  // RN-07: APV-08 en NC es hallazgo crítico (riesgo de asfixia) y fuerza semáforo ROJO.
+  hallazgoCritico        Boolean             @default(false)
+
+  estado                 EstadoApilamiento @default(FINALIZADO)
+  observacionesGenerales String?
+
+  nombreResponsableLocal String?
+  cargoResponsableLocal  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  detalles ApilamientoDetalle[]
+  acciones ApilamientoAccion[]
+  medias   ApilamientoMedia[]
+
+  // RN-08: no se admiten duplicados de cliente + fecha + placa.
+  @@unique([clienteId, fechaEvaluacion, placaVehiculo])
+  @@index([fechaEvaluacion])
+  @@index([semaforo])
+}
+
+model ApilamientoDetalle {
+  id String @id @default(cuid())
+
+  registroId String
+  registro   ApilamientoRegistro @relation(fields: [registroId], references: [id], onDelete: Cascade)
+
+  itemCodigo String
+  item       ApilamientoItem @relation(fields: [itemCodigo], references: [codigo])
+
+  resultado   ApilamientoResultado
+  observacion String? // obligatoria si NC o NA (mín. 10 caracteres)
+
+  medias ApilamientoMedia[]
+
+  @@unique([registroId, itemCodigo])
+}
+
+// Evidencia: fotos (recomprimidas) y videos cortos. Se sirven por /api/uploads/... con login.
+model ApilamientoMedia {
+  id String @id @default(cuid())
+
+  registroId String
+  registro   ApilamientoRegistro @relation(fields: [registroId], references: [id], onDelete: Cascade)
+
+  detalleId String?
+  detalle   ApilamientoDetalle? @relation(fields: [detalleId], references: [id], onDelete: Cascade)
+
+  itemCodigo String? // ítem al que corresponde la evidencia (null = general del registro)
+  tipo       TipoMediaApilamiento
+  path       String
+  bytes      Int?
+
+  createdAt DateTime @default(now())
+
+  @@index([registroId])
+}
+
+model ApilamientoAccion {
+  id String @id @default(cuid())
+
+  registroId String
+  registro   ApilamientoRegistro @relation(fields: [registroId], references: [id], onDelete: Cascade)
+
+  itemCodigo String // debe corresponder a un ítem con resultado NC (RN-03)
+  item       ApilamientoItem @relation(fields: [itemCodigo], references: [codigo])
+
+  descripcion     String
+  responsable     String
+  fechaCompromiso DateTime
+
+  estado             EstadoAccionApilamiento @default(PENDIENTE)
+  fechaCierre        DateTime?
+  evidenciaCierreUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([registroId])
+  @@index([estado, fechaCompromiso])
 }
 
 model PesoEstandar {

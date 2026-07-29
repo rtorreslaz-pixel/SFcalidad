@@ -34,7 +34,12 @@ export default function NavLinks({ role, showSaca = false }: { role: Role; showS
             ];
 
   // El módulo de saca se agrega al final de la barra cuando está habilitado.
-  const links = showSaca ? [...baseLinks, { href: "/saca", label: "Pesaje de saca" }] : baseLinks;
+  const conSaca = showSaca ? [...baseLinks, { href: "/saca", label: "Pesaje de saca" }] : baseLinks;
+
+  // Reporte de apilamiento y ventilación de jabas: lo consultan calidad y jefatura (los
+  // verificadores registran desde el enlace público, pero también pueden revisar lo enviado).
+  const links =
+    role === "COMERCIAL" ? conSaca : [...conSaca, { href: "/apilamiento-reporte", label: "Apilamiento de jabas" }];
 
   return (
     <div className="flex gap-1 overflow-x-auto pb-2 text-sm">
