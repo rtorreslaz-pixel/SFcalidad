@@ -514,9 +514,6 @@ model ApilamientoRegistro {
   estado                 EstadoApilamiento @default(FINALIZADO)
   observacionesGenerales String?
 
-  nombreResponsableLocal String?
-  cargoResponsableLocal  String?
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -557,7 +554,9 @@ model ApilamientoMedia {
   detalleId String?
   detalle   ApilamientoDetalle? @relation(fields: [detalleId], references: [id], onDelete: Cascade)
 
-  itemCodigo String? // ítem al que corresponde la evidencia (null = general del registro)
+  // Ítem al que corresponde la evidencia. Null = evidencia general del local (por ejemplo la
+  // foto o el video de la ventilación, que no pertenece a un ítem del checklist).
+  itemCodigo String?
   tipo       TipoMediaApilamiento
   path       String
   bytes      Int?

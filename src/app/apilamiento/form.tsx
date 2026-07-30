@@ -75,8 +75,6 @@ export default function ApilamientoForm({
 
   // Cierre
   const [observacionesGenerales, setObservacionesGenerales] = useState("");
-  const [nombreResponsableLocal, setNombreResponsableLocal] = useState("");
-  const [cargoResponsableLocal, setCargoResponsableLocal] = useState("");
 
   // Id del registro (se usa también para agrupar la evidencia subida) + borrador guardado.
   useEffect(() => {
@@ -95,8 +93,6 @@ export default function ApilamientoForm({
         if (d.observaciones) setObservaciones(d.observaciones);
         if (d.medias) setMedias(d.medias);
         if (d.observacionesGenerales) setObservacionesGenerales(d.observacionesGenerales);
-        if (d.nombreResponsableLocal) setNombreResponsableLocal(d.nombreResponsableLocal);
-        if (d.cargoResponsableLocal) setCargoResponsableLocal(d.cargoResponsableLocal);
         return;
       } catch {
         /* borrador ilegible: se empieza de cero */
@@ -111,12 +107,10 @@ export default function ApilamientoForm({
     const draft = {
       registroId, fechaEvaluacion, clienteId, local, verificadorNombre, tipoVentilacion,
       cantidadVentiladores, resultados, observaciones, medias, observacionesGenerales,
-      nombreResponsableLocal, cargoResponsableLocal,
     };
     window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   }, [registroId, exito, fechaEvaluacion, clienteId, local, verificadorNombre, tipoVentilacion,
-    cantidadVentiladores, resultados, observaciones, medias, observacionesGenerales,
-    nombreResponsableLocal, cargoResponsableLocal]);
+    cantidadVentiladores, resultados, observaciones, medias, observacionesGenerales]);
 
   // RN-01: con ventilación natural los ítems del ventilador se marcan VN y quedan bloqueados.
   // RN-02: con ventilación mecánica esos ítems vuelven a estar sin responder (solo C o NC).
@@ -152,9 +146,11 @@ export default function ApilamientoForm({
     return [...grupos.entries()];
   }, [items]);
 
-  async function subirArchivo(itemCodigo: string, file: File | undefined) {
+  // itemCodigo null = evidencia general del local (la foto/video de la ventilación), que no
+  // pertenece a ningún ítem del checklist.
+  async function subirArchivo(itemCodigo: string | null, file: File | undefined) {
     if (!file || !registroId) return;
-    setSubiendo(itemCodigo);
+    setSubiendo(itemCodigo ?? "GENERAL");
     setErrores([]);
     try {
       const fd = new FormData();
@@ -190,8 +186,6 @@ export default function ApilamientoForm({
           tipoVentilacion,
           cantidadVentiladores: tipoVentilacion === "MECANICA" ? Number(cantidadVentiladores) : null,
           observacionesGenerales,
-          nombreResponsableLocal,
-          cargoResponsableLocal,
           respuestas: items
             .filter((i) => resultados[i.codigo])
             .map((i) => ({ itemCodigo: i.codigo, resultado: resultados[i.codigo], observacion: observaciones[i.codigo] ?? "" })),
@@ -309,6 +303,27 @@ export default function ApilamientoForm({
           {!tipoVentilacion && (
             <p className="mt-1 text-xs text-slate-500">Elige el tipo de ventilación para habilitar el bloque de ventilación.</p>
           )}
+
+          {/* Evidencia de la ventilación del local (no pertenece a un ítem del checklist) */}
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <label className="flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white py-2.5 text-sm font-semibold text-slate-700">
+              📷 Foto
+              <input type="file" accept="image/*" capture="environment" className="hidden"
+                onChange={(e) => subirArchivo(null, e.target.files?.[0])} />
+            </label>
+            <label className="flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white py-2.5 text-sm font-semibold text-slate-700">
+              🎥 Video
+              <input type="file" accept="video/*" capture="environment" className="hidden"
+                onChange={(e) => subirArchivo(null, e.target.files?.[0])} />
+            </label>
+          </div>
+          {subiendo === "GENERAL" && <p className="mt-1 text-xs text-slate-500">Subiendo archivo…</p>}
+          {medias.filter((m) => m.itemCodigo === null).length > 0 && (
+            <p className="mt-1 text-xs font-semibold text-green-700">
+              ✓ {medias.filter((m) => m.itemCodigo === null && m.tipo === "FOTO").length} foto(s) ·{" "}
+              {medias.filter((m) => m.itemCodigo === null && m.tipo === "VIDEO").length} video(s) de la ventilación
+            </p>
+          )}
         </Campo>
 
         {tipoVentilacion === "MECANICA" && (
@@ -415,12 +430,6 @@ export default function ApilamientoForm({
         <h2 className="text-sm font-bold text-slate-900">Cierre</h2>
         <Campo label="Observaciones generales (opcional)">
           <textarea className="inp" rows={3} value={observacionesGenerales} onChange={(e) => setObservacionesGenerales(e.target.value)} />
-        </Campo>
-        <Campo label="Responsable del local que recibe los hallazgos">
-          <input className="inp" value={nombreResponsableLocal} onChange={(e) => setNombreResponsableLocal(e.target.value)} placeholder="Nombre" />
-        </Campo>
-        <Campo label="Cargo (opcional)">
-          <input className="inp" value={cargoResponsableLocal} onChange={(e) => setCargoResponsableLocal(e.target.value)} />
         </Campo>
       </section>
 

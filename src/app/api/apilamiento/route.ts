@@ -29,8 +29,6 @@ type Body = {
   tipoVentilacion?: string;
   cantidadVentiladores?: number | null;
   observacionesGenerales?: string | null;
-  nombreResponsableLocal?: string | null;
-  cargoResponsableLocal?: string | null;
   respuestas?: RespuestaInput[];
   medias?: { itemCodigo?: string | null; tipo: "FOTO" | "VIDEO"; path: string; bytes?: number }[];
 };
@@ -140,8 +138,6 @@ export async function POST(request: NextRequest) {
             hallazgoCritico,
             estado: "FINALIZADO",
             observacionesGenerales: body.observacionesGenerales?.trim() || null,
-            nombreResponsableLocal: body.nombreResponsableLocal?.trim() || null,
-            cargoResponsableLocal: body.cargoResponsableLocal?.trim() || null,
           },
         });
 

@@ -53,12 +53,15 @@ export async function GET(request: NextRequest) {
     "OBSERVACIÓN",
     "FOTOS",
     "VIDEOS",
+    "FOTOS VENTILACIÓN",
+    "VIDEOS VENTILACIÓN",
     "OBSERVACIONES GENERALES",
-    "RESPONSABLE DEL LOCAL",
   ];
 
   const rows: (string | number)[][] = [headers];
   for (const r of registros) {
+    // Evidencia general del local (ventilación): no pertenece a un ítem, se repite por fila.
+    const generales = r.medias.filter((m) => m.itemCodigo === null);
     for (const d of r.detalles) {
       const medias = r.medias.filter((m) => m.itemCodigo === d.itemCodigo);
       rows.push([
@@ -80,8 +83,9 @@ export async function GET(request: NextRequest) {
         d.observacion ?? "",
         medias.filter((m) => m.tipo === "FOTO").length,
         medias.filter((m) => m.tipo === "VIDEO").length,
+        generales.filter((m) => m.tipo === "FOTO").length,
+        generales.filter((m) => m.tipo === "VIDEO").length,
         r.observacionesGenerales ?? "",
-        r.nombreResponsableLocal ?? "",
       ]);
     }
   }

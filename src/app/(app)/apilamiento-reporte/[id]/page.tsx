@@ -36,6 +36,9 @@ export default async function ApilamientoDetallePage({ params }: { params: Promi
   });
   if (!r) notFound();
 
+  // Evidencia general del local: la de la ventilación, que no pertenece a un ítem.
+  const mediasVentilacion = r.medias.filter((m) => m.itemCodigo === null);
+
   return (
     <div>
       <Link href="/apilamiento-reporte" className="text-sm font-semibold text-blue-700 hover:underline">
@@ -77,6 +80,23 @@ export default async function ApilamientoDetallePage({ params }: { params: Promi
         />
         <Dato label="Conformes / No conformes" valor={`${r.itemsConformes} / ${r.itemsNoConformes}`} />
       </div>
+
+      {/* Evidencia de la ventilación del local (medias sin ítem asociado) */}
+      {mediasVentilacion.length > 0 && (
+        <>
+          <h2 className="mb-2 text-sm font-bold text-slate-900">Evidencia de la ventilación</h2>
+          <div className="mb-6 flex flex-wrap gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+            {mediasVentilacion.map((m) =>
+              m.tipo === "VIDEO" ? (
+                <video key={m.id} src={m.path} controls className="h-40 rounded-lg bg-black" />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={m.id} src={m.path} alt="Evidencia de la ventilación" className="h-40 rounded-lg object-cover" />
+              )
+            )}
+          </div>
+        </>
+      )}
 
       {/* Checklist */}
       <h2 className="mb-2 text-sm font-bold text-slate-900">Checklist</h2>
@@ -122,20 +142,10 @@ export default async function ApilamientoDetallePage({ params }: { params: Promi
         })}
       </div>
 
-      {(r.observacionesGenerales || r.nombreResponsableLocal) && (
+      {r.observacionesGenerales && (
         <div className="rounded-xl bg-white p-4 text-sm shadow-sm ring-1 ring-slate-200">
-          {r.observacionesGenerales && (
-            <p className="mb-2">
-              <span className="font-semibold">Observaciones generales: </span>
-              {r.observacionesGenerales}
-            </p>
-          )}
-          {r.nombreResponsableLocal && (
-            <p className="text-slate-600">
-              Recibido por: <b>{r.nombreResponsableLocal}</b>
-              {r.cargoResponsableLocal ? ` — ${r.cargoResponsableLocal}` : ""}
-            </p>
-          )}
+          <span className="font-semibold">Observaciones generales: </span>
+          {r.observacionesGenerales}
         </div>
       )}
     </div>
