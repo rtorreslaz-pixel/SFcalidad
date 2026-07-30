@@ -9,7 +9,6 @@ import {
   esHallazgoCritico,
   formatearCodigoRegistro,
   validarRegistro,
-  type AccionInput,
   type RespuestaInput,
 } from "@/lib/apilamiento";
 import type { ApilamientoResultado, SexoApilamiento, TipoVentilacion } from "@/generated/prisma/enums";
@@ -41,7 +40,6 @@ type Body = {
   nombreResponsableLocal?: string | null;
   cargoResponsableLocal?: string | null;
   respuestas?: RespuestaInput[];
-  acciones?: AccionInput[];
   medias?: { itemCodigo?: string | null; tipo: "FOTO" | "VIDEO"; path: string; bytes?: number }[];
 };
 
@@ -100,7 +98,6 @@ export async function POST(request: NextRequest) {
     tipoVentilacion === "MECANICA" && body.cantidadVentiladores != null ? Number(body.cantidadVentiladores) : null;
 
   const respuestas = Array.isArray(body.respuestas) ? body.respuestas : [];
-  const acciones = Array.isArray(body.acciones) ? body.acciones : [];
 
   const items = await prisma.apilamientoItem.findMany({ where: { activo: true }, orderBy: { orden: "asc" } });
   if (items.length === 0) {
@@ -108,9 +105,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (errores.length === 0) {
-    errores.push(
-      ...validarRegistro({ respuestas, acciones, items, tipoVentilacion, cantidadVentiladores, fechaEvaluacion })
-    );
+    errores.push(...validarRegistro({ respuestas, items, tipoVentilacion, cantidadVentiladores, fechaEvaluacion }));
   }
 
   if (errores.length > 0) return NextResponse.json({ errores }, { status: 400 });
@@ -192,18 +187,6 @@ export async function POST(request: NextRequest) {
             },
           });
           detallePorItem.set(r.itemCodigo, detalle.id);
-        }
-
-        for (const a of acciones) {
-          await tx.apilamientoAccion.create({
-            data: {
-              registroId: registro.id,
-              itemCodigo: a.itemCodigo,
-              descripcion: a.descripcion.trim(),
-              responsable: a.responsable.trim(),
-              fechaCompromiso: new Date(a.fechaCompromiso),
-            },
-          });
         }
 
         for (const m of mediasValidas) {

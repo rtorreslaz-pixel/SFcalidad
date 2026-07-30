@@ -57,8 +57,7 @@ export default async function ApilamientoReportePage({
       take: 300,
       include: {
         cliente: { select: { nombre: true } },
-        _count: { select: { medias: true, acciones: true } },
-        acciones: { where: { estado: "PENDIENTE" }, select: { id: true } },
+        _count: { select: { medias: true } },
       },
     }),
     prisma.cliente.findMany({ orderBy: { nombre: "asc" }, select: { id: true, nombre: true } }),
@@ -71,7 +70,6 @@ export default async function ApilamientoReportePage({
       : null;
   const criticos = registros.filter((r) => r.hallazgoCritico).length;
   const totalNC = registros.reduce((a, r) => a + r.itemsNoConformes, 0);
-  const accionesPendientes = registros.reduce((a, r) => a + r.acciones.length, 0);
 
   // % de cumplimiento por ítem (identifica el ítem más incumplido a nivel sistémico).
   const porItem = await prisma.apilamientoDetalle.groupBy({
@@ -125,12 +123,11 @@ export default async function ApilamientoReportePage({
       )}
 
       {/* Totalizadores */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Tarjeta titulo="Verificaciones" valor={String(registros.length)} />
         <Tarjeta titulo="Cumplimiento prom." valor={promedio != null ? `${promedio.toFixed(1)}%` : "—"} />
         <Tarjeta titulo="Ítems no conformes" valor={String(totalNC)} />
         <Tarjeta titulo="Hallazgos críticos" valor={String(criticos)} destacar={criticos > 0} />
-        <Tarjeta titulo="Acciones pendientes" valor={String(accionesPendientes)} />
       </div>
 
       {/* Filtros */}
@@ -183,7 +180,6 @@ export default async function ApilamientoReportePage({
                 <th className="px-3 py-2.5 font-medium">%</th>
                 <th className="px-3 py-2.5 font-medium">Semáforo</th>
                 <th className="px-3 py-2.5 font-medium">Evidencia</th>
-                <th className="px-3 py-2.5 font-medium">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -224,15 +220,6 @@ export default async function ApilamientoReportePage({
                     </span>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-slate-500">{r._count.medias}</td>
-                  <td className="px-3 py-2 whitespace-nowrap">
-                    {r.acciones.length > 0 ? (
-                      <span className="font-semibold text-amber-700">{r.acciones.length} pend.</span>
-                    ) : r._count.acciones > 0 ? (
-                      <span className="text-green-700">cerradas</span>
-                    ) : (
-                      <span className="text-slate-400">—</span>
-                    )}
-                  </td>
                 </tr>
               ))}
             </tbody>

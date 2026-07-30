@@ -4,8 +4,9 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { RESULTADO_LABEL } from "@/lib/apilamiento";
 
-// Detalle de una verificación: cabecera, los 8 ítems con su resultado/observación, la evidencia
-// (fotos y videos) y las acciones correctivas.
+// Detalle de una verificación: cabecera, los 8 ítems con su resultado y observación, y la
+// evidencia (fotos y videos). El verificador solo levanta información: no hay acciones
+// correctivas en el registro.
 
 const RESULTADO_BADGE: Record<string, string> = {
   C: "bg-green-100 text-green-700",
@@ -30,7 +31,6 @@ export default async function ApilamientoDetallePage({ params }: { params: Promi
     include: {
       cliente: { select: { nombre: true } },
       detalles: { include: { item: true }, orderBy: { item: { orden: "asc" } } },
-      acciones: { orderBy: { fechaCompromiso: "asc" } },
       medias: true,
     },
   });
@@ -126,49 +126,6 @@ export default async function ApilamientoDetallePage({ params }: { params: Promi
           );
         })}
       </div>
-
-      {/* Acciones correctivas */}
-      {r.acciones.length > 0 && (
-        <>
-          <h2 className="mb-2 text-sm font-bold text-slate-900">Acciones correctivas</h2>
-          <div className="mb-6 overflow-x-auto rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-slate-500">
-                <tr>
-                  <th className="px-3 py-2.5 font-medium">Ítem</th>
-                  <th className="px-3 py-2.5 font-medium">Acción</th>
-                  <th className="px-3 py-2.5 font-medium">Responsable</th>
-                  <th className="px-3 py-2.5 font-medium">Compromiso</th>
-                  <th className="px-3 py-2.5 font-medium">Estado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {r.acciones.map((a) => {
-                  const vencida = a.estado === "PENDIENTE" && a.fechaCompromiso < new Date();
-                  return (
-                    <tr key={a.id}>
-                      <td className="px-3 py-2 font-semibold whitespace-nowrap">{a.itemCodigo}</td>
-                      <td className="px-3 py-2">{a.descripcion}</td>
-                      <td className="px-3 py-2 whitespace-nowrap">{a.responsable}</td>
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        {a.fechaCompromiso.toLocaleDateString("es-PE")}
-                        {vencida && <span className="ml-1 text-xs font-bold text-red-700">vencida</span>}
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        {a.estado === "CERRADA" ? (
-                          <span className="font-semibold text-green-700">Cerrada</span>
-                        ) : (
-                          <span className="font-semibold text-amber-700">Pendiente</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
 
       {(r.observacionesGenerales || r.nombreResponsableLocal) && (
         <div className="rounded-xl bg-white p-4 text-sm shadow-sm ring-1 ring-slate-200">

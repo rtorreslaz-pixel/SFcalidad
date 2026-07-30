@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 
 // Formulario de campo: el verificador lo llena de pie, en el local del cliente, con una mano.
-// Botones grandes en vez de desplegables, observación y acción correctiva que se abren en línea
-// al marcar "No conforme", y evidencia (foto/video) por ítem. El borrador se guarda en el propio
-// teléfono para que una recarga o una pérdida de señal no borre lo avanzado.
+// Botones grandes en vez de desplegables, observación opcional y evidencia (foto/video) por ítem.
+// El verificador solo levanta información: no se le piden acciones correctivas ni se le muestran
+// valoraciones. El borrador se guarda en el propio teléfono para que una recarga o una pérdida de
+// señal no borre lo avanzado.
 
 type Item = {
   codigo: string;
@@ -33,7 +34,6 @@ const RESULTADO_LABEL: Record<Resultado, string> = {
   VN: "Vent. natural",
 };
 
-const MIN_OBSERVACION = 10;
 const DRAFT_KEY = "apilamiento-borrador-v1";
 
 const hoyISO = () => new Date().toISOString().slice(0, 10);
@@ -73,9 +73,6 @@ export default function ApilamientoForm({
   // Checklist
   const [resultados, setResultados] = useState<Record<string, Resultado>>({});
   const [observaciones, setObservaciones] = useState<Record<string, string>>({});
-  const [acciones, setAcciones] = useState<Record<string, { descripcion: string; responsable: string; fechaCompromiso: string }>>(
-    {}
-  );
   const [medias, setMedias] = useState<Media[]>([]);
   const [subiendo, setSubiendo] = useState<string | null>(null);
 
@@ -106,7 +103,6 @@ export default function ApilamientoForm({
         if (d.cantidadVentiladores) setCantidadVentiladores(d.cantidadVentiladores);
         if (d.resultados) setResultados(d.resultados);
         if (d.observaciones) setObservaciones(d.observaciones);
-        if (d.acciones) setAcciones(d.acciones);
         if (d.medias) setMedias(d.medias);
         if (d.observacionesGenerales) setObservacionesGenerales(d.observacionesGenerales);
         if (d.nombreResponsableLocal) setNombreResponsableLocal(d.nombreResponsableLocal);
@@ -125,13 +121,13 @@ export default function ApilamientoForm({
     const draft = {
       registroId, fechaEvaluacion, horaDescarga, clienteId, local, verificadorNombre, plantel, galpon,
       placaVehiculo, cantidadJabas, sexo, densidadJaba, tipoVentilacion, cantidadVentiladores,
-      resultados, observaciones, acciones, medias, observacionesGenerales, nombreResponsableLocal,
+      resultados, observaciones, medias, observacionesGenerales, nombreResponsableLocal,
       cargoResponsableLocal,
     };
     window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   }, [registroId, exito, fechaEvaluacion, horaDescarga, clienteId, local, verificadorNombre, plantel, galpon,
     placaVehiculo, cantidadJabas, sexo, densidadJaba, tipoVentilacion, cantidadVentiladores, resultados,
-    observaciones, acciones, medias, observacionesGenerales, nombreResponsableLocal, cargoResponsableLocal]);
+    observaciones, medias, observacionesGenerales, nombreResponsableLocal, cargoResponsableLocal]);
 
   // RN-01: con ventilación natural los ítems del ventilador se marcan VN y quedan bloqueados.
   // RN-02: con ventilación mecánica esos ítems vuelven a estar sin responder (solo C o NC).
@@ -217,9 +213,6 @@ export default function ApilamientoForm({
           respuestas: items
             .filter((i) => resultados[i.codigo])
             .map((i) => ({ itemCodigo: i.codigo, resultado: resultados[i.codigo], observacion: observaciones[i.codigo] ?? "" })),
-          acciones: Object.entries(acciones)
-            .filter(([codigo]) => resultados[codigo] === "NC")
-            .map(([codigo, a]) => ({ itemCodigo: codigo, ...a })),
           medias,
         }),
       });
@@ -376,7 +369,6 @@ export default function ApilamientoForm({
             const bloqueado = item.permiteVn && tipoVentilacion === "NATURAL";
             const valor = resultados[item.codigo];
             const obs = observaciones[item.codigo] ?? "";
-            const accion = acciones[item.codigo] ?? { descripcion: "", responsable: "", fechaCompromiso: "" };
             const mediasItem = medias.filter((m) => m.itemCodigo === item.codigo);
             return (
               <div key={item.codigo} className="border-t border-slate-100 pt-3 first:border-0 first:pt-0">
@@ -406,10 +398,10 @@ export default function ApilamientoForm({
                   </div>
                 )}
 
-                {/* Observación obligatoria en NC y NA, con evidencia y acción correctiva */}
+                {/* En NC y NA se ofrece observación (opcional) y evidencia */}
                 {(valor === "NC" || valor === "NA") && (
                   <div className="mt-3 space-y-3 rounded-lg bg-slate-50 p-3">
-                    <Campo label={`Observación (mínimo ${MIN_OBSERVACION} caracteres)`}>
+                    <Campo label="Observación (opcional)">
                       <textarea
                         className="inp"
                         rows={2}
@@ -417,9 +409,6 @@ export default function ApilamientoForm({
                         onChange={(e) => setObservaciones((p) => ({ ...p, [item.codigo]: e.target.value }))}
                         placeholder="Qué observaste exactamente"
                       />
-                      {obs.trim().length > 0 && obs.trim().length < MIN_OBSERVACION && (
-                        <p className="mt-1 text-xs text-amber-700">Faltan {MIN_OBSERVACION - obs.trim().length} caracteres.</p>
-                      )}
                     </Campo>
 
                     <div className="grid grid-cols-2 gap-2">
@@ -442,31 +431,6 @@ export default function ApilamientoForm({
                       </p>
                     )}
 
-                    {valor === "NC" && (
-                      <div className="space-y-2 rounded-lg bg-white p-3 ring-1 ring-slate-200">
-                        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Acción correctiva</p>
-                        <textarea
-                          className="inp"
-                          rows={2}
-                          placeholder="Qué se hizo o se hará para corregirlo"
-                          value={accion.descripcion}
-                          onChange={(e) => setAcciones((p) => ({ ...p, [item.codigo]: { ...accion, descripcion: e.target.value } }))}
-                        />
-                        <input
-                          className="inp"
-                          placeholder="Responsable"
-                          value={accion.responsable}
-                          onChange={(e) => setAcciones((p) => ({ ...p, [item.codigo]: { ...accion, responsable: e.target.value } }))}
-                        />
-                        <input
-                          type="date"
-                          className="inp"
-                          min={fechaEvaluacion}
-                          value={accion.fechaCompromiso}
-                          onChange={(e) => setAcciones((p) => ({ ...p, [item.codigo]: { ...accion, fechaCompromiso: e.target.value } }))}
-                        />
-                      </div>
-                    )}
                   </div>
                 )}
 

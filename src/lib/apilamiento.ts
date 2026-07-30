@@ -14,9 +14,6 @@ export const ITEM_DESCARGA = "APV-01";
 
 export const TOTAL_ITEMS = 8;
 
-/** Mínimo de caracteres exigido en la observación de un NC o NA (RN-04). */
-export const MIN_OBSERVACION = 10;
-
 export const UMBRAL_VERDE = 95;
 export const UMBRAL_AMBAR = 85;
 
@@ -82,27 +79,23 @@ export type RespuestaInput = {
   observacion?: string | null;
 };
 
-export type AccionInput = {
-  itemCodigo: string;
-  descripcion: string;
-  responsable: string;
-  fechaCompromiso: string;
-};
-
 /**
- * Valida un registro completo antes de finalizarlo. Devuelve la lista de errores en
- * castellano (vacía si todo está bien) para mostrarlos tal cual en el formulario.
+ * Valida un registro completo antes de guardarlo. Devuelve la lista de errores en castellano
+ * (vacía si todo está bien) para mostrarlos tal cual en el formulario.
+ *
+ * El verificador solo levanta información: la observación es OPCIONAL en todos los casos y no
+ * se piden acciones correctivas. Lo único que se exige es que los ítems estén respondidos con
+ * un resultado válido para el tipo de ventilación del local.
  */
 export function validarRegistro(input: {
   respuestas: RespuestaInput[];
-  acciones: AccionInput[];
   items: { codigo: string; permiteNa: boolean; permiteVn: boolean }[];
   tipoVentilacion: TipoVentilacion;
   cantidadVentiladores: number | null;
   fechaEvaluacion: string;
 }): string[] {
   const errores: string[] = [];
-  const { respuestas, acciones, items, tipoVentilacion, cantidadVentiladores, fechaEvaluacion } = input;
+  const { respuestas, items, tipoVentilacion, cantidadVentiladores, fechaEvaluacion } = input;
 
   // RN-05: los 8 ítems deben tener resultado.
   if (respuestas.length !== items.length) {
@@ -133,30 +126,6 @@ export function validarRegistro(input: {
     // RN-01/RN-02: el resultado debe estar permitido para ese ítem y tipo de ventilación.
     if (!resultadosPermitidos(item, tipoVentilacion).includes(r.resultado)) {
       errores.push(`El resultado ${r.resultado} no es válido para el ítem ${r.itemCodigo}.`);
-    }
-    // RN-04: NC y NA exigen observación con contenido.
-    if ((r.resultado === "NC" || r.resultado === "NA") && (r.observacion ?? "").trim().length < MIN_OBSERVACION) {
-      errores.push(
-        `El ítem ${r.itemCodigo} está como ${r.resultado} y necesita una observación de al menos ${MIN_OBSERVACION} caracteres.`
-      );
-    }
-    // RN-03: cada NC exige al menos una acción correctiva.
-    if (r.resultado === "NC" && !acciones.some((a) => a.itemCodigo === r.itemCodigo && a.descripcion.trim())) {
-      errores.push(`El ítem ${r.itemCodigo} está como no conforme y necesita una acción correctiva.`);
-    }
-  }
-
-  // Las acciones correctivas deben apuntar a ítems no conformes y tener fecha coherente.
-  const noConformes = new Set(respuestas.filter((r) => r.resultado === "NC").map((r) => r.itemCodigo));
-  for (const a of acciones) {
-    if (!noConformes.has(a.itemCodigo)) {
-      errores.push(`Hay una acción correctiva para el ítem ${a.itemCodigo}, que no está como no conforme.`);
-    }
-    if (!a.responsable.trim()) errores.push(`La acción del ítem ${a.itemCodigo} necesita un responsable.`);
-    if (!a.fechaCompromiso) {
-      errores.push(`La acción del ítem ${a.itemCodigo} necesita fecha de compromiso.`);
-    } else if (new Date(a.fechaCompromiso) < new Date(fechaEvaluacion)) {
-      errores.push(`La fecha de compromiso del ítem ${a.itemCodigo} no puede ser anterior a la evaluación.`);
     }
   }
 

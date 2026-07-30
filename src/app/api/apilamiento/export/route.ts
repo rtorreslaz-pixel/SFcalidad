@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
     include: {
       cliente: { select: { nombre: true } },
       detalles: { include: { item: true }, orderBy: { item: { orden: "asc" } } },
-      acciones: true,
       medias: true,
     },
   });
@@ -61,10 +60,6 @@ export async function GET(request: NextRequest) {
     "OBSERVACIÓN",
     "FOTOS",
     "VIDEOS",
-    "ACCIÓN CORRECTIVA",
-    "RESPONSABLE ACCIÓN",
-    "FECHA COMPROMISO",
-    "ESTADO ACCIÓN",
     "OBSERVACIONES GENERALES",
     "RESPONSABLE DEL LOCAL",
   ];
@@ -73,7 +68,6 @@ export async function GET(request: NextRequest) {
   for (const r of registros) {
     for (const d of r.detalles) {
       const medias = r.medias.filter((m) => m.itemCodigo === d.itemCodigo);
-      const accion = r.acciones.find((a) => a.itemCodigo === d.itemCodigo);
       rows.push([
         r.codigoRegistro,
         r.fechaEvaluacion.toISOString().slice(0, 10),
@@ -100,10 +94,6 @@ export async function GET(request: NextRequest) {
         d.observacion ?? "",
         medias.filter((m) => m.tipo === "FOTO").length,
         medias.filter((m) => m.tipo === "VIDEO").length,
-        accion?.descripcion ?? "",
-        accion?.responsable ?? "",
-        accion ? accion.fechaCompromiso.toISOString().slice(0, 10) : "",
-        accion?.estado ?? "",
         r.observacionesGenerales ?? "",
         r.nombreResponsableLocal ?? "",
       ]);
