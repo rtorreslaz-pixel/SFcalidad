@@ -9,7 +9,11 @@ import type { Prisma } from "@/generated/prisma/client";
 
 export async function GET(request: NextRequest) {
   await resolveExportUser(request);
-  const { searchParams } = new URL(request.url);
+  const { searchParams, origin } = new URL(request.url);
+  // Con el origen se arman URLs completas de la evidencia, clicables desde Excel.
+  const baseUrl = request.headers.get("x-forwarded-host")
+    ? `${request.headers.get("x-forwarded-proto") ?? "https"}://${request.headers.get("x-forwarded-host")}`
+    : origin;
 
   const where: Prisma.ApilamientoRegistroWhereInput = {};
   const clienteId = searchParams.get("cliente");
@@ -55,6 +59,7 @@ export async function GET(request: NextRequest) {
     "VIDEOS",
     "FOTOS VENTILACIÓN",
     "VIDEOS VENTILACIÓN",
+    "ARCHIVOS DEL ÍTEM (URL)",
     "OBSERVACIONES GENERALES",
   ];
 
@@ -85,6 +90,8 @@ export async function GET(request: NextRequest) {
         medias.filter((m) => m.tipo === "VIDEO").length,
         generales.filter((m) => m.tipo === "FOTO").length,
         generales.filter((m) => m.tipo === "VIDEO").length,
+        // Enlaces directos a la evidencia del ítem (se abren con la sesión iniciada).
+        medias.map((m) => `${baseUrl}${m.path}`).join(" "),
         r.observacionesGenerales ?? "",
       ]);
     }

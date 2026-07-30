@@ -63,6 +63,14 @@ export default async function ApilamientoDetallePage({ params }: { params: Promi
         {r.hallazgoCritico && (
           <span className="rounded bg-red-600 px-2 py-0.5 text-sm font-bold text-white">Hallazgo crítico</span>
         )}
+        {r.medias.length > 0 && (
+          <a
+            href={`/api/apilamiento/${r.id}/evidencia`}
+            className="ml-auto rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            Descargar fotos y videos ({r.medias.length})
+          </a>
+        )}
       </div>
 
       <p className="mb-6 text-sm text-slate-500">
@@ -90,8 +98,11 @@ export default async function ApilamientoDetallePage({ params }: { params: Promi
               m.tipo === "VIDEO" ? (
                 <video key={m.id} src={m.path} controls className="h-40 rounded-lg bg-black" />
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={m.id} src={m.path} alt="Evidencia de la ventilación" className="h-40 rounded-lg object-cover" />
+                // Clic en la foto = descargarla (además del ZIP con todo).
+                <a key={m.id} href={m.path} download title="Descargar foto">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={m.path} alt="Evidencia de la ventilación" className="h-40 rounded-lg object-cover" />
+                </a>
               )
             )}
           </div>
@@ -131,8 +142,10 @@ export default async function ApilamientoDetallePage({ params }: { params: Promi
                     m.tipo === "VIDEO" ? (
                       <video key={m.id} src={m.path} controls className="h-40 rounded-lg bg-black" />
                     ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={m.id} src={m.path} alt="Evidencia" className="h-40 rounded-lg object-cover" />
+                      <a key={m.id} href={m.path} download title="Descargar foto">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={m.path} alt="Evidencia" className="h-40 rounded-lg object-cover" />
+                      </a>
                     )
                   )}
                 </div>
