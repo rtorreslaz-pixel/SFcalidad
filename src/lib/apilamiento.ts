@@ -9,7 +9,7 @@ export const ITEMS_VENTILADOR = ["APV-05", "APV-06", "APV-07"] as const;
 /** Ítem de resultado del bloque de ventilación: SIEMPRE se evalúa C o NC (RN-01). */
 export const ITEM_CONFORT = "APV-08";
 
-/** Único ítem que admite "No aplica" (descarga ya concluida al llegar). */
+/** Ítem del bloque de descarga: solo admite conforme o no conforme. */
 export const ITEM_DESCARGA = "APV-01";
 
 export const TOTAL_ITEMS = 8;

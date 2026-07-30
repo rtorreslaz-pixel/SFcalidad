@@ -201,7 +201,8 @@ const DEFAULT_PASSWORD = "demo1234";
 
 // Catálogo de ítems del instructivo IICYB003 (apilamiento y ventilación de jabas en local
 // del cliente). permiteVn: ítems del ventilador, que se resuelven como "ventilación natural"
-// cuando el local no tiene ventilador. permiteNa: solo la descarga (si ya había concluido).
+// cuando el local no tiene ventilador. Ningún ítem admite "no aplica": todos se responden
+// conforme o no conforme (salvo los del ventilador con ventilación natural).
 const APILAMIENTO_ITEMS = [
   {
     codigo: "APV-01",
@@ -209,7 +210,8 @@ const APILAMIENTO_ITEMS = [
     orden: 1,
     descripcion: "La descarga de jabas se realiza sin causar golpes a los pollos.",
     referenciaInstructivo: "2.1",
-    permiteNa: true,
+    // Solo conforme / no conforme: el ítem de descarga no admite "no aplica".
+    permiteNa: false,
     permiteVn: false,
   },
   {
