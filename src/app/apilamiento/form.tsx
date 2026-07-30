@@ -51,9 +51,9 @@ export default function ApilamientoForm({
   const [registroId, setRegistroId] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [errores, setErrores] = useState<string[]>([]);
-  const [exito, setExito] = useState<{ codigo: string; porcentaje: number | null; semaforo: string; critico: boolean } | null>(
-    null
-  );
+  // El formulario solo captura: no muestra porcentaje, semáforo ni avisos de criticidad.
+  // El análisis se hace después con los datos (reporte y CSV).
+  const [exito, setExito] = useState<{ codigo: string } | null>(null);
 
   // Cabecera
   const [fechaEvaluacion, setFechaEvaluacion] = useState(hoyISO());
@@ -156,17 +156,6 @@ export default function ApilamientoForm({
   };
 
   const respondidos = items.filter((i) => resultados[i.codigo]).length;
-  const conformes = items.filter((i) => resultados[i.codigo] === "C").length;
-  const noConformes = items.filter((i) => resultados[i.codigo] === "NC").length;
-  const porcentaje = conformes + noConformes > 0 ? (conformes / (conformes + noConformes)) * 100 : null;
-  const critico = resultados["APV-08"] === "NC";
-  const semaforoColor = critico || (porcentaje != null && porcentaje < 85)
-    ? "bg-red-100 text-red-700"
-    : porcentaje != null && porcentaje < 95
-      ? "bg-amber-100 text-amber-700"
-      : porcentaje != null
-        ? "bg-green-100 text-green-700"
-        : "bg-slate-100 text-slate-500";
 
   const bloques = useMemo(() => {
     const grupos = new Map<Item["bloque"], Item[]>();
@@ -240,12 +229,7 @@ export default function ApilamientoForm({
         return;
       }
       window.localStorage.removeItem(DRAFT_KEY);
-      setExito({
-        codigo: data.codigoRegistro,
-        porcentaje: data.porcentajeCumplimiento,
-        semaforo: data.semaforo,
-        critico: data.hallazgoCritico,
-      });
+      setExito({ codigo: data.codigoRegistro });
     } catch {
       setErrores(["No se pudo enviar. Revisa la señal: lo que llenaste queda guardado en el teléfono."]);
     } finally {
@@ -262,20 +246,11 @@ export default function ApilamientoForm({
     return (
       <div className="p-4">
         <div className="rounded-xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-200">
-          <div className="text-4xl">{exito.critico ? "🔴" : exito.semaforo === "VERDE" ? "🟢" : exito.semaforo === "AMBAR" ? "🟡" : "🔴"}</div>
+          <div className="text-4xl">✓</div>
           <h2 className="mt-2 text-lg font-bold text-slate-900">Registro enviado</h2>
           <p className="mt-1 text-sm text-slate-500">
             Código <b className="text-slate-900">{exito.codigo}</b>
           </p>
-          <p className="mt-3 text-3xl font-bold text-slate-900">
-            {exito.porcentaje != null ? `${exito.porcentaje.toFixed(1)}%` : "—"}
-          </p>
-          <p className="text-xs text-slate-500">de cumplimiento</p>
-          {exito.critico && (
-            <p className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-700">
-              Hallazgo crítico: el flujo de aire no da confort al ave (APV-08). Comunícalo al supervisor de inmediato.
-            </p>
-          )}
           <button
             onClick={nuevoRegistro}
             className="mt-6 w-full rounded-xl bg-[#0B4EA2] py-3 font-bold text-white"
@@ -289,14 +264,9 @@ export default function ApilamientoForm({
 
   return (
     <div className="space-y-4 p-4">
-      {/* Progreso y cumplimiento en vivo */}
-      <div className="sticky top-[52px] z-10 flex items-center justify-between rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200">
-        <div className="text-sm font-semibold text-slate-700">
-          {respondidos}/{items.length} ítems
-        </div>
-        <div className={`rounded-lg px-3 py-1 text-sm font-bold ${semaforoColor}`}>
-          {porcentaje != null ? `${porcentaje.toFixed(0)}%` : "—"}
-        </div>
+      {/* Avance del llenado (sin porcentaje de cumplimiento ni semáforo: aquí solo se captura) */}
+      <div className="sticky top-[52px] z-10 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200">
+        {respondidos}/{items.length} ítems respondidos
       </div>
 
       {errores.length > 0 && (
@@ -531,12 +501,6 @@ export default function ApilamientoForm({
           <input className="inp" value={cargoResponsableLocal} onChange={(e) => setCargoResponsableLocal(e.target.value)} />
         </Campo>
       </section>
-
-      {critico && (
-        <div className="rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-700 ring-1 ring-red-200">
-          Hallazgo crítico (APV-08): el registro se marcará en rojo y debe comunicarse al supervisor.
-        </div>
-      )}
 
       <button
         onClick={enviar}
