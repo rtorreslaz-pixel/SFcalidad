@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveExportUser, csvResponse } from "@/lib/export-csv";
 import { RESULTADO_LABEL } from "@/lib/apilamiento";
-import type { Prisma } from "@/generated/prisma/client";
+import { construirWhere, leerFiltros } from "@/lib/apilamiento-filtros";
 
 // CSV del módulo de apilamiento y ventilación: una fila por ítem evaluado, con los datos de la
 // cabecera repetidos, la observación, la evidencia adjunta y la acción correctiva del ítem.
@@ -15,18 +15,8 @@ export async function GET(request: NextRequest) {
     ? `${request.headers.get("x-forwarded-proto") ?? "https"}://${request.headers.get("x-forwarded-host")}`
     : origin;
 
-  const where: Prisma.ApilamientoRegistroWhereInput = {};
-  const clienteId = searchParams.get("cliente");
-  const semaforo = searchParams.get("semaforo");
-  const desde = searchParams.get("desde");
-  const hasta = searchParams.get("hasta");
-  if (clienteId) where.clienteId = clienteId;
-  if (semaforo) where.semaforo = semaforo as Prisma.ApilamientoRegistroWhereInput["semaforo"];
-  if (desde || hasta) {
-    where.fechaEvaluacion = {};
-    if (desde) where.fechaEvaluacion.gte = new Date(desde);
-    if (hasta) where.fechaEvaluacion.lte = new Date(hasta + "T23:59:59");
-  }
+  // Mismo filtro que la pantalla del reporte: lo que se ve es lo que se descarga.
+  const where = construirWhere(leerFiltros(searchParams));
 
   const registros = await prisma.apilamientoRegistro.findMany({
     where,

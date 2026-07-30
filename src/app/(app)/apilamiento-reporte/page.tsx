@@ -4,7 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { enlacePublico } from "@/lib/apilamiento-token";
-import type { Prisma } from "@/generated/prisma/client";
+import { construirWhere, queryDeFiltros } from "@/lib/apilamiento-filtros";
 
 // Reporte de las verificaciones de apilamiento y ventilación (IICYB003) que los verificadores
 // registran desde el enlace público. Solo lectura + export CSV.
@@ -41,14 +41,8 @@ export default async function ApilamientoReportePage({
   const desde = val("desde");
   const hasta = val("hasta");
 
-  const where: Prisma.ApilamientoRegistroWhereInput = {};
-  if (clienteId) where.clienteId = clienteId;
-  if (semaforo) where.semaforo = semaforo as Prisma.ApilamientoRegistroWhereInput["semaforo"];
-  if (desde || hasta) {
-    where.fechaEvaluacion = {};
-    if (desde) where.fechaEvaluacion.gte = new Date(desde);
-    if (hasta) where.fechaEvaluacion.lte = new Date(hasta + "T23:59:59");
-  }
+  const filtros = { clienteId, semaforo, desde, hasta };
+  const where = construirWhere(filtros);
 
   const [registros, clientes] = await Promise.all([
     prisma.apilamientoRegistro.findMany({
@@ -94,26 +88,37 @@ export default async function ApilamientoReportePage({
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const link = host ? enlacePublico(`${proto}://${host}`) : null;
 
-  const qs = new URLSearchParams();
-  if (clienteId) qs.set("cliente", clienteId);
-  if (semaforo) qs.set("semaforo", semaforo);
-  if (desde) qs.set("desde", desde);
-  if (hasta) qs.set("hasta", hasta);
+  const qs = queryDeFiltros(filtros);
+  const hayFiltro = qs.length > 0;
+  const totalEvidencia = registros.reduce((a, r) => a + r._count.medias, 0);
 
   return (
     <div>
       <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-bold text-slate-900">Apilamiento y ventilación de jabas</h1>
-        <a
-          href={`/api/apilamiento/export?${qs.toString()}`}
-          download
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-        >
-          Descargar CSV
-        </a>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={`/api/apilamiento/export?${qs}`}
+            download
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            Descargar CSV
+          </a>
+          {totalEvidencia > 0 && (
+            <a
+              href={`/api/apilamiento/export-evidencia?${qs}`}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Descargar fotos y videos ({totalEvidencia})
+            </a>
+          )}
+        </div>
       </div>
       <p className="mb-4 text-sm text-slate-500">
-        Verificaciones registradas por los verificadores en los locales de clientes (instructivo IICYB003).
+        Verificaciones registradas por los verificadores en los locales de clientes (instructivo IICYB003).{" "}
+        {hayFiltro
+          ? "Las descargas incluyen solo lo que estás viendo con el filtro aplicado."
+          : "Las descargas incluyen todo; filtra por cliente o fechas para acotarlas."}
       </p>
 
       {link && (
