@@ -58,8 +58,13 @@ const APILAMIENTO_ROOT = path.join(
 
 const VIDEO_TYPES = new Set(["video/mp4", "video/quicktime", "video/webm", "video/3gpp", "video/x-matroska"]);
 
-/** Tope por video: los videos NO se recomprimen, así que se acotan en tamaño. */
-export const MAX_VIDEO_BYTES = 25 * 1024 * 1024; // 25 MB
+/**
+ * Tope por video: los videos NO se recomprimen, así que se acotan en tamaño. El volumen de
+ * producción es pequeño (500 MB compartidos con la base de datos), y si se llena la base deja
+ * de poder escribir: 10 MB por video da margen para ~40 videos además de las fotos. Si se
+ * amplía el volumen en Railway, este tope se puede subir.
+ */
+export const MAX_VIDEO_BYTES = 10 * 1024 * 1024; // 10 MB
 export const MAX_FOTO_BYTES = 15 * 1024 * 1024; // 15 MB antes de recomprimir
 
 const EXT_POR_TIPO: Record<string, string> = {
