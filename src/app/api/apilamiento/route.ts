@@ -11,29 +11,21 @@ import {
   validarRegistro,
   type RespuestaInput,
 } from "@/lib/apilamiento";
-import type { ApilamientoResultado, SexoApilamiento, TipoVentilacion } from "@/generated/prisma/enums";
+import type { ApilamientoResultado, TipoVentilacion } from "@/generated/prisma/enums";
 
 // Crea un registro de verificación de apilamiento y ventilación desde el enlace público.
+// La evaluación es POR LOCAL del cliente: no se piden datos del despacho del día.
 // Valida las reglas RN-01..RN-08 en el servidor (el formulario también las aplica en pantalla,
 // pero el servidor es la autoridad) y calcula cumplimiento y semáforo.
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-// Placa peruana: AAA-000 o A0A-000.
-const PLACA_RE = /^[A-Z][A-Z0-9][A-Z]-\d{3}$/;
 
 type Body = {
   id?: string;
   fechaEvaluacion?: string;
-  horaDescarga?: string;
   clienteId?: string;
-  local?: string | null;
+  local?: string;
   verificadorNombre?: string;
-  plantel?: string;
-  galpon?: string | null;
-  placaVehiculo?: string;
-  cantidadJabas?: number;
-  sexo?: string;
-  densidadJaba?: number;
   tipoVentilacion?: string;
   cantidadVentiladores?: number | null;
   observacionesGenerales?: string | null;
@@ -64,9 +56,6 @@ export async function POST(request: NextRequest) {
   // --- Cabecera ---
   const fechaEvaluacion = String(body.fechaEvaluacion ?? "");
   if (!fechaEvaluacion) errores.push("Falta la fecha de evaluación.");
-  const horaDescarga = String(body.horaDescarga ?? "").trim();
-  if (!/^\d{2}:\d{2}$/.test(horaDescarga)) errores.push("Falta la hora de descarga.");
-
   const clienteId = String(body.clienteId ?? "");
   const cliente = clienteId ? await prisma.cliente.findUnique({ where: { id: clienteId } }) : null;
   if (!cliente) errores.push("Selecciona un cliente válido.");
@@ -74,22 +63,9 @@ export async function POST(request: NextRequest) {
   const verificadorNombre = String(body.verificadorNombre ?? "").trim();
   if (verificadorNombre.length < 3) errores.push("Indica tu nombre como verificador.");
 
-  const plantel = String(body.plantel ?? "").trim();
-  if (!plantel) errores.push("Indica el plantel de origen.");
-
-  const placaVehiculo = String(body.placaVehiculo ?? "").trim().toUpperCase();
-  if (!PLACA_RE.test(placaVehiculo)) errores.push("La placa debe tener el formato AAA-000 o A0A-000.");
-
-  const cantidadJabas = Number(body.cantidadJabas);
-  if (!Number.isInteger(cantidadJabas) || cantidadJabas <= 0) errores.push("La cantidad de jabas debe ser mayor a 0.");
-
-  const densidadJaba = Number(body.densidadJaba);
-  if (!Number.isInteger(densidadJaba) || densidadJaba < 1 || densidadJaba > 20) {
-    errores.push("La densidad por jaba debe estar entre 1 y 20 aves.");
-  }
-
-  const sexo = String(body.sexo ?? "") as SexoApilamiento;
-  if (!["MACHO", "HEMBRA", "MIXTO"].includes(sexo)) errores.push("Selecciona el sexo del lote.");
+  // El local es la unidad evaluada, así que es obligatorio.
+  const local = String(body.local ?? "").trim();
+  if (local.length < 2) errores.push("Indica el local o sede del cliente que estás evaluando.");
 
   const tipoVentilacion = String(body.tipoVentilacion ?? "") as TipoVentilacion;
   if (!["MECANICA", "NATURAL"].includes(tipoVentilacion)) errores.push("Selecciona el tipo de ventilación.");
@@ -118,14 +94,14 @@ export async function POST(request: NextRequest) {
 
   const fecha = new Date(fechaEvaluacion);
 
-  // RN-08: cliente + fecha + placa no se repiten.
+  // RN-08: una evaluación por local y por día.
   const duplicado = await prisma.apilamientoRegistro.findFirst({
-    where: { clienteId, fechaEvaluacion: fecha, placaVehiculo },
+    where: { clienteId, local, fechaEvaluacion: fecha },
     select: { codigoRegistro: true },
   });
   if (duplicado) {
     return NextResponse.json(
-      { errores: [`Ya existe el registro ${duplicado.codigoRegistro} para este cliente, fecha y placa.`] },
+      { errores: [`Ya existe el registro ${duplicado.codigoRegistro} para este local en esa fecha.`] },
       { status: 409 }
     );
   }
@@ -150,16 +126,9 @@ export async function POST(request: NextRequest) {
             id: id!,
             codigoRegistro,
             fechaEvaluacion: fecha,
-            horaDescarga,
             clienteId,
-            local: body.local?.trim() || null,
+            local,
             verificadorNombre,
-            plantel,
-            galpon: body.galpon?.trim() || null,
-            placaVehiculo,
-            cantidadJabas,
-            sexo,
-            densidadJaba,
             tipoVentilacion,
             cantidadVentiladores,
             itemsConformes: conteos.conformes,
@@ -217,10 +186,7 @@ export async function POST(request: NextRequest) {
       // Choque de código (dos envíos simultáneos): se reintenta con la siguiente secuencia.
       if (mensaje.includes("codigoRegistro") && intento < 4) continue;
       if (mensaje.includes("clienteId") || mensaje.includes("Unique")) {
-        return NextResponse.json(
-          { errores: ["Ya existe un registro para este cliente, fecha y placa."] },
-          { status: 409 }
-        );
+        return NextResponse.json({ errores: ["Ya existe un registro para este local en esa fecha."] }, { status: 409 });
       }
       return NextResponse.json({ errores: ["No se pudo guardar el registro. Intenta de nuevo."] }, { status: 500 });
     }

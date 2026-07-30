@@ -63,19 +63,14 @@ export default async function ApilamientoDetallePage({ params }: { params: Promi
       </div>
 
       <p className="mb-6 text-sm text-slate-500">
-        {r.cliente.nombre}
-        {r.local ? ` · ${r.local}` : ""} · {r.fechaEvaluacion.toLocaleDateString("es-PE")} {r.horaDescarga} ·{" "}
-        {r.verificadorNombre}
+        {r.cliente.nombre} · <b>{r.local}</b> · {r.fechaEvaluacion.toLocaleDateString("es-PE")} · {r.verificadorNombre}
       </p>
 
       {/* Cabecera */}
       <div className="mb-6 grid grid-cols-2 gap-3 rounded-xl bg-white p-4 text-sm shadow-sm ring-1 ring-slate-200 sm:grid-cols-4">
-        <Dato label="Plantel" valor={r.plantel} />
-        <Dato label="Galpón" valor={r.galpon ?? "—"} />
-        <Dato label="Placa" valor={r.placaVehiculo} />
-        <Dato label="Jabas" valor={String(r.cantidadJabas)} />
-        <Dato label="Sexo" valor={r.sexo} />
-        <Dato label="Aves por jaba" valor={String(r.densidadJaba)} />
+        <Dato label="Cliente" valor={r.cliente.nombre} />
+        <Dato label="Local" valor={r.local} />
+        <Dato label="Fecha" valor={r.fechaEvaluacion.toLocaleDateString("es-PE")} />
         <Dato
           label="Ventilación"
           valor={r.tipoVentilacion === "MECANICA" ? `Mecánica (${r.cantidadVentiladores ?? 0} vent.)` : "Natural"}

@@ -43,10 +43,14 @@ export default function ApilamientoForm({
   clientes,
   items,
   token,
+  localesPorCliente,
 }: {
   clientes: { id: string; nombre: string }[];
   items: Item[];
   token: string;
+  /** Locales ya registrados por cliente: se sugieren para que el nombre no se escriba distinto
+   *  cada vez (el análisis es por local, así que la consistencia del nombre importa). */
+  localesPorCliente: Record<string, string[]>;
 }) {
   const [registroId, setRegistroId] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -57,16 +61,9 @@ export default function ApilamientoForm({
 
   // Cabecera
   const [fechaEvaluacion, setFechaEvaluacion] = useState(hoyISO());
-  const [horaDescarga, setHoraDescarga] = useState(horaActual());
   const [clienteId, setClienteId] = useState("");
   const [local, setLocal] = useState("");
   const [verificadorNombre, setVerificadorNombre] = useState("");
-  const [plantel, setPlantel] = useState("");
-  const [galpon, setGalpon] = useState("");
-  const [placaVehiculo, setPlacaVehiculo] = useState("");
-  const [cantidadJabas, setCantidadJabas] = useState("");
-  const [sexo, setSexo] = useState<"MACHO" | "HEMBRA" | "MIXTO">("MACHO");
-  const [densidadJaba, setDensidadJaba] = useState("");
   const [tipoVentilacion, setTipoVentilacion] = useState<"MECANICA" | "NATURAL" | "">("");
   const [cantidadVentiladores, setCantidadVentiladores] = useState("");
 
@@ -89,16 +86,9 @@ export default function ApilamientoForm({
         const d = JSON.parse(guardado);
         if (d.registroId) setRegistroId(d.registroId);
         if (d.fechaEvaluacion) setFechaEvaluacion(d.fechaEvaluacion);
-        if (d.horaDescarga) setHoraDescarga(d.horaDescarga);
         if (d.clienteId) setClienteId(d.clienteId);
         if (d.local) setLocal(d.local);
         if (d.verificadorNombre) setVerificadorNombre(d.verificadorNombre);
-        if (d.plantel) setPlantel(d.plantel);
-        if (d.galpon) setGalpon(d.galpon);
-        if (d.placaVehiculo) setPlacaVehiculo(d.placaVehiculo);
-        if (d.cantidadJabas) setCantidadJabas(d.cantidadJabas);
-        if (d.sexo) setSexo(d.sexo);
-        if (d.densidadJaba) setDensidadJaba(d.densidadJaba);
         if (d.tipoVentilacion) setTipoVentilacion(d.tipoVentilacion);
         if (d.cantidadVentiladores) setCantidadVentiladores(d.cantidadVentiladores);
         if (d.resultados) setResultados(d.resultados);
@@ -119,15 +109,14 @@ export default function ApilamientoForm({
   useEffect(() => {
     if (!registroId || exito) return;
     const draft = {
-      registroId, fechaEvaluacion, horaDescarga, clienteId, local, verificadorNombre, plantel, galpon,
-      placaVehiculo, cantidadJabas, sexo, densidadJaba, tipoVentilacion, cantidadVentiladores,
-      resultados, observaciones, medias, observacionesGenerales, nombreResponsableLocal,
-      cargoResponsableLocal,
+      registroId, fechaEvaluacion, clienteId, local, verificadorNombre, tipoVentilacion,
+      cantidadVentiladores, resultados, observaciones, medias, observacionesGenerales,
+      nombreResponsableLocal, cargoResponsableLocal,
     };
     window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-  }, [registroId, exito, fechaEvaluacion, horaDescarga, clienteId, local, verificadorNombre, plantel, galpon,
-    placaVehiculo, cantidadJabas, sexo, densidadJaba, tipoVentilacion, cantidadVentiladores, resultados,
-    observaciones, medias, observacionesGenerales, nombreResponsableLocal, cargoResponsableLocal]);
+  }, [registroId, exito, fechaEvaluacion, clienteId, local, verificadorNombre, tipoVentilacion,
+    cantidadVentiladores, resultados, observaciones, medias, observacionesGenerales,
+    nombreResponsableLocal, cargoResponsableLocal]);
 
   // RN-01: con ventilación natural los ítems del ventilador se marcan VN y quedan bloqueados.
   // RN-02: con ventilación mecánica esos ítems vuelven a estar sin responder (solo C o NC).
@@ -195,16 +184,9 @@ export default function ApilamientoForm({
         body: JSON.stringify({
           id: registroId,
           fechaEvaluacion,
-          horaDescarga,
           clienteId,
           local,
           verificadorNombre,
-          plantel,
-          galpon,
-          placaVehiculo: placaVehiculo.toUpperCase(),
-          cantidadJabas: Number(cantidadJabas),
-          sexo,
-          densidadJaba: Number(densidadJaba),
           tipoVentilacion,
           cantidadVentiladores: tipoVentilacion === "MECANICA" ? Number(cantidadVentiladores) : null,
           observacionesGenerales,
@@ -275,20 +257,15 @@ export default function ApilamientoForm({
 
       {/* ---- Cabecera ---- */}
       <section className="space-y-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-        <h2 className="text-sm font-bold text-slate-900">1. Datos de la visita</h2>
+        <h2 className="text-sm font-bold text-slate-900">Local evaluado</h2>
 
         <Campo label="Verificador">
           <input className="inp" value={verificadorNombre} onChange={(e) => setVerificadorNombre(e.target.value)} placeholder="Tu nombre y apellido" />
         </Campo>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Campo label="Fecha">
-            <input type="date" className="inp" max={hoyISO()} value={fechaEvaluacion} onChange={(e) => setFechaEvaluacion(e.target.value)} />
-          </Campo>
-          <Campo label="Hora de descarga">
-            <input type="time" className="inp" value={horaDescarga} onChange={(e) => setHoraDescarga(e.target.value)} />
-          </Campo>
-        </div>
+        <Campo label="Fecha">
+          <input type="date" className="inp" max={hoyISO()} value={fechaEvaluacion} onChange={(e) => setFechaEvaluacion(e.target.value)} />
+        </Campo>
 
         <Campo label="Cliente / distribuidor">
           <select className="inp" value={clienteId} onChange={(e) => setClienteId(e.target.value)}>
@@ -299,45 +276,26 @@ export default function ApilamientoForm({
           </select>
         </Campo>
 
-        <Campo label="Local / sede (opcional)">
-          <input className="inp" value={local} onChange={(e) => setLocal(e.target.value)} placeholder="Ej. Local Norte" />
-        </Campo>
-
-        <div className="grid grid-cols-2 gap-3">
-          <Campo label="Plantel de origen">
-            <input className="inp" value={plantel} onChange={(e) => setPlantel(e.target.value)} placeholder="Ej. P208" />
-          </Campo>
-          <Campo label="Galpón (opcional)">
-            <input className="inp" value={galpon} onChange={(e) => setGalpon(e.target.value)} />
-          </Campo>
-        </div>
-
-        <Campo label="Placa del vehículo">
+        <Campo label="Local / sede">
           <input
-            className="inp uppercase"
-            value={placaVehiculo}
-            onChange={(e) => setPlacaVehiculo(e.target.value.toUpperCase())}
-            placeholder="AAA-000"
+            className="inp"
+            value={local}
+            onChange={(e) => setLocal(e.target.value)}
+            placeholder="Ej. Local Norte"
+            list="locales-sugeridos"
           />
-        </Campo>
-
-        <div className="grid grid-cols-2 gap-3">
-          <Campo label="Cantidad de jabas">
-            <input type="number" inputMode="numeric" className="inp" value={cantidadJabas} onChange={(e) => setCantidadJabas(e.target.value)} />
-          </Campo>
-          <Campo label="Aves por jaba">
-            <input type="number" inputMode="numeric" min={1} max={20} className="inp" value={densidadJaba} onChange={(e) => setDensidadJaba(e.target.value)} />
-          </Campo>
-        </div>
-
-        <Campo label="Sexo del lote">
-          <div className="grid grid-cols-3 gap-2">
-            {(["MACHO", "HEMBRA", "MIXTO"] as const).map((s) => (
-              <button key={s} type="button" onClick={() => setSexo(s)} className={chip(sexo === s)}>
-                {s === "MACHO" ? "Macho" : s === "HEMBRA" ? "Hembra" : "Mixto"}
-              </button>
+          {/* Sugerencias de locales ya registrados para ese cliente: así el mismo local se
+              escribe igual siempre y el análisis por local no se fragmenta. */}
+          <datalist id="locales-sugeridos">
+            {(localesPorCliente[clienteId] ?? []).map((l) => (
+              <option key={l} value={l} />
             ))}
-          </div>
+          </datalist>
+          {(localesPorCliente[clienteId] ?? []).length > 0 && (
+            <p className="mt-1 text-xs text-slate-500">
+              Ya registrados: {(localesPorCliente[clienteId] ?? []).join(" · ")}
+            </p>
+          )}
         </Campo>
 
         <Campo label="Tipo de ventilación del local">
@@ -454,7 +412,7 @@ export default function ApilamientoForm({
 
       {/* ---- Cierre ---- */}
       <section className="space-y-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-        <h2 className="text-sm font-bold text-slate-900">3. Cierre</h2>
+        <h2 className="text-sm font-bold text-slate-900">Cierre</h2>
         <Campo label="Observaciones generales (opcional)">
           <textarea className="inp" rows={3} value={observacionesGenerales} onChange={(e) => setObservacionesGenerales(e.target.value)} />
         </Campo>

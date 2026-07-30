@@ -172,9 +172,9 @@ export default async function ApilamientoReportePage({
               <tr>
                 <th className="px-3 py-2.5 font-medium">Código</th>
                 <th className="px-3 py-2.5 font-medium">Fecha</th>
-                <th className="px-3 py-2.5 font-medium">Cliente / local</th>
+                <th className="px-3 py-2.5 font-medium">Cliente</th>
+                <th className="px-3 py-2.5 font-medium">Local</th>
                 <th className="px-3 py-2.5 font-medium">Verificador</th>
-                <th className="px-3 py-2.5 font-medium">Placa</th>
                 <th className="px-3 py-2.5 font-medium">Ventilación</th>
                 <th className="px-3 py-2.5 font-medium">C / NC</th>
                 <th className="px-3 py-2.5 font-medium">%</th>
@@ -191,15 +191,10 @@ export default async function ApilamientoReportePage({
                     </Link>
                     {r.hallazgoCritico && <span className="ml-1 text-xs font-bold text-red-700">crítico</span>}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap">
-                    {r.fechaEvaluacion.toLocaleDateString("es-PE")} <span className="text-slate-400">{r.horaDescarga}</span>
-                  </td>
-                  <td className="px-3 py-2">
-                    {r.cliente.nombre}
-                    {r.local && <span className="text-slate-400"> · {r.local}</span>}
-                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">{r.fechaEvaluacion.toLocaleDateString("es-PE")}</td>
+                  <td className="px-3 py-2">{r.cliente.nombre}</td>
+                  <td className="px-3 py-2 font-semibold">{r.local}</td>
                   <td className="px-3 py-2 whitespace-nowrap text-slate-600">{r.verificadorNombre}</td>
-                  <td className="px-3 py-2 whitespace-nowrap">{r.placaVehiculo}</td>
                   <td className="px-3 py-2 whitespace-nowrap text-slate-600">
                     {r.tipoVentilacion === "MECANICA" ? `Mecánica (${r.cantidadVentiladores ?? 0})` : "Natural"}
                   </td>

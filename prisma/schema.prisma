@@ -445,12 +445,6 @@ enum TipoVentilacion {
   NATURAL
 }
 
-enum SexoApilamiento {
-  MACHO
-  HEMBRA
-  MIXTO
-}
-
 enum EstadoApilamiento {
   BORRADOR
   FINALIZADO
@@ -493,21 +487,16 @@ model ApilamientoRegistro {
   codigoRegistro String @unique // APV-{AAAA}-{secuencia 5 dígitos}
 
   fechaEvaluacion DateTime // no se admite fecha futura (validado en la API)
-  horaDescarga    String // "HH:MM"
 
   clienteId String
   cliente   Cliente @relation(fields: [clienteId], references: [id])
-  local     String? // local/sede del cliente (texto libre)
+  // La evaluación es POR LOCAL del cliente: el local es la unidad evaluada, no un dato
+  // opcional. No se registran datos del despacho del día (placa, jabas, lote): no son
+  // relevantes para evaluar las condiciones del local.
+  local     String
 
   // Con el enlace público no hay sesión: el verificador se identifica por nombre.
   verificadorNombre String
-
-  plantel        String
-  galpon         String?
-  placaVehiculo  String
-  cantidadJabas  Int
-  sexo           SexoApilamiento
-  densidadJaba   Int // aves por jaba (1..20)
 
   tipoVentilacion      TipoVentilacion
   cantidadVentiladores Int? // obligatorio >= 1 si MECANICA, nulo si NATURAL
@@ -535,8 +524,8 @@ model ApilamientoRegistro {
   acciones ApilamientoAccion[]
   medias   ApilamientoMedia[]
 
-  // RN-08: no se admiten duplicados de cliente + fecha + placa.
-  @@unique([clienteId, fechaEvaluacion, placaVehiculo])
+  // RN-08: una evaluación por local y por día (antes era por despacho/placa).
+  @@unique([clienteId, local, fechaEvaluacion])
   @@index([fechaEvaluacion])
   @@index([semaforo])
 }

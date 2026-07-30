@@ -1,0 +1,55 @@
+-- Nota: los registros creados antes de este cambio pudieron quedar sin local (era opcional).
+-- Se les asigna una etiqueta con su id para no perderlos ni romper el NOT NULL ni el índice
+-- único (cliente + local + fecha). Los datos del despacho del día (placa, jabas, plantel,
+-- galpón, sexo, aves por jaba, hora de descarga) se eliminan a propósito: la evaluación es
+-- por local y esos campos no son relevantes.
+
+/*
+  Warnings:
+
+  - You are about to drop the column `cantidadJabas` on the `ApilamientoRegistro` table. All the data in the column will be lost.
+  - You are about to drop the column `densidadJaba` on the `ApilamientoRegistro` table. All the data in the column will be lost.
+  - You are about to drop the column `galpon` on the `ApilamientoRegistro` table. All the data in the column will be lost.
+  - You are about to drop the column `horaDescarga` on the `ApilamientoRegistro` table. All the data in the column will be lost.
+  - You are about to drop the column `placaVehiculo` on the `ApilamientoRegistro` table. All the data in the column will be lost.
+  - You are about to drop the column `plantel` on the `ApilamientoRegistro` table. All the data in the column will be lost.
+  - You are about to drop the column `sexo` on the `ApilamientoRegistro` table. All the data in the column will be lost.
+  - Made the column `local` on table `ApilamientoRegistro` required. This step will fail if there are existing NULL values in that column.
+
+*/
+-- RedefineTables
+PRAGMA defer_foreign_keys=ON;
+PRAGMA foreign_keys=OFF;
+CREATE TABLE "new_ApilamientoRegistro" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "codigoRegistro" TEXT NOT NULL,
+    "fechaEvaluacion" DATETIME NOT NULL,
+    "clienteId" TEXT NOT NULL,
+    "local" TEXT NOT NULL,
+    "verificadorNombre" TEXT NOT NULL,
+    "tipoVentilacion" TEXT NOT NULL,
+    "cantidadVentiladores" INTEGER,
+    "itemsConformes" INTEGER NOT NULL DEFAULT 0,
+    "itemsNoConformes" INTEGER NOT NULL DEFAULT 0,
+    "itemsNa" INTEGER NOT NULL DEFAULT 0,
+    "itemsVn" INTEGER NOT NULL DEFAULT 0,
+    "porcentajeCumplimiento" REAL,
+    "semaforo" TEXT NOT NULL DEFAULT 'NA',
+    "hallazgoCritico" BOOLEAN NOT NULL DEFAULT false,
+    "estado" TEXT NOT NULL DEFAULT 'FINALIZADO',
+    "observacionesGenerales" TEXT,
+    "nombreResponsableLocal" TEXT,
+    "cargoResponsableLocal" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "ApilamientoRegistro_clienteId_fkey" FOREIGN KEY ("clienteId") REFERENCES "Cliente" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+INSERT INTO "new_ApilamientoRegistro" ("cantidadVentiladores", "cargoResponsableLocal", "clienteId", "codigoRegistro", "createdAt", "estado", "fechaEvaluacion", "hallazgoCritico", "id", "itemsConformes", "itemsNa", "itemsNoConformes", "itemsVn", "local", "nombreResponsableLocal", "observacionesGenerales", "porcentajeCumplimiento", "semaforo", "tipoVentilacion", "updatedAt", "verificadorNombre") SELECT "cantidadVentiladores", "cargoResponsableLocal", "clienteId", "codigoRegistro", "createdAt", "estado", "fechaEvaluacion", "hallazgoCritico", "id", "itemsConformes", "itemsNa", "itemsNoConformes", "itemsVn", COALESCE(NULLIF("local", ''), '(sin especificar) ' || substr("id", 1, 8)), "nombreResponsableLocal", "observacionesGenerales", "porcentajeCumplimiento", "semaforo", "tipoVentilacion", "updatedAt", "verificadorNombre" FROM "ApilamientoRegistro";
+DROP TABLE "ApilamientoRegistro";
+ALTER TABLE "new_ApilamientoRegistro" RENAME TO "ApilamientoRegistro";
+CREATE UNIQUE INDEX "ApilamientoRegistro_codigoRegistro_key" ON "ApilamientoRegistro"("codigoRegistro");
+CREATE INDEX "ApilamientoRegistro_fechaEvaluacion_idx" ON "ApilamientoRegistro"("fechaEvaluacion");
+CREATE INDEX "ApilamientoRegistro_semaforo_idx" ON "ApilamientoRegistro"("semaforo");
+CREATE UNIQUE INDEX "ApilamientoRegistro_clienteId_local_fechaEvaluacion_key" ON "ApilamientoRegistro"("clienteId", "local", "fechaEvaluacion");
+PRAGMA foreign_keys=ON;
+PRAGMA defer_foreign_keys=OFF;
