@@ -1,4 +1,4 @@
-import { redirect, notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
@@ -21,9 +21,6 @@ function fmtFecha(d: Date): string {
 }
 
 export default async function SacaPage() {
-  // Módulo en evaluación: por ahora solo se habilita en el despliegue demo. Para publicarlo
-  // en producción basta quitar esta guarda (y la de /saca/[id] y el flag del nav).
-  if (process.env.DEMO_MODE !== "true") notFound();
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 

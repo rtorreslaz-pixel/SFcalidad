@@ -4,9 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Role } from "@/generated/prisma/enums";
 
-// showSaca: el módulo de saca está en evaluación y por ahora se muestra solo en el
-// despliegue demo (DEMO_MODE=true); el layout lo resuelve en el servidor.
-export default function NavLinks({ role, showSaca = false }: { role: Role; showSaca?: boolean }) {
+export default function NavLinks({ role }: { role: Role }) {
   const pathname = usePathname();
 
   const baseLinks =
@@ -33,8 +31,8 @@ export default function NavLinks({ role, showSaca = false }: { role: Role; showS
               { href: "/dashboard-bi/engranaje", label: "Engranaje granja-clientes" },
             ];
 
-  // El módulo de saca se agrega al final de la barra cuando está habilitado.
-  const conSaca = showSaca ? [...baseLinks, { href: "/saca", label: "Pesaje de saca" }] : baseLinks;
+  // Pesaje de saca: muestreo de jabas antes de la saca, comparado contra preventa.
+  const conSaca = [...baseLinks, { href: "/saca", label: "Pesaje de saca" }];
 
   // Reporte de apilamiento y ventilación de jabas: lo consultan calidad y jefatura (los
   // verificadores registran desde el enlace público, pero también pueden revisar lo enviado).

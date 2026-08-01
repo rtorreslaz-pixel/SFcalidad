@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Selector de tipo de trabajo: preventa/calidad (aves, ~35 d) o saca (jabas, ~40+ d). -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sf_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            style="@style/SfSectionTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_home" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonPreventa"
+            style="@style/SfButtonPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/home_preventa" />
+
+        <TextView
+            style="@style/SfMuted"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/home_preventa_desc" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonSaca"
+            style="@style/SfButtonGhost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/home_saca" />
+
+        <TextView
+            style="@style/SfMuted"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="6dp"
+            android:text="@string/home_saca_desc" />
+
+        <TextView
+            android:id="@+id/textSacaPendientes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="18dp"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/sf_amber"
+            android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>

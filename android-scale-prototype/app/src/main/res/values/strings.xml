@@ -119,4 +119,37 @@
     <string name="action_volver">Volver</string>
 
     <string name="session_revoked_message">Tu sesión fue cerrada por el administrador. Vuelve a iniciar sesión.</string>
+
+    <!-- Selector de tipo de trabajo al iniciar -->
+    <string name="title_home">¿Qué vas a registrar hoy?</string>
+    <string name="home_preventa">⚖️ Pesaje preventa / calidad</string>
+    <string name="home_preventa_desc">Muestreo en granja a ~35 días (aves individuales) o solo calidad.</string>
+    <string name="home_saca">📦 Pesaje de saca</string>
+    <string name="home_saca_desc">Muestreo de jabas antes de la saca (~40+ días).</string>
+
+    <!-- Saca: configuración y captura por pesadas -->
+    <string name="title_saca_setup">Configurar saca</string>
+    <string name="title_saca_capture">Pesaje de saca</string>
+    <string name="label_aves_por_jaba">Aves por jaba</string>
+    <string name="label_tara_jaba">Tara por jaba (kg)</string>
+    <string name="label_tipo_jaba">Tipo de jaba (opcional)</string>
+    <string name="action_start_saca">Comenzar saca</string>
+    <string name="label_num_jabas">N° de jabas en la balanza</string>
+    <string name="label_peso_bruto">PESO BRUTO EN VIVO</string>
+    <string name="saca_neto_format">Neto estimado (− tara): %1$.2f kg (%2$d jabas)</string>
+    <string name="saca_neto_vacio">Indica cuántas jabas hay en la balanza</string>
+    <string name="action_registrar_pesada">Registrar pesada</string>
+    <string name="action_finalizar_saca">Finalizar saca</string>
+    <string name="saca_pesada_registrada">Pesada %1$d registrada — %2$d jabas · %3$d g/ave</string>
+    <string name="saca_resumen_format">%1$d pesadas · %2$d jabas · %3$d aves · promedio %4$d g/ave</string>
+    <string name="saca_sin_pesadas">Aún no registras pesadas.</string>
+    <string name="saca_error_jabas">Indica cuántas jabas hay en la balanza.</string>
+    <string name="saca_error_sin_peso">Espera a que la báscula muestre el peso.</string>
+    <string name="saca_error_campos">Completa plantel, campaña, galpón, edad, aves por jaba y tara.</string>
+    <string name="saca_finalizar_titulo">Finalizar saca</string>
+    <string name="saca_finalizar_mensaje">%1$d pesadas · %2$d jabas · promedio %3$d g/ave.</string>
+    <string name="saca_pendientes_format">%1$d muestreo(s) de saca por sincronizar</string>
+    <string name="saca_item_format">Pesada %1$d · %2$d jabas</string>
+    <string name="saca_item_detalle">bruto %1$.2f · tara %2$.1f · neto %3$.2f kg</string>
+    <string name="saca_item_prom">%1$d g/ave</string>
 </resources>

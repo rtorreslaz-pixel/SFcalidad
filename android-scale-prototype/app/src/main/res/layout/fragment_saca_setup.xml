@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Configuración del muestreo de saca: lote + aves por jaba y tara (se fijan una vez). -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sf_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/SfCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    style="@style/SfSectionTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/title_saca_setup" />
+
+                <TextView
+                    style="@style/SfFieldLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_plantel" />
+
+                <Spinner
+                    android:id="@+id/spinnerPlantelSaca"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp" />
+
+                <EditText
+                    android:id="@+id/editCampaniaSaca"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/label_campania"
+                    android:layout_marginBottom="12dp" />
+
+                <EditText
+                    android:id="@+id/editGalponSaca"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/label_galpon"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    style="@style/SfFieldLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_sexo" />
+
+                <RadioGroup
+                    android:id="@+id/radioGroupCategoriaSaca"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <RadioButton
+                        android:id="@+id/radioSacaMacho"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:checked="true"
+                        android:text="@string/categoria_macho" />
+
+                    <RadioButton
+                        android:id="@+id/radioSacaHembra"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/categoria_hembra" />
+
+                    <RadioButton
+                        android:id="@+id/radioSacaMediano"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/categoria_mediano" />
+                </RadioGroup>
+
+                <EditText
+                    android:id="@+id/editEdadSaca"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/label_edad"
+                    android:inputType="number"
+                    android:layout_marginBottom="12dp" />
+
+                <EditText
+                    android:id="@+id/editAvesPorJaba"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/label_aves_por_jaba"
+                    android:inputType="number"
+                    android:layout_marginBottom="12dp" />
+
+                <EditText
+                    android:id="@+id/editTaraJaba"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/label_tara_jaba"
+                    android:inputType="numberDecimal"
+                    android:layout_marginBottom="12dp" />
+
+                <EditText
+                    android:id="@+id/editTipoJaba"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/label_tipo_jaba"
+                    android:layout_marginBottom="16dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonStartSaca"
+                    style="@style/SfButtonPrimary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/action_start_saca" />
+
+                <ProgressBar
+                    android:id="@+id/progressSacaSetup"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/textSacaSetupError"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/sf_red"
+                    android:textSize="13sp"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</ScrollView>

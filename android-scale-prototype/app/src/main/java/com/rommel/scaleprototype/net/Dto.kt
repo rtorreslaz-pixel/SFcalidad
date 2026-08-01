@@ -68,3 +68,37 @@ data class LiveWeightRequest(
 
 @Serializable
 data class NumeroAveMaxResponse(val maxNumeroAve: Int? = null)
+
+// --- Muestreo de saca (jabas) ---
+
+@Serializable
+data class SacaPesadaDto(
+    val id: String,
+    val numJabas: Int,
+    val pesoBrutoGramos: Double,
+    val pesoNetoGramos: Double,
+    val avesTotal: Int,
+    val promedioGramos: Double,
+    val fechaHora: String,
+)
+
+@Serializable
+data class SacaMuestreoDto(
+    val id: String,
+    val plantelId: String,
+    val campania: String? = null,
+    val galpon: String,
+    val categoria: String,
+    val fecha: String,
+    val edad: Int? = null,
+    val avesPorJaba: Int,
+    val taraGramosPorJaba: Double,
+    val tipoJaba: String? = null,
+    val pesadas: List<SacaPesadaDto>,
+)
+
+@Serializable
+data class SacaBatchRequest(val muestreos: List<SacaMuestreoDto>)
+
+@Serializable
+data class SacaBatchResponse(val ingested: Int, val ids: List<String>)

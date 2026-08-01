@@ -44,7 +44,7 @@ export default async function AppLayout({
           </div>
         </div>
         <nav className="mx-auto max-w-6xl px-4">
-          <NavLinks role={user.role} showSaca={process.env.DEMO_MODE === "true"} />
+          <NavLinks role={user.role} />
         </nav>
       </header>
       {process.env.DEMO_MODE === "true" && (

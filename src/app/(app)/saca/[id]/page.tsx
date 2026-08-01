@@ -15,8 +15,6 @@ function fmtKg(gramos: number | null): string {
 }
 
 export default async function SacaDetallePage({ params }: { params: Promise<{ id: string }> }) {
-  // Ver nota en /saca/page.tsx: módulo habilitado solo en el despliegue demo por ahora.
-  if (process.env.DEMO_MODE !== "true") notFound();
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   const { id } = await params;

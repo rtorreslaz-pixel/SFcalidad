@@ -7,10 +7,16 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.migration.Migration
 
-@Database(entities = [RegistroPeso::class], version = 6, exportSchema = true)
+@Database(
+    entities = [RegistroPeso::class, SacaMuestreo::class, SacaPesada::class],
+    version = 7,
+    exportSchema = true,
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun registroPesoDao(): RegistroPesoDao
+
+    abstract fun sacaDao(): SacaDao
 
     companion object {
         @Volatile
@@ -64,6 +70,27 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // Muestreo de saca (jabas) con su cola de sincronización propia. Tablas nuevas: no
+        // toca nada de lo que ya había en el teléfono.
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS saca_muestreo (" +
+                        "id TEXT NOT NULL PRIMARY KEY, plantelId TEXT NOT NULL, plantelCodigo TEXT NOT NULL, " +
+                        "campania TEXT NOT NULL, galpon TEXT NOT NULL, categoria TEXT NOT NULL, edad INTEGER, " +
+                        "avesPorJaba INTEGER NOT NULL, taraGramosPorJaba REAL NOT NULL, tipoJaba TEXT, " +
+                        "fechaEpochMillis INTEGER NOT NULL, verificadorId TEXT, verificadorNombre TEXT, " +
+                        "synced INTEGER NOT NULL DEFAULT 0, createdAtEpochMillis INTEGER NOT NULL)"
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS saca_pesada (" +
+                        "id TEXT NOT NULL PRIMARY KEY, muestreoId TEXT NOT NULL, numJabas INTEGER NOT NULL, " +
+                        "pesoBrutoGramos REAL NOT NULL, pesoNetoGramos REAL NOT NULL, avesTotal INTEGER NOT NULL, " +
+                        "promedioGramos REAL NOT NULL, fechaHoraEpochMillis INTEGER NOT NULL)"
+                )
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -72,7 +99,9 @@ abstract class AppDatabase : RoomDatabase() {
                     "scale-prototype.db",
                     // Sin fallbackToDestructiveMigration(): un futuro cambio de esquema
                     // debe ir por una Migration real, no borrar la cola de un verificador.
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                ).addMigrations(
+                    MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7,
+                )
                     .build().also { instance = it }
             }
         }
