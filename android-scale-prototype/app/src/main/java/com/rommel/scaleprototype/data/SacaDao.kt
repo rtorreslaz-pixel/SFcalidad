@@ -3,7 +3,6 @@ package com.rommel.scaleprototype.data
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -36,11 +35,4 @@ interface SacaDao {
 
     @Query("SELECT COUNT(*) FROM saca_muestreo WHERE synced = 0")
     suspend fun countUnsynced(): Int
-
-    /** Un muestreo con sus pesadas, para armar el envío al servidor. */
-    @Transaction
-    suspend fun muestreoConPesadas(id: String): Pair<SacaMuestreo, List<SacaPesada>>? {
-        val m = getMuestreo(id) ?: return null
-        return m to getPesadas(id)
-    }
 }

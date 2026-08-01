@@ -57,9 +57,9 @@ class ApiClient(private val baseUrl: String, context: Context) {
     }
 
     suspend fun postSaca(muestreos: List<SacaMuestreoDto>): SacaBatchResponse = withContext(Dispatchers.IO) {
-        val body = json.encodeToString(SacaBatchRequest(muestreos)).toRequestBody(JSON_MEDIA)
+        val body = json.encodeToString(SacaBatchRequest(muestreos)).toRequestBody(JSON_MEDIA_TYPE)
         val request = Request.Builder().url(baseUrl + "api/mobile/saca").post(body).build()
-        execute(request)
+        execute(request) { json.decodeFromString(SacaBatchResponse.serializer(), it) }
     }
 
     suspend fun postLiveWeight(liveWeight: LiveWeightRequest) = withContext(Dispatchers.IO) {
