@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Paleta corporativa: mismos valores que la app web (src/app/globals.css). -->
+<!-- Paleta corporativa: mismos valores que la app web (src/app/globals.css) y que el
+     prototipo interactivo (public/prototipo.html), para que la app se vea igual. -->
 <resources>
     <color name="sf_blue">#0B4EA2</color>
     <color name="sf_blue_deep">#002F86</color>
@@ -10,4 +11,14 @@
     <color name="sf_white">#FFFFFF</color>
     <!-- Variante clara del azul para modo oscuro (contraste sobre superficies oscuras). -->
     <color name="sf_blue_light">#8FB7E8</color>
+
+    <!-- Tonos de apoyo del prototipo: fondo, líneas, textos y estados. -->
+    <color name="sf_bg">#F1F5F9</color>
+    <color name="sf_line">#E6EBF2</color>
+    <color name="sf_ink">#0F172A</color>
+    <color name="sf_muted">#64748B</color>
+    <color name="sf_green">#16A34A</color>
+    <color name="sf_green_bg">#DCFCE7</color>
+    <color name="sf_amber">#B45309</color>
+    <color name="sf_amber_bg">#FEF3C7</color>
 </resources>

@@ -3,21 +3,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:background="@color/sf_bg"
+    android:padding="16dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        style="@style/SfSectionTitle"
         android:text="@string/title_muestreos_dia"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:layout_marginBottom="2dp" />
 
     <TextView
         android:id="@+id/textResumen"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="12sp"
-        android:textColor="#666666"
+        android:textColor="@color/sf_muted"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="12dp" />
 
@@ -39,20 +40,21 @@
         android:layout_height="wrap_content"
         android:text="@string/muestreos_vacio"
         android:gravity="center"
-        android:textColor="#666666"
+        android:textColor="@color/sf_muted"
         android:layout_marginTop="24dp"
         android:visibility="gone" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonSync"
+        style="@style/SfButtonPrimary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="@string/action_sync_pendientes" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonVolver"
-        style="?attr/materialButtonOutlinedStyle"
+        style="@style/SfButtonGhost"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"

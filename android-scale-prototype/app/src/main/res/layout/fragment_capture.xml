@@ -1,305 +1,349 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Captura de pesaje. Sigue el prototipo (public/prototipo.html): fondo gris, tarjetas
+     blancas, peso en grande y azul, y botones grandes para usar con una mano en granja. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:background="@color/sf_bg"
+    android:fillViewport="true">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="8dp">
-
-        <TextView
-            android:id="@+id/textSelectionHeader"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="13sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textChangeSelection"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/action_change_selection"
-            android:textColor="@color/sf_blue"
-            android:clickable="true"
-            android:focusable="true" />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/textCaptureSubHeader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:textColor="#555555"
-        android:layout_marginBottom="4dp" />
-
-    <TextView
-        android:id="@+id/textPendingBadge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:textSize="12sp" />
-
-    <TextView
-        android:id="@+id/textCaptureStatus"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="13sp"
-        android:layout_marginBottom="8dp" />
-
-    <TextView
-        android:id="@+id/textCaptureWeight"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/weight_placeholder"
-        android:textSize="56sp"
-        android:textStyle="bold"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp" />
-
-    <Switch
-        android:id="@+id/switchEvaluarCalidad"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/switch_evaluar_calidad"
-        android:textSize="13sp"
-        android:layout_marginBottom="4dp" />
-
-    <LinearLayout
-        android:id="@+id/layoutCalidad"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="gone"
-        android:layout_marginBottom="8dp">
+        android:padding="16dp">
+
+        <!-- Lote en captura -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/SfCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/textSelectionHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/sf_ink" />
+
+                <TextView
+                    android:id="@+id/textCaptureSubHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:textSize="12sp"
+                    android:textColor="@color/sf_muted" />
+
+                <TextView
+                    android:id="@+id/textChangeSelection"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/action_change_selection"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/sf_blue"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Estado de sincronización -->
+        <TextView
+            android:id="@+id/textPendingBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:background="@drawable/bg_badge_verde"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/sf_green" />
+
+        <!-- Estado de la báscula -->
+        <TextView
+            android:id="@+id/textCaptureStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:textSize="13sp"
+            android:textColor="@color/sf_muted" />
+
+        <!-- Peso en vivo -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/SfCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingTop="18dp"
+                android:paddingBottom="18dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_peso_en_vivo"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08"
+                    android:textColor="@color/sf_muted" />
+
+                <TextView
+                    android:id="@+id/textCaptureWeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/weight_placeholder"
+                    android:textSize="50sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/sf_blue" />
+
+                <!-- Confirmación de que el peso llegó a la web (o aviso si no) -->
+                <TextView
+                    android:id="@+id/textEnvioWeb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Evaluar calidad -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/SfCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switchEvaluarCalidad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="14dp"
+                android:text="@string/switch_evaluar_calidad"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/sf_ink" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Calidad por ave -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/layoutCalidad"
+            style="@style/SfCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    style="@style/SfFieldLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_pododermatitis" />
+
+                <RadioGroup
+                    android:id="@+id/radioGroupPododermatitis"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp">
+
+                    <RadioButton
+                        android:id="@+id/radioPodoSano"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="12sp"
+                        android:checked="true"
+                        android:text="@string/grado_sano" />
+
+                    <RadioButton
+                        android:id="@+id/radioPodoLeve"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="12sp"
+                        android:text="@string/grado_leve" />
+
+                    <RadioButton
+                        android:id="@+id/radioPodoGrave"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="12sp"
+                        android:text="@string/grado_grave" />
+                </RadioGroup>
+
+                <TextView
+                    style="@style/SfFieldLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_rasguno" />
+
+                <RadioGroup
+                    android:id="@+id/radioGroupRasguno"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp">
+
+                    <RadioButton
+                        android:id="@+id/radioRasgSano"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="12sp"
+                        android:checked="true"
+                        android:text="@string/grado_sano" />
+
+                    <RadioButton
+                        android:id="@+id/radioRasgLeve"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="12sp"
+                        android:text="@string/grado_leve" />
+
+                    <RadioButton
+                        android:id="@+id/radioRasgGrave"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="12sp"
+                        android:text="@string/grado_grave" />
+                </RadioGroup>
+
+                <TextView
+                    style="@style/SfFieldLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_pigmentacion" />
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/togglePigmentacion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/pig1"
+                        style="@style/SfChip"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="1" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/pig2"
+                        style="@style/SfChip"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="2" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/pig3"
+                        style="@style/SfChip"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="3" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/pig4"
+                        style="@style/SfChip"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="4" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/pig5"
+                        style="@style/SfChip"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="5" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/pig6"
+                        style="@style/SfChip"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="6" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Acción principal -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonRegisterAve"
+            style="@style/SfButtonPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="@string/action_register_ave"
+            android:textSize="17sp" />
 
         <TextView
+            android:id="@+id/textLastRegistered"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/label_pododermatitis"
-            android:textSize="11sp"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="4dp"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/sf_green" />
 
-        <RadioGroup
-            android:id="@+id/radioGroupPododermatitis"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/textOpenDiagnostic"
+            style="@style/SfButtonGhost"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_marginTop="8dp"
+            android:text="@string/action_open_diagnostic" />
 
-            <RadioButton
-                android:id="@+id/radioPodoSano"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="11sp"
-                android:checked="true"
-                android:text="@string/grado_sano" />
-
-            <RadioButton
-                android:id="@+id/radioPodoLeve"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="11sp"
-                android:text="@string/grado_leve" />
-
-            <RadioButton
-                android:id="@+id/radioPodoGrave"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="11sp"
-                android:text="@string/grado_grave" />
-        </RadioGroup>
-
-        <TextView
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/textMuestreos"
+            style="@style/SfButtonGhost"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/label_rasguno"
-            android:textSize="11sp"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="8dp"
+            android:text="@string/action_muestreos_dia" />
 
-        <RadioGroup
-            android:id="@+id/radioGroupRasguno"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonFinalizar"
+            style="@style/SfButtonGhost"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/action_finalizar_muestreo"
+            android:textColor="@color/sf_red"
+            app:strokeColor="@color/sf_red" />
 
-            <RadioButton
-                android:id="@+id/radioRasgSano"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="11sp"
-                android:checked="true"
-                android:text="@string/grado_sano" />
-
-            <RadioButton
-                android:id="@+id/radioRasgLeve"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="11sp"
-                android:text="@string/grado_leve" />
-
-            <RadioButton
-                android:id="@+id/radioRasgGrave"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="11sp"
-                android:text="@string/grado_grave" />
-        </RadioGroup>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/label_pigmentacion"
-            android:textSize="11sp"
-            android:layout_marginTop="4dp" />
-
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/togglePigmentacion"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:singleSelection="true">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/pig1"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:insetLeft="0dp"
-                android:insetRight="0dp"
-                android:paddingLeft="0dp"
-                android:paddingRight="0dp"
-                android:text="1" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/pig2"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:insetLeft="0dp"
-                android:insetRight="0dp"
-                android:paddingLeft="0dp"
-                android:paddingRight="0dp"
-                android:text="2" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/pig3"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:insetLeft="0dp"
-                android:insetRight="0dp"
-                android:paddingLeft="0dp"
-                android:paddingRight="0dp"
-                android:text="3" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/pig4"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:insetLeft="0dp"
-                android:insetRight="0dp"
-                android:paddingLeft="0dp"
-                android:paddingRight="0dp"
-                android:text="4" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/pig5"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:insetLeft="0dp"
-                android:insetRight="0dp"
-                android:paddingLeft="0dp"
-                android:paddingRight="0dp"
-                android:text="5" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/pig6"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:insetLeft="0dp"
-                android:insetRight="0dp"
-                android:paddingLeft="0dp"
-                android:paddingRight="0dp"
-                android:text="6" />
-        </com.google.android.material.button.MaterialButtonToggleGroup>
     </LinearLayout>
-
-    <Button
-        android:id="@+id/buttonRegisterAve"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:enabled="false"
-        android:text="@string/action_register_ave"
-        android:textSize="18sp" />
-
-    <TextView
-        android:id="@+id/textLastRegistered"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:textSize="13sp"
-        android:gravity="center" />
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-    <TextView
-        android:id="@+id/textOpenDiagnostic"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/action_open_diagnostic"
-        android:textColor="@color/sf_blue"
-        android:clickable="true"
-        android:focusable="true" />
-
-    <TextView
-        android:id="@+id/textMuestreos"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="8dp"
-        android:text="@string/action_muestreos_dia"
-        android:textColor="@color/sf_blue"
-        android:clickable="true"
-        android:focusable="true" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/buttonFinalizar"
-        style="?attr/materialButtonOutlinedStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/action_finalizar_muestreo"
-        android:textColor="@color/sf_red"
-        app:strokeColor="@color/sf_red" />
-
-</LinearLayout>
+</ScrollView>

@@ -12,6 +12,11 @@
     <string name="error_format">Error: %1$s</string>
     <string name="weight_format">%1$.3f %2$s</string>
     <string name="weight_placeholder">-- kg</string>
+    <string name="label_peso_en_vivo">PESO EN VIVO</string>
+    <!-- Confirmación de que el peso llegó al servidor (antes fallaba en silencio). -->
+    <string name="envio_web_ok">✓ Peso enviado a la web</string>
+    <string name="envio_web_error">⚠ No se pudo enviar el peso a la web (revisa la señal)</string>
+    <string name="envio_web_sesion">⚠ Sesión vencida: vuelve a iniciar sesión</string>
     <string name="log_copied">Registro copiado al portapapeles.</string>
 
     <string name="label_devices">Dispositivo emparejado</string>
@@ -32,6 +37,7 @@
     <string name="error_login_fields_required">Ingresa correo y contraseña.</string>
     <string name="error_login_invalid">Credenciales inválidas.</string>
     <string name="error_login_network">No se pudo conectar al servidor. Intenta de nuevo.</string>
+    <string name="login_hint_sesion">La sesión queda guardada en el teléfono: no hay que reingresar cada día.</string>
 
     <string name="title_capture_setup">Configurar captura</string>
     <string name="label_plantel">Plantel</string>

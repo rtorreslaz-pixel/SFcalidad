@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Estilos que replican el prototipo interactivo (public/prototipo.html): tarjetas blancas
+     con borde suave sobre fondo gris, etiquetas pequeñas en mayúsculas, botones redondeados
+     y chips de selección. Se usan en todas las pantallas para que la app se vea igual. -->
+<resources>
+
+    <!-- Tarjeta blanca redondeada, como las secciones del prototipo -->
+    <style name="SfCard" parent="Widget.Material3.CardView.Outlined">
+        <item name="cardBackgroundColor">@color/sf_white</item>
+        <item name="cardCornerRadius">14dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">@color/sf_line</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
+    </style>
+
+    <!-- Título de sección dentro de una tarjeta -->
+    <style name="SfSectionTitle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/sf_ink</item>
+        <item name="android:layout_marginBottom">12dp</item>
+    </style>
+
+    <!-- Etiqueta de campo: pequeña, gris, sobre el control -->
+    <style name="SfFieldLabel">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/sf_muted</item>
+        <item name="android:layout_marginBottom">4dp</item>
+    </style>
+
+    <!-- Texto secundario -->
+    <style name="SfMuted">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/sf_muted</item>
+    </style>
+
+    <!-- Botón principal: azul, redondeado, alto para usar con una mano -->
+    <style name="SfButtonPrimary" parent="Widget.Material3.Button">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+        <item name="backgroundTint">@color/sf_blue</item>
+        <item name="android:textColor">@color/sf_white</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+
+    <!-- Botón secundario: blanco con borde azul -->
+    <style name="SfButtonGhost" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:textColor">@color/sf_blue</item>
+        <item name="strokeColor">@color/sf_line</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+
+    <!-- Botón de un grupo de selección (chips grandes: sexo, lote, resultados) -->
+    <style name="SfChip" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+        <item name="cornerRadius">10dp</item>
+        <item name="strokeColor">@color/sf_line</item>
+    </style>
+
+</resources>

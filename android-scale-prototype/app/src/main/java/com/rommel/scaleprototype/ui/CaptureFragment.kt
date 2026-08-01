@@ -28,6 +28,7 @@ import com.rommel.scaleprototype.data.AppDatabase
 import com.rommel.scaleprototype.data.RegistroPeso
 import com.rommel.scaleprototype.databinding.FragmentCaptureBinding
 import com.rommel.scaleprototype.net.ApiClient
+import com.rommel.scaleprototype.net.ApiException
 import com.rommel.scaleprototype.net.LiveWeightRequest
 import com.rommel.scaleprototype.sync.SyncScheduler
 import kotlinx.coroutines.launch
@@ -171,11 +172,17 @@ class CaptureFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 dao.countUnsyncedFlow().collect { count ->
                     // Confirmación operativa: 0 pendientes = todo lo pesado ya está en el
-                    // servidor; el verificador puede irse/apagar tranquilo.
-                    binding?.textPendingBadge?.text = if (count == 0) {
-                        getString(R.string.sync_all_done)
+                    // servidor; el verificador puede irse/apagar tranquilo. Verde cuando está
+                    // al día, ámbar cuando falta subir algo (igual que el prototipo).
+                    val badge = binding?.textPendingBadge ?: return@collect
+                    if (count == 0) {
+                        badge.text = getString(R.string.sync_all_done)
+                        badge.setBackgroundResource(R.drawable.bg_badge_verde)
+                        badge.setTextColor(ContextCompat.getColor(requireContext(), R.color.sf_green))
                     } else {
-                        getString(R.string.pending_count_format, count)
+                        badge.text = getString(R.string.pending_count_format, count)
+                        badge.setBackgroundResource(R.drawable.bg_badge_ambar)
+                        badge.setTextColor(ContextCompat.getColor(requireContext(), R.color.sf_amber))
                     }
                 }
             }
@@ -254,14 +261,16 @@ class CaptureFragment : Fragment() {
         maybeSendLiveWeight(parsed.value)
     }
 
-    // Best-effort: a diferencia de los registros (Room + WorkManager), una lectura en vivo
-    // vieja no sirve de nada, así que sin internet simplemente se omite en vez de encolarse.
+    // Una lectura en vivo vieja no sirve de nada, así que (a diferencia de los registros, que
+    // van a Room y se sincronizan solos) no se encola: si falla, se descarta. Lo que sí se hace
+    // es DECIRLO en pantalla -- antes fallaba en silencio y era imposible saber, desde la granja,
+    // si el peso estaba llegando al monitor de la web o no.
     private fun maybeSendLiveWeight(valueKg: Double) {
         val now = System.currentTimeMillis()
         if (now - lastLiveWeightSentAtMillis < LIVE_WEIGHT_THROTTLE_MS) return
         lastLiveWeightSentAtMillis = now
         viewLifecycleOwner.lifecycleScope.launch {
-            runCatching {
+            val resultado = runCatching {
                 ApiClient.getInstance(requireContext()).postLiveWeight(
                     LiveWeightRequest(
                         pesoGramos = valueKg * 1000.0,
@@ -272,6 +281,28 @@ class CaptureFragment : Fragment() {
                         categoria = categoria,
                     )
                 )
+            }
+            mostrarEstadoEnvio(resultado.exceptionOrNull())
+        }
+    }
+
+    /** Pinta si el peso llegó a la web, para no depender de adivinar. */
+    private fun mostrarEstadoEnvio(error: Throwable?) {
+        val vista = binding?.textEnvioWeb ?: return
+        vista.visibility = View.VISIBLE
+        when {
+            error == null -> {
+                vista.text = getString(R.string.envio_web_ok)
+                vista.setTextColor(ContextCompat.getColor(requireContext(), R.color.sf_green))
+            }
+            // 401: el token dejó de valer (revocado o rotado desde el admin).
+            error is ApiException && error.code == 401 -> {
+                vista.text = getString(R.string.envio_web_sesion)
+                vista.setTextColor(ContextCompat.getColor(requireContext(), R.color.sf_red))
+            }
+            else -> {
+                vista.text = getString(R.string.envio_web_error)
+                vista.setTextColor(ContextCompat.getColor(requireContext(), R.color.sf_amber))
             }
         }
     }

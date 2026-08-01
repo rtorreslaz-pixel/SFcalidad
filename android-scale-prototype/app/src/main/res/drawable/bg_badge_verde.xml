@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Insignia "todo sincronizado": pastilla verde clara, como en el prototipo. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/sf_green_bg" />
+    <corners android:radius="999dp" />
+</shape>

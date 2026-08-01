@@ -1,28 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/sf_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="16dp">
+
+    <com.google.android.material.card.MaterialCardView
+        style="@style/SfCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/title_capture_setup"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
+            style="@style/SfSectionTitle"
+            android:text="@string/title_capture_setup" />
 
         <TextView
+            style="@style/SfFieldLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/label_tipo_captura"
-            android:textStyle="bold"
-            android:textSize="12sp"
             android:layout_marginBottom="4dp" />
 
         <RadioGroup
@@ -49,11 +58,10 @@
         </RadioGroup>
 
         <TextView
+            style="@style/SfFieldLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/label_plantel"
-            android:textStyle="bold"
-            android:textSize="12sp" />
+            android:text="@string/label_plantel" />
 
         <Spinner
             android:id="@+id/spinnerPlantel"
@@ -76,11 +84,10 @@
             android:layout_marginBottom="12dp" />
 
         <TextView
+            style="@style/SfFieldLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/label_sexo"
-            android:textStyle="bold"
-            android:textSize="12sp"
             android:layout_marginBottom="4dp" />
 
         <RadioGroup
@@ -129,11 +136,10 @@
             android:layout_marginBottom="12dp" />
 
         <TextView
+            style="@style/SfFieldLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/label_linea"
-            android:textStyle="bold"
-            android:textSize="12sp"
             android:layout_marginBottom="4dp" />
 
         <Spinner
@@ -143,11 +149,10 @@
             android:layout_marginBottom="12dp" />
 
         <TextView
+            style="@style/SfFieldLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/label_lote"
-            android:textStyle="bold"
-            android:textSize="12sp"
             android:layout_marginBottom="4dp" />
 
         <RadioGroup
@@ -174,11 +179,10 @@
         </RadioGroup>
 
         <TextView
+            style="@style/SfFieldLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/label_n_aves_pesada"
-            android:textStyle="bold"
-            android:textSize="12sp"
             android:layout_marginBottom="4dp" />
 
         <Spinner
@@ -187,8 +191,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonStartCapture"
+            style="@style/SfButtonPrimary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/action_start_capture" />
@@ -209,5 +214,7 @@
             android:layout_marginTop="12dp"
             android:visibility="gone" />
 
+    </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </ScrollView>

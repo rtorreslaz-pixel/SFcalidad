@@ -21,11 +21,16 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.rommel.scaleprototype.R
 import com.rommel.scaleprototype.ScaleConnectionManager
 import com.rommel.scaleprototype.ScaleEvent
 import com.rommel.scaleprototype.ScaleProtocols
 import com.rommel.scaleprototype.databinding.FragmentBluetoothDiagnosticBinding
+import com.rommel.scaleprototype.net.ApiClient
+import com.rommel.scaleprototype.net.ApiException
+import com.rommel.scaleprototype.net.LiveWeightRequest
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -41,6 +46,7 @@ class BluetoothDiagnosticFragment : Fragment() {
     private var lastSelectedDevice: BluetoothDevice? = null
     private val scaleListener: (ScaleEvent) -> Unit = { event -> handleScaleEvent(event) }
     private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
+    private var ultimoEnvioMillis = 0L
 
     private val requestBluetoothConnect = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -207,6 +213,43 @@ class BluetoothDiagnosticFragment : Fragment() {
         val protocol = ScaleProtocols.all.getOrNull(protocolIndex) ?: ScaleProtocols.default
         val parsed = protocol.parse(line) ?: return
         b.textWeight.text = getString(R.string.weight_format, parsed.value, parsed.unit ?: "")
+        enviarPesoAWeb(parsed.value)
+    }
+
+    /**
+     * Envía el peso al monitor de la web también desde esta pantalla. Antes solo lo hacía la
+     * pantalla de captura, así que una prueba de conexión hecha aquí no se veía en la web y
+     * parecía que la app no estaba comunicando. Va sin datos de lote (aquí no hay lote elegido):
+     * en el monitor aparece como la balanza del verificador, sin plantel ni corral.
+     */
+    private fun enviarPesoAWeb(valueKg: Double) {
+        val ahora = System.currentTimeMillis()
+        if (ahora - ultimoEnvioMillis < ENVIO_THROTTLE_MS) return
+        ultimoEnvioMillis = ahora
+        viewLifecycleOwner.lifecycleScope.launch {
+            val resultado = runCatching {
+                ApiClient.getInstance(requireContext()).postLiveWeight(
+                    LiveWeightRequest(pesoGramos = valueKg * 1000.0)
+                )
+            }
+            val vista = binding?.textEnvioWeb ?: return@launch
+            vista.visibility = View.VISIBLE
+            val error = resultado.exceptionOrNull()
+            when {
+                error == null -> {
+                    vista.text = getString(R.string.envio_web_ok)
+                    vista.setTextColor(ContextCompat.getColor(requireContext(), R.color.sf_green))
+                }
+                error is ApiException && error.code == 401 -> {
+                    vista.text = getString(R.string.envio_web_sesion)
+                    vista.setTextColor(ContextCompat.getColor(requireContext(), R.color.sf_red))
+                }
+                else -> {
+                    vista.text = getString(R.string.envio_web_error)
+                    vista.setTextColor(ContextCompat.getColor(requireContext(), R.color.sf_amber))
+                }
+            }
+        }
     }
 
     private fun appendLog(line: String) {
@@ -256,5 +299,10 @@ class BluetoothDiagnosticFragment : Fragment() {
             .getSharedPreferences(CaptureFragment.SCALE_PREFS_NAME, Context.MODE_PRIVATE)
             .getInt(CaptureFragment.KEY_LAST_PROTOCOL_INDEX, -1)
         if (index in ScaleProtocols.all.indices) b.spinnerProtocol.setSelection(index)
+    }
+
+    companion object {
+        /** La báscula manda varias lecturas por segundo: no tiene sentido subirlas todas. */
+        private const val ENVIO_THROTTLE_MS = 1500L
     }
 }
