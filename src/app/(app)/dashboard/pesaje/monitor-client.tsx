@@ -35,6 +35,9 @@ export default function MonitorPesaje() {
   const [now, setNow] = useState(() => Date.now());
   const [error, setError] = useState(false);
   const [selected, setSelected] = useState<string>("");
+  // Rango de fechas de la descarga (vacío = todo el histórico).
+  const [desde, setDesde] = useState("");
+  const [hasta, setHasta] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -74,6 +77,12 @@ export default function MonitorPesaje() {
 
   const enVivoCount = visibles.filter((b) => now - new Date(b.updatedAt).getTime() < LIVE_WITHIN_MS).length;
 
+  // La descarga respeta el rango elegido; el endpoint filtra por fecha de captura.
+  const exportQs = new URLSearchParams();
+  if (desde) exportQs.set("desde", desde);
+  if (hasta) exportQs.set("hasta", hasta);
+  const exportHref = `/api/dashboard/monitor-pesaje/export?${exportQs.toString()}`;
+
   // La balanza elegida en el selector; si desaparece o no hay selección, cae a la primera.
   const selectedBalanza = visibles.find((b) => b.verificador === selected) ?? visibles[0] ?? null;
 
@@ -93,14 +102,43 @@ export default function MonitorPesaje() {
             Reintentando conexión…
           </span>
         )}
-        {/* Descarga de la base de datos de la toma de muestras (registros de preventa) */}
-        <a
-          href="/api/dashboard/monitor-pesaje/export"
-          download
-          className="ml-auto rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-        >
-          Descargar base de datos de la toma de muestras
-        </a>
+        {/* Descarga de la base de datos de la toma de muestras (registros de preventa), por fechas */}
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Desde
+            <input
+              type="date"
+              value={desde}
+              max={hasta || undefined}
+              onChange={(e) => setDesde(e.target.value)}
+              className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm font-normal normal-case tracking-normal text-slate-800"
+            />
+          </label>
+          <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Hasta
+            <input
+              type="date"
+              value={hasta}
+              min={desde || undefined}
+              onChange={(e) => setHasta(e.target.value)}
+              className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm font-normal normal-case tracking-normal text-slate-800"
+            />
+          </label>
+          <a
+            href={exportHref}
+            download
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            Descargar toma de muestras
+            {desde || hasta ? (
+              <span className="ml-1 font-normal text-slate-500">
+                ({desde || "inicio"} → {hasta || "hoy"})
+              </span>
+            ) : (
+              <span className="ml-1 font-normal text-slate-500">(todo)</span>
+            )}
+          </a>
+        </div>
       </div>
 
       {visibles.length === 0 ? (

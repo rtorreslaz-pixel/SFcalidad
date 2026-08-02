@@ -55,6 +55,9 @@ calidad del pollo en el cliente + pesaje preventa en granja. Omnicanal:
 - **App móvil offline-first** con **sincronización idempotente** (UUID por registro).
 - **Marca genérica** "Sistema de Calidad y Pesaje" en app + documentos (sin "San Fernando").
 - **Base de datos = archivo SQLite en volumen** en prod; lenta por ser disco de red → otra razón para SQL Server.
+- **Descargas filtradas por fecha**: toda exportación de la web acepta `desde`/`hasta` y usa el
+  mismo filtro que la pantalla ("lo que se ve es lo que se descarga"). Los filtros viven en
+  `src/lib/*-filtros.ts` para que pantalla y CSV no se desincronicen.
 
 ## 7. Documentación en el repo
 - `docs/DFU-Calidad-Pesaje.docx` — Documento Funcional (con capturas).

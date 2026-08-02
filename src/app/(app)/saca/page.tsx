@@ -3,6 +3,12 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { complexLoteFromComplex } from "@/lib/complex-entity";
+import {
+  construirWhereSaca,
+  describirFiltrosSaca,
+  leerFiltrosSaca,
+  queryDeFiltrosSaca,
+} from "@/lib/saca-filtros";
 
 // Módulo de saca: reporta los muestreos de jabas que hace el equipo de saca (~40+ días)
 // y los compara contra el muestreo de preventa (~35 días) del MISMO lote. El cruce se hace
@@ -20,20 +26,35 @@ function fmtFecha(d: Date): string {
   return d.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-export default async function SacaPage() {
+export default async function SacaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ desde?: string; hasta?: string; plantel?: string }>;
+}) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const muestreos = await prisma.sacaMuestreo.findMany({
-    where: user.role === "VERIFICADOR" ? { verificadorId: user.id } : {},
-    orderBy: { fecha: "desc" },
-    take: 200,
-    include: {
-      plantel: { select: { codigo: true, nombre: true } },
-      verificador: { select: { nombre: true } },
-      pesadas: { orderBy: { fechaHora: "asc" } },
-    },
-  });
+  const filtros = leerFiltrosSaca(await searchParams);
+  const qs = queryDeFiltrosSaca(filtros);
+
+  const where = construirWhereSaca(filtros);
+  if (user.role === "VERIFICADOR") where.verificadorId = user.id;
+
+  const [muestreos, planteles] = await Promise.all([
+    prisma.sacaMuestreo.findMany({
+      where,
+      orderBy: { fecha: "desc" },
+      take: 200,
+      include: {
+        plantel: { select: { codigo: true, nombre: true } },
+        verificador: { select: { nombre: true } },
+        pesadas: { orderBy: { fechaHora: "asc" } },
+      },
+    }),
+    prisma.plantel.findMany({ orderBy: { codigo: "asc" }, select: { id: true, codigo: true } }),
+  ]);
+
+  const nombrePlantel = planteles.find((p) => p.id === filtros.plantelId)?.codigo;
 
   // Preventa de los mismos lotes, para comparar estimado (35 d) vs real de saca (40+ d).
   const complexLotes = [...new Set(muestreos.map((m) => m.complexLote).filter((c): c is string => !!c))];
@@ -102,16 +123,67 @@ export default async function SacaPage() {
       <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-bold text-slate-900">Pesaje de saca</h1>
         <a
-          href="/api/saca/export"
+          href={`/api/saca/export?${qs}`}
           download
           className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
         >
           Descargar CSV
         </a>
       </div>
-      <p className="mb-6 text-sm text-slate-500">
+      <p className="mb-4 text-sm text-slate-500">
         Muestreos de jabas que toma el equipo de saca antes de la saca diaria (~40+ días), comparados contra
         el muestreo de preventa (~35 días) del mismo lote.
+      </p>
+
+      {/* Filtros: la descarga usa exactamente el mismo filtro que la tabla. */}
+      <form method="get" className="mb-2 flex flex-wrap items-end gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        <label className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Desde
+          <input
+            type="date"
+            name="desde"
+            defaultValue={filtros.desde}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-normal normal-case tracking-normal text-slate-800"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Hasta
+          <input
+            type="date"
+            name="hasta"
+            defaultValue={filtros.hasta}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-normal normal-case tracking-normal text-slate-800"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Plantel
+          <select
+            name="plantel"
+            defaultValue={filtros.plantelId}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-normal normal-case tracking-normal text-slate-800"
+          >
+            <option value="">Todos</option>
+            {planteles.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.codigo}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          type="submit"
+          className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover"
+        >
+          Filtrar
+        </button>
+        {qs !== "" && (
+          <Link href="/saca" className="px-2 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700">
+            Limpiar
+          </Link>
+        )}
+      </form>
+      <p className="mb-6 text-xs text-slate-400">
+        La descarga incluye {describirFiltrosSaca(filtros, nombrePlantel)}.
       </p>
 
       {/* Totalizadores */}

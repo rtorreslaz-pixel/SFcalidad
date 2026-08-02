@@ -2,11 +2,13 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { resolveExportUser, csvResponse } from "@/lib/export-csv";
 import { complexLoteFromComplex } from "@/lib/complex-entity";
+import { construirWhereSaca, leerFiltrosSaca } from "@/lib/saca-filtros";
 
 // Descarga del reporte de saca: una fila por PESADA, con los datos del muestreo, el neto/
 // promedio de la pesada y la comparación contra el promedio de preventa del mismo lote.
 // Misma autenticación que las demás exportaciones (token de BI o sesión; un VERIFICADOR
-// solo descarga lo suyo).
+// solo descarga lo suyo). Acepta los mismos filtros que la pantalla (desde/hasta/plantel):
+// lo que se ve en el reporte es lo que se descarga.
 
 const CATEGORIA_LABEL: Record<string, string> = { MACHO: "Macho", HEMBRA: "Hembra", MEDIANO: "Mediano" };
 
@@ -16,10 +18,20 @@ function fecha(d: Date | null | undefined): string {
 }
 
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
   const user = await resolveExportUser(request);
 
+  const where = construirWhereSaca(
+    leerFiltrosSaca({
+      desde: searchParams.get("desde") ?? undefined,
+      hasta: searchParams.get("hasta") ?? undefined,
+      plantel: searchParams.get("plantel") ?? undefined,
+    }),
+  );
+  if (user?.role === "VERIFICADOR") where.verificadorId = user.id;
+
   const muestreos = await prisma.sacaMuestreo.findMany({
-    where: user?.role === "VERIFICADOR" ? { verificadorId: user.id } : {},
+    where,
     orderBy: { fecha: "desc" },
     include: {
       plantel: { select: { codigo: true, nombre: true } },
