@@ -81,10 +81,16 @@ export default async function InspeccionesPage({
         <h1 className="text-xl font-bold text-slate-900">Inspecciones</h1>
         <div className="flex flex-wrap items-center gap-2">
           <a
-            href={`/api/export?${filterQs}`}
+            href={`/api/export?${filterQs ? filterQs + "&" : ""}formato=xlsx`}
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
-            Exportar CSV
+            Exportar Excel
+          </a>
+          <a
+            href={`/api/export?${filterQs}`}
+            className="self-center text-xs font-semibold text-slate-400 hover:text-slate-600"
+          >
+            CSV
           </a>
           <details className="relative">
             <summary className="cursor-pointer list-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
@@ -102,7 +108,7 @@ export default async function InspeccionesPage({
               ).map(([label, endpoint]) => (
                 <a
                   key={endpoint}
-                  href={`/api/export/${endpoint}?${filterQs}`}
+                  href={`/api/export/${endpoint}?${filterQs ? filterQs + "&" : ""}formato=xlsx`}
                   className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
                 >
                   {label}

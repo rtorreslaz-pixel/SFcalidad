@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { resolveExportUser, buildInspeccionWhere, csvResponse } from "@/lib/export-csv";
+import { resolveExportUser, buildInspeccionWhere, tablaResponse } from "@/lib/export-csv";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -65,5 +65,5 @@ export async function GET(request: NextRequest) {
   dataRows.sort((a, b) => (b.fecha?.getTime() ?? 0) - (a.fecha?.getTime() ?? 0));
 
   const rows: (string | number)[][] = [headers, ...dataRows.map((d) => d.row)];
-  return csvResponse(rows, "temperaturas");
+  return tablaResponse(rows, "temperaturas", searchParams, "Temperaturas");
 }

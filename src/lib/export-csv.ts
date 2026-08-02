@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { redirect } from "next/navigation";
 import { timingSafeEqual } from "crypto";
 import { getCurrentUser, type SessionUser } from "@/lib/auth";
+import { crearXlsx } from "@/lib/xlsx";
 import type { Prisma } from "@/generated/prisma/client";
 
 export function csvEscape(value: string | number | null | undefined): string {
@@ -63,4 +64,39 @@ export function csvResponse(rows: (string | number)[][], filenamePrefix: string)
       "Content-Disposition": `attachment; filename="${filenamePrefix}_${new Date().toISOString().slice(0, 10)}.csv"`,
     },
   });
+}
+
+const XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+export function xlsxResponse(
+  rows: (string | number)[][],
+  filenamePrefix: string,
+  nombreHoja?: string
+): NextResponse {
+  const libro = crearXlsx(rows, nombreHoja ?? filenamePrefix);
+  return new NextResponse(new Uint8Array(libro), {
+    headers: {
+      "Content-Type": XLSX_MIME,
+      "Content-Length": String(libro.length),
+      "Content-Disposition": `attachment; filename="${filenamePrefix}_${new Date().toISOString().slice(0, 10)}.xlsx"`,
+    },
+  });
+}
+
+/**
+ * Respuesta de una descarga tabular en el formato que pida la query (`?formato=xlsx`).
+ * El CSV sigue siendo el predeterminado para no romper integraciones que ya consumen las
+ * exportaciones con token (Power BI y similares); la web pide Excel explícitamente.
+ */
+export function tablaResponse(
+  rows: (string | number)[][],
+  filenamePrefix: string,
+  searchParams: URLSearchParams,
+  nombreHoja?: string
+): NextResponse {
+  const formato = (searchParams.get("formato") ?? "").toLowerCase();
+  if (formato === "xlsx" || formato === "excel") {
+    return xlsxResponse(rows, filenamePrefix, nombreHoja);
+  }
+  return csvResponse(rows, filenamePrefix);
 }

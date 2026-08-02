@@ -81,7 +81,9 @@ export default function MonitorPesaje() {
   const exportQs = new URLSearchParams();
   if (desde) exportQs.set("desde", desde);
   if (hasta) exportQs.set("hasta", hasta);
-  const exportHref = `/api/dashboard/monitor-pesaje/export?${exportQs.toString()}`;
+  const exportBase = exportQs.toString();
+  const exportHref = `/api/dashboard/monitor-pesaje/export?${exportBase ? exportBase + "&" : ""}formato=xlsx`;
+  const exportHrefCsv = `/api/dashboard/monitor-pesaje/export?${exportBase}`;
 
   // La balanza elegida en el selector; si desaparece o no hay selección, cae a la primera.
   const selectedBalanza = visibles.find((b) => b.verificador === selected) ?? visibles[0] ?? null;
@@ -129,7 +131,7 @@ export default function MonitorPesaje() {
             download
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
-            Descargar toma de muestras
+            Descargar toma de muestras en Excel
             {desde || hasta ? (
               <span className="ml-1 font-normal text-slate-500">
                 ({desde || "inicio"} → {hasta || "hoy"})
@@ -137,6 +139,9 @@ export default function MonitorPesaje() {
             ) : (
               <span className="ml-1 font-normal text-slate-500">(todo)</span>
             )}
+          </a>
+          <a href={exportHrefCsv} download className="text-xs font-semibold text-slate-400 hover:text-slate-600">
+            CSV
           </a>
         </div>
       </div>

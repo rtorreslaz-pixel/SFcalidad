@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { resolveExportUser, csvResponse } from "@/lib/export-csv";
+import { resolveExportUser, tablaResponse } from "@/lib/export-csv";
 import type { Prisma } from "@/generated/prisma/client";
 
 // Descarga de la "base de datos de la toma de muestras": todos los registros de peso
@@ -125,5 +125,5 @@ export async function GET(request: NextRequest) {
   ]);
 
   const rows: (string | number)[][] = [headers, ...dataRows];
-  return csvResponse(rows, "toma-muestras");
+  return tablaResponse(rows, "toma-muestras", searchParams, "Toma de muestras");
 }

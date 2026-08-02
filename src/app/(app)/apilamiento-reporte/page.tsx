@@ -98,11 +98,18 @@ export default async function ApilamientoReportePage({
         <h1 className="text-xl font-bold text-slate-900">Apilamiento y ventilación de jabas</h1>
         <div className="flex flex-wrap gap-2">
           <a
-            href={`/api/apilamiento/export?${qs}`}
+            href={`/api/apilamiento/export?${qs ? qs + "&" : ""}formato=xlsx`}
             download
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
-            Descargar CSV
+            Descargar Excel
+          </a>
+          <a
+            href={`/api/apilamiento/export?${qs}`}
+            download
+            className="self-center text-xs font-semibold text-slate-400 hover:text-slate-600"
+          >
+            CSV
           </a>
           {totalEvidencia > 0 && (
             <a

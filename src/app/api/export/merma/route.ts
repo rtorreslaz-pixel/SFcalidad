@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { resolveExportUser, buildInspeccionWhere, csvResponse } from "@/lib/export-csv";
+import { resolveExportUser, buildInspeccionWhere, tablaResponse } from "@/lib/export-csv";
 
 const NOMBRES_MERMA_PASO7 = [
   "Alas Grado 1°", "Alas Grado 2°", "Alas Grado 3°", "Alas Rota",
@@ -93,5 +93,5 @@ export async function GET(request: NextRequest) {
 
   const rows: (string | number)[][] = [[...baseHeaders, ...mermaHeaders], ...dataRows.map((d) => d.row)];
 
-  return csvResponse(rows, "merma");
+  return tablaResponse(rows, "merma", searchParams, "Merma");
 }

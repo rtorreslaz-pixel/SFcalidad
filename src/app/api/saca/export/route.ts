@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { resolveExportUser, csvResponse } from "@/lib/export-csv";
+import { resolveExportUser, tablaResponse } from "@/lib/export-csv";
 import { complexLoteFromComplex } from "@/lib/complex-entity";
 import { construirWhereSaca, leerFiltrosSaca } from "@/lib/saca-filtros";
 
@@ -114,5 +114,5 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  return csvResponse(rows, "saca");
+  return tablaResponse(rows, "saca", searchParams, "Pesaje de saca");
 }

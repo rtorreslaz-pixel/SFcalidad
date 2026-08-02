@@ -122,13 +122,22 @@ export default async function SacaPage({
     <div>
       <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-bold text-slate-900">Pesaje de saca</h1>
-        <a
-          href={`/api/saca/export?${qs}`}
-          download
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-        >
-          Descargar CSV
-        </a>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/api/saca/export?${qs ? qs + "&" : ""}formato=xlsx`}
+            download
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            Descargar Excel
+          </a>
+          <a
+            href={`/api/saca/export?${qs}`}
+            download
+            className="text-xs font-semibold text-slate-400 hover:text-slate-600"
+          >
+            CSV
+          </a>
+        </div>
       </div>
       <p className="mb-4 text-sm text-slate-500">
         Muestreos de jabas que toma el equipo de saca antes de la saca diaria (~40+ días), comparados contra

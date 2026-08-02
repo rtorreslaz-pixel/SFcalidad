@@ -58,6 +58,10 @@ calidad del pollo en el cliente + pesaje preventa en granja. Omnicanal:
 - **Descargas filtradas por fecha**: toda exportación de la web acepta `desde`/`hasta` y usa el
   mismo filtro que la pantalla ("lo que se ve es lo que se descarga"). Los filtros viven en
   `src/lib/*-filtros.ts` para que pantalla y CSV no se desincronicen.
+- **Descarga en Excel**: los botones de la web piden `?formato=xlsx` y reciben un `.xlsx` real
+  (`src/lib/xlsx.ts`, un ZIP con los XML de OOXML armado con el mismo `crearZip` de la evidencia;
+  sin dependencias nuevas). El **CSV sigue siendo el predeterminado** del endpoint para no romper
+  integraciones que ya lo consumen con `EXPORT_API_TOKEN` (Power BI).
 
 ## 7. Documentación en el repo
 - `docs/DFU-Calidad-Pesaje.docx` — Documento Funcional (con capturas).

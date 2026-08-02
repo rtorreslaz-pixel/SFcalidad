@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { resolveExportUser, buildInspeccionWhere, csvResponse } from "@/lib/export-csv";
+import { resolveExportUser, buildInspeccionWhere, tablaResponse } from "@/lib/export-csv";
 
 // Defectos de selección (no merma): nombre en BD → columnas en el CSV del analista
 const SELECCION_MAP: { nombre: string; colUnid: string; colKg: string }[] = [
@@ -125,5 +125,5 @@ export async function GET(request: NextRequest) {
   dataRows.sort((a, b) => (b.fecha?.getTime() ?? 0) - (a.fecha?.getTime() ?? 0));
 
   const rows: (string | number)[][] = [headers, ...dataRows.map((d) => d.row)];
-  return csvResponse(rows, "seleccion");
+  return tablaResponse(rows, "seleccion", searchParams, "Seleccion y merma");
 }

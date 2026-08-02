@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { resolveExportUser, csvResponse } from "@/lib/export-csv";
+import { resolveExportUser, tablaResponse } from "@/lib/export-csv";
 import { RESULTADO_LABEL } from "@/lib/apilamiento";
 import { construirWhere, leerFiltros } from "@/lib/apilamiento-filtros";
 
@@ -87,5 +87,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return csvResponse(rows, "apilamiento-ventilacion");
+  return tablaResponse(rows, "apilamiento-ventilacion", searchParams, "Apilamiento y ventilacion");
 }

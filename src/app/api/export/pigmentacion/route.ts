@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { resolveExportUser, buildInspeccionWhere, csvEscape } from "@/lib/export-csv";
+import { resolveExportUser, buildInspeccionWhere, csvEscape, xlsxResponse } from "@/lib/export-csv";
 import { NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -72,10 +72,16 @@ export async function GET(request: NextRequest) {
 
   dataRows.sort((a, b) => (b.fecha?.getTime() ?? 0) - (a.fecha?.getTime() ?? 0));
 
+  const filas = [headers, ...dataRows.map((d) => d.row)];
+
+  // En Excel el separador no aplica: se entrega el libro con una celda por columna.
+  const formato = (searchParams.get("formato") ?? "").toLowerCase();
+  if (formato === "xlsx" || formato === "excel") {
+    return xlsxResponse(filas, "pigmentacion", "Pigmentacion");
+  }
+
   // Pigmentación uses comma separator (matching the analyst's file)
-  const csv = [headers, ...dataRows.map((d) => d.row)]
-    .map((row) => row.map(csvEscape).join(","))
-    .join("\n");
+  const csv = filas.map((row) => row.map(csvEscape).join(",")).join("\n");
   const bom = "﻿";
 
   return new NextResponse(bom + csv, {
