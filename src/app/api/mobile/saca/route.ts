@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireMobileUser } from "@/lib/auth";
 import { CategoriaAve } from "@/generated/prisma/enums";
-import { buildComplexLote } from "@/lib/complex-entity";
+import { buildComplexEntity, buildComplexLote } from "@/lib/complex-entity";
 
 // Sincronización de los muestreos de saca que levanta la app en granja (~40+ días): el equipo
 // muestrea algunas jabas y de ahí sale el peso promedio por ave. Cada muestreo llega con sus
@@ -24,6 +24,7 @@ type MuestreoInput = {
   plantelId: string;
   campania?: string | null;
   galpon: string;
+  corral?: string | null;
   categoria: string;
   fecha: string;
   edad?: number | null;
@@ -64,6 +65,7 @@ function esMuestreoValido(m: unknown): m is MuestreoInput {
     typeof v.plantelId === "string" &&
     (v.campania === undefined || v.campania === null || typeof v.campania === "string") &&
     typeof v.galpon === "string" &&
+    (v.corral === undefined || v.corral === null || typeof v.corral === "string") &&
     typeof v.categoria === "string" &&
     Object.values(CategoriaAve).includes(v.categoria as CategoriaAve) &&
     typeof v.fecha === "string" &&
@@ -119,8 +121,17 @@ export async function POST(request: NextRequest) {
           plantelId: m.plantelId,
           campania: m.campania ?? null,
           galpon: m.galpon,
+          corral: m.corral ?? null,
           categoria: m.categoria as CategoriaAve,
-          // Clave de cruce con preventa: Plantel-Campaña-Galpón-Categoría (sin corral).
+          // Dos claves de cruce con preventa: la exacta (con corral, idéntica a la de
+          // preventa) y la del lote (sin corral), por si no coinciden de lado.
+          complex: buildComplexEntity({
+            plantelCodigo: codigoPorPlantel.get(m.plantelId) ?? null,
+            campania: m.campania ?? null,
+            galpon: m.galpon,
+            categoria: m.categoria as CategoriaAve,
+            corral: m.corral ?? null,
+          }),
           complexLote: buildComplexLote({
             plantelCodigo: codigoPorPlantel.get(m.plantelId) ?? null,
             campania: m.campania ?? null,

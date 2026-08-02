@@ -247,52 +247,101 @@
                     app:singleSelection="true">
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/pig0"
+                        style="@style/SfChip"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="48dp"
+                        android:textSize="12sp"
+                        android:textColor="@color/sf_ink"
+                        app:backgroundTint="@color/pig_0"
+                        app:strokeColor="@color/pig_stroke"
+                        app:strokeWidth="2dp"
+                        android:text="0" />
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/pig1"
                         style="@style/SfChip"
                         android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:layout_height="wrap_content"
+                        android:layout_height="48dp"
+                        android:textSize="12sp"
+                        android:textColor="@color/sf_ink"
+                        app:backgroundTint="@color/pig_1"
+                        app:strokeColor="@color/pig_stroke"
+                        app:strokeWidth="2dp"
                         android:text="1" />
-
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pig2"
                         style="@style/SfChip"
                         android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:layout_height="wrap_content"
+                        android:layout_height="48dp"
+                        android:textSize="12sp"
+                        android:textColor="@color/sf_ink"
+                        app:backgroundTint="@color/pig_2"
+                        app:strokeColor="@color/pig_stroke"
+                        app:strokeWidth="2dp"
                         android:text="2" />
-
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pig3"
                         style="@style/SfChip"
                         android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:layout_height="wrap_content"
+                        android:layout_height="48dp"
+                        android:textSize="12sp"
+                        android:textColor="@color/sf_ink"
+                        app:backgroundTint="@color/pig_3"
+                        app:strokeColor="@color/pig_stroke"
+                        app:strokeWidth="2dp"
                         android:text="3" />
-
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pig4"
                         style="@style/SfChip"
                         android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:layout_height="wrap_content"
+                        android:layout_height="48dp"
+                        android:textSize="12sp"
+                        android:textColor="@color/sf_ink"
+                        app:backgroundTint="@color/pig_4"
+                        app:strokeColor="@color/pig_stroke"
+                        app:strokeWidth="2dp"
                         android:text="4" />
-
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pig5"
                         style="@style/SfChip"
                         android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:layout_height="wrap_content"
+                        android:layout_height="48dp"
+                        android:textSize="12sp"
+                        android:textColor="@color/sf_ink"
+                        app:backgroundTint="@color/pig_5"
+                        app:strokeColor="@color/pig_stroke"
+                        app:strokeWidth="2dp"
                         android:text="5" />
-
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pig6"
                         style="@style/SfChip"
                         android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:layout_height="wrap_content"
+                        android:layout_height="48dp"
+                        android:textSize="12sp"
+                        android:textColor="@color/sf_ink"
+                        app:backgroundTint="@color/pig_6"
+                        app:strokeColor="@color/pig_stroke"
+                        app:strokeWidth="2dp"
                         android:text="6" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/pig7"
+                        style="@style/SfChip"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="48dp"
+                        android:textSize="12sp"
+                        android:textColor="@color/sf_ink"
+                        app:backgroundTint="@color/pig_7"
+                        app:strokeColor="@color/pig_stroke"
+                        app:strokeWidth="2dp"
+                        android:text="7" />
                 </com.google.android.material.button.MaterialButtonToggleGroup>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

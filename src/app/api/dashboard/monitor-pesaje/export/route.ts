@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
     "TIENE DEFECTO SELECCIÓN",
     "GRADO PODODERMATITIS",
     "GRADO RASGUÑO",
-    "PIGMENTACIÓN (1-6)",
+    "PIGMENTACIÓN (0-7)",
     "VERIFICADOR",
     "SINCRONIZADO",
     "CREADO",

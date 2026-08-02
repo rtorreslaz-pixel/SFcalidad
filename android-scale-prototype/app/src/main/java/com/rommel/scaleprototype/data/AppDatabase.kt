@@ -9,7 +9,7 @@ import androidx.room.migration.Migration
 
 @Database(
     entities = [RegistroPeso::class, SacaMuestreo::class, SacaPesada::class],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -91,6 +91,14 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // El corral ("lado") entra al muestreo de saca para poder cruzarlo con preventa por el
+        // complex completo. Las filas anteriores quedan con corral vacío.
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE saca_muestreo ADD COLUMN corral TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -100,7 +108,7 @@ abstract class AppDatabase : RoomDatabase() {
                     // Sin fallbackToDestructiveMigration(): un futuro cambio de esquema
                     // debe ir por una Migration real, no borrar la cola de un verificador.
                 ).addMigrations(
-                    MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7,
+                    MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
                 )
                     .build().also { instance = it }
             }

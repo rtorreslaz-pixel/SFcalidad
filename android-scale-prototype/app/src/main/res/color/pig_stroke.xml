@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- El botón de pigmentación elegido se marca con borde azul; los demás con la línea suave.
+     Hace falta porque el fondo de cada botón es su color de la escala, no el de selección. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/sf_blue" android:state_checked="true" />
+    <item android:color="@color/sf_line" />
+</selector>

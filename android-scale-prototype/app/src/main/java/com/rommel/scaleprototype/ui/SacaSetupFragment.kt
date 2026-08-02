@@ -37,6 +37,11 @@ class SacaSetupFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding?.spinnerTipoJaba?.adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            TIPOS_JABA,
+        )
         cargarPlanteles()
         binding?.buttonStartSaca?.setOnClickListener { onComenzarClicked() }
     }
@@ -67,11 +72,12 @@ class SacaSetupFragment : Fragment() {
         val plantel = planteles.getOrNull(b.spinnerPlantelSaca.selectedItemPosition)
         val campania = b.editCampaniaSaca.text.toString().trim()
         val galpon = b.editGalponSaca.text.toString().trim()
+        val corral = b.editCorralSaca.text.toString().trim().uppercase()
         val edad = b.editEdadSaca.text.toString().trim().toIntOrNull()
         val avesPorJaba = b.editAvesPorJaba.text.toString().trim().toIntOrNull()
         val taraKg = b.editTaraJaba.text.toString().trim().replace(',', '.').toDoubleOrNull()
 
-        if (plantel == null || campania.isEmpty() || galpon.isEmpty() ||
+        if (plantel == null || campania.isEmpty() || galpon.isEmpty() || corral.isEmpty() ||
             avesPorJaba == null || avesPorJaba <= 0 || taraKg == null || taraKg < 0
         ) {
             mostrarError(getString(R.string.saca_error_campos))
@@ -91,12 +97,13 @@ class SacaSetupFragment : Fragment() {
                 ARG_PLANTEL_CODIGO to plantel.codigo,
                 ARG_CAMPANIA to campania,
                 ARG_GALPON to galpon,
+                ARG_CORRAL to corral,
                 ARG_CATEGORIA to categoria,
                 ARG_EDAD to (edad ?: 0),
                 ARG_AVES_POR_JABA to avesPorJaba,
                 // La tara se maneja en gramos hacia adentro, aunque se pida en kg.
                 ARG_TARA_GRAMOS to taraKg * 1000.0,
-                ARG_TIPO_JABA to b.editTipoJaba.text.toString().trim(),
+                ARG_TIPO_JABA to (TIPOS_JABA.getOrNull(b.spinnerTipoJaba.selectedItemPosition) ?: ""),
             ),
         )
     }
@@ -122,10 +129,14 @@ class SacaSetupFragment : Fragment() {
         const val ARG_PLANTEL_CODIGO = "sacaPlantelCodigo"
         const val ARG_CAMPANIA = "sacaCampania"
         const val ARG_GALPON = "sacaGalpon"
+        const val ARG_CORRAL = "sacaCorral"
         const val ARG_CATEGORIA = "sacaCategoria"
         const val ARG_EDAD = "sacaEdad"
         const val ARG_AVES_POR_JABA = "sacaAvesPorJaba"
         const val ARG_TARA_GRAMOS = "sacaTaraGramos"
         const val ARG_TIPO_JABA = "sacaTipoJaba"
+
+        /** Tipos de jaba en uso; se guarda el texto tal cual en el muestreo. */
+        val TIPOS_JABA = listOf("BASA", "NOVATEC", "COLORES")
     }
 }

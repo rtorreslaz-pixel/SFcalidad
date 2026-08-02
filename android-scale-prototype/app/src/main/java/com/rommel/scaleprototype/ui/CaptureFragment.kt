@@ -388,14 +388,16 @@ class CaptureFragment : Fragment() {
         }
     }
 
-    /** Pigmentación 1–6 (botones): devuelve null si no se seleccionó ninguno. */
+    /** Pigmentación 0–7 (botones): devuelve null si no se seleccionó ninguno. */
     private fun pigmentacionSeleccionada(): Int? = when (binding?.togglePigmentacion?.checkedButtonId) {
+        R.id.pig0 -> 0
         R.id.pig1 -> 1
         R.id.pig2 -> 2
         R.id.pig3 -> 3
         R.id.pig4 -> 4
         R.id.pig5 -> 5
         R.id.pig6 -> 6
+        R.id.pig7 -> 7
         else -> null
     }
 

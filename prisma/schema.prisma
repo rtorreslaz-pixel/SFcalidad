@@ -373,9 +373,13 @@ model SacaMuestreo {
 
   campania  String?
   galpon    String
+  corral    String? // "lado" del galpón (A/B/C/D), igual que en preventa
   categoria CategoriaAve
 
-  // Plantel-Campaña-Galpón-Categoría (nivel galpón, sin corral): clave de cruce con preventa.
+  // Dos claves de cruce con preventa:
+  //  - complex: Plantel-Campaña-Galpón-Categoría-Corral, idéntico al de preventa (cruce exacto).
+  //  - complexLote: el mismo sin el corral, para cuando la saca y la preventa no coinciden de lado.
+  complex     String?
   complexLote String?
 
   fecha DateTime // momento del muestreo en campo (hora del celular)
@@ -395,6 +399,7 @@ model SacaMuestreo {
   createdAt DateTime @default(now())
 
   @@index([plantelId, galpon, categoria])
+  @@index([complex])
   @@index([complexLote])
   @@index([verificadorId, fecha])
 }

@@ -100,6 +100,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             plantelId = plantelId,
             campania = campania,
             galpon = galpon,
+            corral = corral.ifBlank { null },
             categoria = categoria,
             fecha = isoFormat.format(Date(fechaEpochMillis)),
             edad = edad,

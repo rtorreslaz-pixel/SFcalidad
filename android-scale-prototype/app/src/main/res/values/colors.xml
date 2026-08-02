@@ -21,4 +21,15 @@
     <color name="sf_green_bg">#DCFCE7</color>
     <color name="sf_amber">#B45309</color>
     <color name="sf_amber_bg">#FEF3C7</color>
+
+    <!-- Escala de pigmentación 0–7: del amarillo pálido al intenso, para que el verificador
+         elija por color y no por número. -->
+    <color name="pig_0">#FFFDE7</color>
+    <color name="pig_1">#FFF9C4</color>
+    <color name="pig_2">#FFF59D</color>
+    <color name="pig_3">#FFF176</color>
+    <color name="pig_4">#FFEE58</color>
+    <color name="pig_5">#FDD835</color>
+    <color name="pig_6">#F9A825</color>
+    <color name="pig_7">#F57F17</color>
 </resources>

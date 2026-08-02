@@ -99,7 +99,7 @@
     <string name="label_defecto_seleccion">Defecto de selección</string>
     <string name="label_pododermatitis">Pododermatitis</string>
     <string name="label_rasguno">Rasguños</string>
-    <string name="label_pigmentacion">Pigmentación (1–6)</string>
+    <string name="label_pigmentacion">Pigmentación (0–7)</string>
     <string name="grado_sano">Sin lesión</string>
     <string name="grado_leve">Leve</string>
     <string name="grado_grave">Grave (G2)</string>
@@ -132,7 +132,7 @@
     <string name="title_saca_capture">Pesaje de saca</string>
     <string name="label_aves_por_jaba">Aves por jaba</string>
     <string name="label_tara_jaba">Tara por jaba (kg)</string>
-    <string name="label_tipo_jaba">Tipo de jaba (opcional)</string>
+    <string name="label_tipo_jaba">Tipo de jaba</string>
     <string name="action_start_saca">Comenzar saca</string>
     <string name="label_num_jabas">N° de jabas en la balanza</string>
     <string name="label_peso_bruto">PESO BRUTO EN VIVO</string>
@@ -145,7 +145,8 @@
     <string name="saca_sin_pesadas">Aún no registras pesadas.</string>
     <string name="saca_error_jabas">Indica cuántas jabas hay en la balanza.</string>
     <string name="saca_error_sin_peso">Espera a que la báscula muestre el peso.</string>
-    <string name="saca_error_campos">Completa plantel, campaña, galpón, edad, aves por jaba y tara.</string>
+    <string name="label_corral_lado">Corral / lado</string>
+    <string name="saca_error_campos">Completa plantel, campaña, galpón, corral, aves por jaba y tara.</string>
     <string name="saca_finalizar_titulo">Finalizar saca</string>
     <string name="saca_finalizar_mensaje">%1$d pesadas · %2$d jabas · promedio %3$d g/ave.</string>
     <string name="saca_pendientes_format">%1$d muestreo(s) de saca por sincronizar</string>

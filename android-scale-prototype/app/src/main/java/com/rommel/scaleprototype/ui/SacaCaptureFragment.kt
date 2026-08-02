@@ -51,6 +51,7 @@ class SacaCaptureFragment : Fragment() {
     private lateinit var plantelCodigo: String
     private lateinit var campania: String
     private lateinit var galpon: String
+    private lateinit var corral: String
     private lateinit var categoria: String
     private var edad: Int = 0
     private var avesPorJaba: Int = 1
@@ -81,6 +82,7 @@ class SacaCaptureFragment : Fragment() {
         plantelCodigo = args.getString(SacaSetupFragment.ARG_PLANTEL_CODIGO)!!
         campania = args.getString(SacaSetupFragment.ARG_CAMPANIA)!!
         galpon = args.getString(SacaSetupFragment.ARG_GALPON)!!
+        corral = args.getString(SacaSetupFragment.ARG_CORRAL) ?: ""
         categoria = args.getString(SacaSetupFragment.ARG_CATEGORIA)!!
         edad = args.getInt(SacaSetupFragment.ARG_EDAD, 0)
         avesPorJaba = args.getInt(SacaSetupFragment.ARG_AVES_POR_JABA, 1)
@@ -88,7 +90,7 @@ class SacaCaptureFragment : Fragment() {
         tipoJaba = args.getString(SacaSetupFragment.ARG_TIPO_JABA) ?: ""
         muestreoId = UUID.randomUUID().toString()
 
-        binding?.textSacaHeader?.text = "$plantelCodigo · $campania · G$galpon · $categoria"
+        binding?.textSacaHeader?.text = "$plantelCodigo · $campania · G$galpon · $corral · $categoria"
         binding?.textSacaSubHeader?.text =
             "${if (edad > 0) "Edad $edad d · " else ""}$avesPorJaba aves/jaba · tara ${"%.1f".format(taraGramosPorJaba / 1000)} kg/jaba"
 
@@ -238,6 +240,7 @@ class SacaCaptureFragment : Fragment() {
                         plantelCodigo = plantelCodigo,
                         campania = campania,
                         galpon = galpon,
+                        corral = corral,
                         categoria = categoria,
                         edad = edad.takeIf { it > 0 },
                         avesPorJaba = avesPorJaba,

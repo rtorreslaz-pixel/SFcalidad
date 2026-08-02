@@ -88,6 +88,7 @@ data class SacaMuestreoDto(
     val plantelId: String,
     val campania: String? = null,
     val galpon: String,
+    val corral: String? = null,
     val categoria: String,
     val fecha: String,
     val edad: Int? = null,

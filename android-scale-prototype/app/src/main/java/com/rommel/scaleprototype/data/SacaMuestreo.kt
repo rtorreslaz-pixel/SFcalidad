@@ -19,6 +19,8 @@ data class SacaMuestreo(
     val plantelCodigo: String,
     val campania: String,
     val galpon: String,
+    /** "Lado" del galpón (A/B/C/D), igual que en preventa: entra al complex de cruce. */
+    val corral: String,
     val categoria: String,
     val edad: Int?,
     /** Aves por jaba y tara: se establecen una vez y valen para todas las pesadas. */

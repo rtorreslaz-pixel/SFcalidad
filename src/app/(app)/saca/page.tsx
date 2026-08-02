@@ -44,19 +44,26 @@ export default async function SacaPage() {
       })
     : [];
 
-  // Agrega preventa por complexLote (recortando el corral del complex).
-  const preventaPorLote = new Map<string, { suma: number; n: number; sumaEdad: number; nEdad: number }>();
-  for (const r of preventa) {
-    const clave = complexLoteFromComplex(r.complex);
-    if (!clave || r.pesoGramos == null) continue;
-    const e = preventaPorLote.get(clave) ?? { suma: 0, n: 0, sumaEdad: 0, nEdad: 0 };
-    e.suma += r.pesoGramos;
+  // La preventa se agrega por DOS claves: el complex exacto (con corral/lado) y el del lote
+  // (sin corral). Al comparar se usa el exacto y, si la saca se tomó de otro lado, el del lote.
+  type Agregado = { suma: number; n: number; sumaEdad: number; nEdad: number };
+  const acumular = (mapa: Map<string, Agregado>, clave: string | null, peso: number, edad: number | null) => {
+    if (!clave) return;
+    const e = mapa.get(clave) ?? { suma: 0, n: 0, sumaEdad: 0, nEdad: 0 };
+    e.suma += peso;
     e.n += 1;
-    if (r.edad != null) {
-      e.sumaEdad += r.edad;
+    if (edad != null) {
+      e.sumaEdad += edad;
       e.nEdad += 1;
     }
-    preventaPorLote.set(clave, e);
+    mapa.set(clave, e);
+  };
+  const preventaPorComplex = new Map<string, Agregado>();
+  const preventaPorLote = new Map<string, Agregado>();
+  for (const r of preventa) {
+    if (r.pesoGramos == null) continue;
+    acumular(preventaPorComplex, r.complex, r.pesoGramos, r.edad);
+    acumular(preventaPorLote, complexLoteFromComplex(r.complex), r.pesoGramos, r.edad);
   }
 
   const filas = muestreos.map((m) => {
@@ -65,7 +72,10 @@ export default async function SacaPage() {
     const totalNeto = m.pesadas.reduce((a, p) => a + p.pesoNetoGramos, 0);
     const promSaca = totalAves > 0 ? totalNeto / totalAves : null;
 
-    const pv = m.complexLote ? preventaPorLote.get(m.complexLote) : undefined;
+    // Preferencia: mismo lado (complex exacto); si no hay, el galpón completo.
+    const pvExacto = m.complex ? preventaPorComplex.get(m.complex) : undefined;
+    const pv = pvExacto ?? (m.complexLote ? preventaPorLote.get(m.complexLote) : undefined);
+    const cruce = pvExacto ? "mismo lado" : pv ? "galpón" : null;
     const promPreventa = pv && pv.n > 0 ? pv.suma / pv.n : null;
     const edadPreventa = pv && pv.nEdad > 0 ? pv.sumaEdad / pv.nEdad : null;
 
@@ -75,7 +85,7 @@ export default async function SacaPage() {
     const dias = m.edad != null && edadPreventa != null ? m.edad - edadPreventa : null;
     const gananciaDiaria = diff != null && dias != null && dias > 0 ? diff / dias : null;
 
-    return { m, totalJabas, totalAves, totalNeto, promSaca, promPreventa, edadPreventa, diff, diffPct, gananciaDiaria };
+    return { m, totalJabas, totalAves, totalNeto, promSaca, promPreventa, edadPreventa, diff, diffPct, gananciaDiaria, cruce };
   });
 
   // Totales del módulo
@@ -140,6 +150,7 @@ export default async function SacaPage() {
                 <th className="px-3 py-2.5 font-medium">Plantel</th>
                 <th className="px-3 py-2.5 font-medium">Campaña</th>
                 <th className="px-3 py-2.5 font-medium">Galpón</th>
+                <th className="px-3 py-2.5 font-medium">Lado</th>
                 <th className="px-3 py-2.5 font-medium">Categoría</th>
                 <th className="px-3 py-2.5 font-medium">Edad</th>
                 <th className="px-3 py-2.5 font-medium">Pesadas</th>
@@ -163,6 +174,7 @@ export default async function SacaPage() {
                   <td className="px-3 py-2 whitespace-nowrap">{f.m.plantel.codigo}</td>
                   <td className="px-3 py-2">{f.m.campania ?? "—"}</td>
                   <td className="px-3 py-2">{f.m.galpon}</td>
+                  <td className="px-3 py-2">{f.m.corral ?? "—"}</td>
                   <td className="px-3 py-2">{CATEGORIA_LABEL[f.m.categoria] ?? f.m.categoria}</td>
                   <td className="px-3 py-2">{f.m.edad != null ? `${f.m.edad} d` : "—"}</td>
                   <td className="px-3 py-2">{f.m.pesadas.length}</td>
@@ -173,6 +185,11 @@ export default async function SacaPage() {
                     {fmtKg(f.promPreventa)}
                     {f.edadPreventa != null && (
                       <span className="ml-1 text-xs text-slate-400">({f.edadPreventa.toFixed(0)} d)</span>
+                    )}
+                    {f.cruce === "galpón" && (
+                      <span className="ml-1 text-xs text-amber-700" title="No hay preventa del mismo lado: se compara contra todo el galpón">
+                        (galpón)
+                      </span>
                     )}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">

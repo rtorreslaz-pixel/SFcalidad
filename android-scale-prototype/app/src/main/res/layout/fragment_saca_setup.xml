@@ -90,6 +90,19 @@
                         android:text="@string/categoria_mediano" />
                 </RadioGroup>
 
+                <TextView
+                    style="@style/SfFieldLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_corral_lado" />
+
+                <EditText
+                    android:id="@+id/editCorralSaca"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/label_corral_lado"
+                    android:layout_marginBottom="12dp" />
+
                 <EditText
                     android:id="@+id/editEdadSaca"
                     android:layout_width="match_parent"
@@ -114,11 +127,16 @@
                     android:inputType="numberDecimal"
                     android:layout_marginBottom="12dp" />
 
-                <EditText
-                    android:id="@+id/editTipoJaba"
+                <TextView
+                    style="@style/SfFieldLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/label_tipo_jaba"
+                    android:text="@string/label_tipo_jaba" />
+
+                <Spinner
+                    android:id="@+id/spinnerTipoJaba"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp" />
 
                 <com.google.android.material.button.MaterialButton
