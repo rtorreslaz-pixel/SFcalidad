@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +15,9 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.rommel.scaleprototype.R
@@ -28,6 +31,7 @@ import com.rommel.scaleprototype.data.SacaPesada
 import com.rommel.scaleprototype.databinding.FragmentSacaCaptureBinding
 import com.rommel.scaleprototype.databinding.ItemPesadaBinding
 import com.rommel.scaleprototype.sync.SyncScheduler
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -59,6 +63,7 @@ class SacaCaptureFragment : Fragment() {
     private var tipoJaba: String = ""
 
     private var pesoBrutoGramos: Double? = null
+    private var ultimoPesoOkMillis = 0L
     private var muestreoCreado = false
     private val pesadas = mutableListOf<SacaPesada>()
 
@@ -102,6 +107,7 @@ class SacaCaptureFragment : Fragment() {
 
         ScaleConnectionManager.addListener(scaleListener)
         ensurePermissionThenConnect()
+        vigilarLlegadaDeDatos()
     }
 
     override fun onDestroyView() {
@@ -178,9 +184,31 @@ class SacaCaptureFragment : Fragment() {
             ?: prefs.getInt(CaptureFragment.KEY_LAST_PROTOCOL_INDEX, -1)
         val protocol = ScaleProtocols.all.getOrNull(protocolIndex) ?: ScaleProtocols.default
         val parsed = protocol.parse(line) ?: return
+        ultimoPesoOkMillis = SystemClock.elapsedRealtime()
         pesoBrutoGramos = parsed.value * 1000.0
         binding?.textSacaPesoBruto?.text = getString(R.string.weight_format, parsed.value, "kg")
         actualizarNeto()
+    }
+
+    /** Igual que en preventa: si no entra peso, se dice por qué en vez de quedarse en "-- kg". */
+    private fun vigilarLlegadaDeDatos() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    delay(INTERVALO_VIGILANCIA_MS)
+                    if (!ScaleConnectionManager.isConnected()) continue
+                    val ahora = SystemClock.elapsedRealtime()
+                    if (ultimoPesoOkMillis != 0L && ahora - ultimoPesoOkMillis < TOLERANCIA_PESO_MS) continue
+                    if (ScaleConnectionManager.millisSinDatos() > TOLERANCIA_DATOS_MS) {
+                        setStatus(getString(R.string.status_sin_datos))
+                    } else {
+                        val protocolo = ScaleConnectionManager.protocoloActual()?.displayName
+                            ?: getString(R.string.protocolo_desconocido)
+                        setStatus(getString(R.string.status_datos_no_interpretados, protocolo))
+                    }
+                }
+            }
+        }
     }
 
     // --- Cálculo y registro de pesadas ---
@@ -325,5 +353,11 @@ class SacaCaptureFragment : Fragment() {
 
     private fun setStatus(text: String) {
         binding?.textSacaStatus?.text = text
+    }
+
+    companion object {
+        private const val INTERVALO_VIGILANCIA_MS = 2000L
+        private const val TOLERANCIA_PESO_MS = 4000L
+        private const val TOLERANCIA_DATOS_MS = 6000L
     }
 }

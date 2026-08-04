@@ -86,6 +86,13 @@ calidad del pollo en el cliente + pesaje preventa en granja. Omnicanal:
   otra báscula conectó bien. Solución: apagar/encender la báscula, desemparejar de la app de
   Bröring, re-emparejar y reintentar.
 - Offline: cola local (Room `scale-prototype.db`), sync por lotes, alertas de pendientes y de atribución (otro usuario).
+- **El protocolo lo manda `ScaleConnectionManager`, no cada pantalla.** El fallo clásico era: se
+  conectaba, luego se cambiaba el desplegable de protocolo, Ajustes mostraba el peso bien (leía el
+  desplegable en vivo) y Pesaje quedaba en `-- kg` (usaba el congelado al conectar). Ahora el
+  desplegable lo fija con `setProtocol()` y todas las pantallas leen de ahí. Además: si llegan
+  tramas que el protocolo no entiende se adopta solo el que sí (`DeteccionProtocolo`, nunca el
+  genérico), si el socket queda mudo se reconecta solo, y si aun así no entra peso la pantalla
+  dice si es "no llegan datos" o "llegan y no se entienden" en vez de quedarse en `-- kg`.
 
 ## 9. Pendientes / roadmap
 - **Fase 2 (productización)**: migrar a SQL Server, SSO/Active Directory, despliegue Docker corporativo, respaldos/SLA, Power BI corporativo.

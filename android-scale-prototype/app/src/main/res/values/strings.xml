@@ -91,6 +91,9 @@
     <string name="status_no_saved_scale">No hay báscula guardada. Abre Ajustes de báscula para vincular una.</string>
     <string name="status_bluetooth_disabled">Bluetooth desactivado.</string>
     <string name="status_connecting">Conectando a la báscula guardada…</string>
+    <string name="status_sin_datos">Conectado, pero la báscula no está enviando datos. Revisa que esté encendida y cerca; la app reintenta sola.</string>
+    <string name="status_datos_no_interpretados">Llegan datos que el protocolo «%1$s» no reconoce. Cámbialo en Ajustes de báscula.</string>
+    <string name="protocolo_desconocido">sin protocolo elegido</string>
     <string name="last_registered_format">Ave #%1$d registrada — %2$.1f g</string>
     <string name="last_registered_calidad_format">Ave #%1$d — calidad registrada</string>
 

@@ -17,4 +17,12 @@ object ScaleProtocols {
     )
 
     val default: ScaleProtocol = all.first()
+
+    /**
+     * Protocolos que [DeteccionProtocolo] puede adoptar solo si detecta que el elegido no
+     * entiende lo que manda la báscula. Son los específicos de marca: el genérico queda fuera
+     * a propósito porque acepta casi cualquier línea con un número y "acertaría" siempre,
+     * dando pesos absurdos (leería el `S995` de la BIT PS como 995 kg).
+     */
+    val autodetectables: List<Int> = all.indices.filter { all[it] !is GenericRegexProtocol }
 }

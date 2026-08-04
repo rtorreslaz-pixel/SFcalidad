@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,6 +32,7 @@ import com.rommel.scaleprototype.net.ApiClient
 import com.rommel.scaleprototype.net.ApiException
 import com.rommel.scaleprototype.net.LiveWeightRequest
 import com.rommel.scaleprototype.sync.SyncScheduler
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -40,6 +42,8 @@ class CaptureFragment : Fragment() {
     private val scaleListener: (ScaleEvent) -> Unit = { event -> handleScaleEvent(event) }
     private var latestWeightGramos: Double? = null
     private var lastLiveWeightSentAtMillis = 0L
+    // Reloj monótono del último peso que sí se pudo interpretar (0 = ninguno todavía).
+    private var ultimoPesoOkMillis = 0L
     // Aves registradas en esta sesión de captura (para el resumen de "Finalizar muestreo").
     private var avesRegistradasSesion = 0
 
@@ -118,6 +122,7 @@ class CaptureFragment : Fragment() {
         if (!soloCalidad) {
             ScaleConnectionManager.addListener(scaleListener)
             ensurePermissionThenConnect()
+            vigilarLlegadaDeDatos()
         }
     }
 
@@ -257,8 +262,50 @@ class CaptureFragment : Fragment() {
             ?: prefs.getInt(KEY_LAST_PROTOCOL_INDEX, -1)
         val protocol = ScaleProtocols.all.getOrNull(protocolIndex) ?: ScaleProtocols.default
         val parsed = protocol.parse(line) ?: return
+        ultimoPesoOkMillis = SystemClock.elapsedRealtime()
         setWeight(parsed.value)
         maybeSendLiveWeight(parsed.value)
+    }
+
+    /**
+     * Vigila que además de "Conectado" esté entrando peso de verdad. Antes, si las tramas no se
+     * podían interpretar, se descartaban en silencio y la pantalla se quedaba en "-- kg" —
+     * indistinguible de una báscula apagada. Ahora se dice cuál de las dos cosas pasa.
+     */
+    private fun vigilarLlegadaDeDatos() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    delay(INTERVALO_VIGILANCIA_MS)
+                    sincronizarProtocoloGuardado()
+                    revisarLlegadaDeDatos()
+                }
+            }
+        }
+    }
+
+    private fun revisarLlegadaDeDatos() {
+        if (soloCalidad || !ScaleConnectionManager.isConnected()) return
+        val ahora = SystemClock.elapsedRealtime()
+        val hayPesoReciente = ultimoPesoOkMillis != 0L && ahora - ultimoPesoOkMillis < TOLERANCIA_PESO_MS
+        if (hayPesoReciente) return
+        if (ScaleConnectionManager.millisSinDatos() > TOLERANCIA_DATOS_MS) {
+            setStatus(getString(R.string.status_sin_datos))
+        } else {
+            // Llegan tramas pero el protocolo no las reconoce: es accionable, hay que decirlo.
+            val protocolo = ScaleConnectionManager.protocoloActual()?.displayName
+                ?: getString(R.string.protocolo_desconocido)
+            setStatus(getString(R.string.status_datos_no_interpretados, protocolo))
+        }
+    }
+
+    /** Deja guardado el protocolo en uso (p. ej. si el gestor lo corrigió solo). */
+    private fun sincronizarProtocoloGuardado() {
+        val indice = ScaleConnectionManager.protocolIndex
+        if (indice < 0) return
+        val prefs = requireContext().getSharedPreferences(SCALE_PREFS_NAME, Context.MODE_PRIVATE)
+        if (prefs.getInt(KEY_LAST_PROTOCOL_INDEX, -1) == indice) return
+        prefs.edit().putInt(KEY_LAST_PROTOCOL_INDEX, indice).apply()
     }
 
     // Una lectura en vivo vieja no sirve de nada, así que (a diferencia de los registros, que
@@ -439,5 +486,10 @@ class CaptureFragment : Fragment() {
         const val KEY_LAST_DEVICE_ADDRESS = "last_device_address"
         const val KEY_LAST_PROTOCOL_INDEX = "last_protocol_index"
         private const val LIVE_WEIGHT_THROTTLE_MS = 1500L
+        private const val INTERVALO_VIGILANCIA_MS = 2000L
+        /** Sin peso interpretado por más de esto, se explica por qué. */
+        private const val TOLERANCIA_PESO_MS = 4000L
+        /** Sin ninguna trama por más de esto, el problema es la báscula, no el protocolo. */
+        private const val TOLERANCIA_DATOS_MS = 6000L
     }
 }

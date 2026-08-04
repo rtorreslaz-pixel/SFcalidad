@@ -16,6 +16,7 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -90,6 +91,15 @@ class BluetoothDiagnosticFragment : Fragment() {
             requireContext(), android.R.layout.simple_spinner_dropdown_item, ScaleProtocols.all.map { it.displayName }
         )
         restoreSavedProtocolSelection()
+        // El listener se instala DESPUÉS de restaurar, para que la restauración no dispare un
+        // guardado con la selección inicial (0) antes de tener la buena.
+        b.spinnerProtocol.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                onProtocoloElegido(position)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+        }
 
         ensurePermissionThenRefresh()
 
@@ -207,10 +217,34 @@ class BluetoothDiagnosticFragment : Fragment() {
         }
     }
 
+    /**
+     * Fija el protocolo elegido en el desplegable: se aplica al vuelo (sin reconectar) y queda
+     * guardado. Antes esta pantalla interpretaba con el desplegable en vivo pero nadie avisaba a
+     * la de pesaje, que seguía con el protocolo del momento de conectar — de ahí que aquí se
+     * viera el peso y allá "-- kg".
+     */
+    private fun onProtocoloElegido(index: Int) {
+        val ctx = context ?: return // el spinner puede notificar después de salir de la pantalla
+        if (index !in ScaleProtocols.all.indices) return
+        ScaleConnectionManager.setProtocol(index)
+        ctx.getSharedPreferences(CaptureFragment.SCALE_PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putInt(CaptureFragment.KEY_LAST_PROTOCOL_INDEX, index)
+            .apply()
+    }
+
     private fun updateWeightFromLine(line: String) {
         val b = binding ?: return
-        val protocolIndex = b.spinnerProtocol.selectedItemPosition
-        val protocol = ScaleProtocols.all.getOrNull(protocolIndex) ?: ScaleProtocols.default
+        // Un solo origen de verdad: el protocolo que el gestor está aplicando, el mismo que usa
+        // la pantalla de pesaje. El desplegable lo fija; ya no se interpreta distinto por pantalla.
+        val indiceGestor = ScaleConnectionManager.protocolIndex
+        if (indiceGestor in ScaleProtocols.all.indices && indiceGestor != b.spinnerProtocol.selectedItemPosition) {
+            // Refleja un cambio automático de protocolo para que el desplegable no mienta.
+            b.spinnerProtocol.setSelection(indiceGestor)
+        }
+        val protocol = ScaleConnectionManager.protocoloActual()
+            ?: ScaleProtocols.all.getOrNull(b.spinnerProtocol.selectedItemPosition)
+            ?: ScaleProtocols.default
         val parsed = protocol.parse(line) ?: return
         b.textWeight.text = getString(R.string.weight_format, parsed.value, parsed.unit ?: "")
         enviarPesoAWeb(parsed.value)
