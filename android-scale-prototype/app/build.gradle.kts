@@ -13,8 +13,8 @@ android {
         applicationId = "com.rommel.scaleprototype"
         minSdk = 24
         targetSdk = 34
-        versionCode = 13
-        versionName = "2.2 (protocolo compartido y reconexión)"
+        versionCode = 14
+        versionName = "2.3 (continuidad entre corrales)"
     }
 
     buildTypes {

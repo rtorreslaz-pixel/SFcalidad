@@ -4,9 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.core.os.bundleOf
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -46,9 +48,99 @@ class CaptureSetupFragment : Fragment() {
             android.R.layout.simple_spinner_dropdown_item,
             LINEAS_GENETICAS,
         )
+        binding?.spinnerCorral?.adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            ConfiguracionMuestreoStore.CORRALES + ConfiguracionMuestreoStore.CORRAL_OTRO,
+        )
+        binding?.spinnerCorral?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, v: View?, position: Int, id: Long) {
+                val esOtro = position == ConfiguracionMuestreoStore.CORRALES.size
+                binding?.editCorralOtro?.visibility = if (esOtro) View.VISIBLE else View.GONE
+                ocultarError()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+        }
+        // El aviso de error deja de tener sentido en cuanto se corrige el campo.
+        binding?.editCampania?.doAfterTextChanged { ocultarError() }
+        binding?.editGalpon?.doAfterTextChanged { ocultarError() }
+        binding?.editEdad?.doAfterTextChanged { ocultarError() }
+
         loadPlanteles()
         warnIfStalePendingRecords()
         binding?.buttonStartCapture?.setOnClickListener { onStartCaptureClicked() }
+    }
+
+    /**
+     * Deja la pantalla como quedó en el corral anterior. Solo el corral avanza al siguiente
+     * (A→B→C→D), que es lo único que cambia dentro de un galpón. Se llama después de cargar los
+     * planteles, porque hace falta el catálogo para poder seleccionar el que estaba en uso.
+     */
+    private fun restaurarUltimaConfiguracion() {
+        val b = binding ?: return
+        val verificadorId = AuthRepository(requireContext()).getVerificadorId()
+        val cfg = ConfiguracionMuestreoStore.leer(requireContext(), verificadorId) ?: return
+
+        val iPlantel = planteles.indexOfFirst { it.id == cfg.plantelId }
+        if (iPlantel >= 0) b.spinnerPlantel.setSelection(iPlantel)
+        b.editCampania.setText(cfg.campania)
+        b.editGalpon.setText(cfg.galpon)
+
+        // Si el corral anterior se dio por terminado, se propone el siguiente del galpón; si se
+        // entró por "Cambiar" a mitad del muestreo, se deja el mismo.
+        val completado = ConfiguracionMuestreoStore.consumirCorralCompletado(requireContext())
+        val propuesto = if (completado) {
+            ConfiguracionMuestreoStore.siguienteCorral(cfg.corral) ?: cfg.corral
+        } else {
+            cfg.corral
+        }
+        val iCorral = ConfiguracionMuestreoStore.CORRALES.indexOf(propuesto)
+        if (iCorral >= 0) {
+            b.spinnerCorral.setSelection(iCorral)
+        } else if (propuesto.isNotEmpty()) {
+            b.spinnerCorral.setSelection(ConfiguracionMuestreoStore.CORRALES.size) // "Otro…"
+            b.editCorralOtro.setText(propuesto)
+        }
+
+        b.radioGroupCategoria.check(
+            when (cfg.categoria) {
+                "HEMBRA" -> R.id.radioHembra
+                "MEDIANO" -> R.id.radioMediano
+                else -> R.id.radioMacho
+            }
+        )
+        // La edad envejece: si lo guardado es de otro día, se deja vacía para que la confirmen.
+        if (cfg.dia == ConfiguracionMuestreoStore.hoy() && cfg.edad > 0) {
+            b.editEdad.setText(cfg.edad.toString())
+        }
+        val iLinea = LINEAS_GENETICAS.indexOf(cfg.linea)
+        if (iLinea >= 0) b.spinnerLinea.setSelection(iLinea)
+        b.radioGroupLote.check(if (cfg.lote == "A") R.id.radioLoteA else R.id.radioLoteJ)
+        if (cfg.nAvesPorPesada in 1..10) b.spinnerNAvesPesada.setSelection(cfg.nAvesPorPesada - 1)
+        b.radioGroupModo.check(if (cfg.soloCalidad) R.id.radioModoCalidad else R.id.radioModoPesaje)
+
+        mostrarCorralesYaMuestreados(cfg)
+    }
+
+    /** "Hoy ya muestreaste: A, B" — para no repetir un corral ni saltarse otro. */
+    private fun mostrarCorralesYaMuestreados(cfg: ConfiguracionMuestreo) {
+        val plantelCodigo = planteles.firstOrNull { it.id == cfg.plantelId }?.codigo ?: return
+        viewLifecycleOwner.lifecycleScope.launch {
+            val dao = AppDatabase.getInstance(requireContext()).registroPesoDao()
+            val inicioDelDia = System.currentTimeMillis() - MILLIS_PER_DAY
+            val hechos = dao.muestreosDelDia(inicioDelDia)
+                .filter { it.plantelCodigo == plantelCodigo && it.galpon == cfg.galpon && it.campania == cfg.campania }
+                .map { it.corral }
+                .distinct()
+            val vista = binding?.textCorralHechos ?: return@launch
+            if (hechos.isEmpty()) {
+                vista.visibility = View.GONE
+            } else {
+                vista.text = getString(R.string.corrales_ya_muestreados, hechos.sorted().joinToString(", "))
+                vista.visibility = View.VISIBLE
+            }
+        }
     }
 
     /**
@@ -87,6 +179,7 @@ class CaptureSetupFragment : Fragment() {
                     android.R.layout.simple_spinner_dropdown_item,
                     planteles.map { if (it.cliente != null) "${it.codigo} — ${it.cliente}" else it.codigo },
                 )
+                restaurarUltimaConfiguracion()
             } catch (e: ApiException) {
                 if (e.code == 401) {
                     forceReLogin()
@@ -115,6 +208,7 @@ class CaptureSetupFragment : Fragment() {
             android.R.layout.simple_spinner_dropdown_item,
             planteles.map { if (it.cliente != null) "${it.codigo} — ${it.cliente}" else it.codigo },
         )
+        restaurarUltimaConfiguracion()
         Toast.makeText(requireContext(), getString(R.string.offline_catalog_notice), Toast.LENGTH_LONG).show()
         return true
     }
@@ -124,21 +218,30 @@ class CaptureSetupFragment : Fragment() {
         val plantel = planteles.getOrNull(b.spinnerPlantel.selectedItemPosition)
         val campania = b.editCampania.text.toString().trim()
         val galpon = b.editGalpon.text.toString().trim()
-        val corral = b.editCorral.text.toString().trim()
+        val corral = corralElegido()
         val edadStr = b.editEdad.text.toString().trim()
         val linea = LINEAS_GENETICAS.getOrNull(b.spinnerLinea.selectedItemPosition) ?: LINEAS_GENETICAS.first()
 
-        if (plantel == null || campania.isEmpty() || galpon.isEmpty() || corral.isEmpty()
-            || edadStr.isEmpty()) {
-            showError(getString(R.string.error_setup_fields_required))
+        // Se nombra lo que falta: antes decía "completa todos los campos" y había que adivinar
+        // cuál era, con el agravante de que el aviso se quedaba en pantalla al corregirlo.
+        val faltantes = buildList {
+            if (plantel == null) add(getString(R.string.label_plantel))
+            if (campania.isEmpty()) add(getString(R.string.label_campania))
+            if (galpon.isEmpty()) add(getString(R.string.label_galpon))
+            if (corral.isEmpty()) add(getString(R.string.label_corral))
+            if (edadStr.isEmpty()) add(getString(R.string.label_edad))
+        }
+        if (faltantes.isNotEmpty() || plantel == null) {
+            showError(getString(R.string.error_setup_falta, faltantes.joinToString(", ")))
             return
         }
 
         val edad = edadStr.toIntOrNull()
         if (edad == null || edad <= 0) {
-            showError(getString(R.string.error_setup_fields_required))
+            showError(getString(R.string.error_setup_edad))
             return
         }
+        ocultarError()
 
         val categoria = when (b.radioGroupCategoria.checkedRadioButtonId) {
             R.id.radioHembra -> "HEMBRA"
@@ -153,6 +256,26 @@ class CaptureSetupFragment : Fragment() {
 
         val nAvesPorPesada = b.spinnerNAvesPesada.selectedItemPosition + 1
         val soloCalidad = b.radioGroupModo.checkedRadioButtonId == R.id.radioModoCalidad
+
+        // Se guarda para el siguiente corral: al volver, la pantalla aparece llena y solo hay
+        // que confirmar (o cambiar) el corral que propone.
+        ConfiguracionMuestreoStore.guardar(
+            requireContext(),
+            ConfiguracionMuestreo(
+                verificadorId = AuthRepository(requireContext()).getVerificadorId() ?: "",
+                plantelId = plantel.id,
+                campania = campania,
+                galpon = galpon,
+                corral = corral,
+                categoria = categoria,
+                edad = edad,
+                linea = linea,
+                lote = lote,
+                nAvesPorPesada = nAvesPorPesada,
+                soloCalidad = soloCalidad,
+                dia = ConfiguracionMuestreoStore.hoy(),
+            ),
+        )
 
         findNavController().navigate(
             R.id.action_captureSetup_to_capture,
@@ -177,9 +300,24 @@ class CaptureSetupFragment : Fragment() {
         binding?.buttonStartCapture?.isEnabled = !loading
     }
 
+    /** Corral elegido: uno de los cuatro del galpón, o el que se escriba en "Otro…". */
+    private fun corralElegido(): String {
+        val b = binding ?: return ""
+        val i = b.spinnerCorral.selectedItemPosition
+        return if (i in ConfiguracionMuestreoStore.CORRALES.indices) {
+            ConfiguracionMuestreoStore.CORRALES[i]
+        } else {
+            b.editCorralOtro.text.toString().trim().uppercase()
+        }
+    }
+
     private fun showError(message: String) {
         binding?.textSetupError?.text = message
         binding?.textSetupError?.visibility = View.VISIBLE
+    }
+
+    private fun ocultarError() {
+        binding?.textSetupError?.visibility = View.GONE
     }
 
     // El catálogo respondió 401: el admin revocó o rotó el token desde /admin/usuarios.
@@ -187,6 +325,7 @@ class CaptureSetupFragment : Fragment() {
     // CaptureFragment.onResume() hace cuando detecta la sesión muerta en pantalla.
     private fun forceReLogin() {
         AuthRepository(requireContext()).logout()
+        ConfiguracionMuestreoStore.limpiar(requireContext())
         Toast.makeText(requireContext(), getString(R.string.session_revoked_message), Toast.LENGTH_LONG).show()
         findNavController().navigate(R.id.action_captureSetup_to_login)
     }
@@ -213,6 +352,7 @@ class CaptureSetupFragment : Fragment() {
         val LINEAS_GENETICAS = listOf("ROSS", "COBB")
 
         private const val MILLIS_PER_HOUR = 3_600_000L
+        private const val MILLIS_PER_DAY = 86_400_000L
         private const val STALE_PENDING_THRESHOLD_HOURS = 12L
     }
 }

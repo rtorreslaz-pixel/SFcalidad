@@ -86,6 +86,11 @@ calidad del pollo en el cliente + pesaje preventa en granja. Omnicanal:
   otra báscula conectó bien. Solución: apagar/encender la báscula, desemparejar de la app de
   Bröring, re-emparejar y reintentar.
 - Offline: cola local (Room `scale-prototype.db`), sync por lotes, alertas de pendientes y de atribución (otro usuario).
+- **Continuidad entre corrales**: un galpón tiene **4 corrales (A–D)** y entre uno y otro solo cambia
+  el corral. La pantalla de configuración recuerda el último muestreo (`ConfiguracionMuestreoStore`,
+  SharedPreferences) y vuelve a aparecer llena, con el corral avanzado al siguiente **solo si se
+  pulsó "Finalizar muestreo"** (por "Cambiar" se respeta el mismo). La edad no se arrastra de un día
+  para otro. La configuración es por verificador: si entra otro en el mismo teléfono, no la ve.
 - **El protocolo lo manda `ScaleConnectionManager`, no cada pantalla.** El fallo clásico era: se
   conectaba, luego se cambiaba el desplegable de protocolo, Ajustes mostraba el peso bien (leía el
   desplegable en vivo) y Pesaje quedaba en `-- kg` (usaba el congelado al conectar). Ahora el

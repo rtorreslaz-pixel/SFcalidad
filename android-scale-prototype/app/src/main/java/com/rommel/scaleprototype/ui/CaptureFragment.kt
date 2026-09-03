@@ -466,8 +466,10 @@ class CaptureFragment : Fragment() {
                 .setMessage(mensaje)
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(R.string.finalizar_confirm) { _, _ ->
-                    // Vuelve a configurar un lote nuevo. Los pendientes siguen subiéndose solos
+                    // Vuelve a configurar, con los datos del lote ya puestos y el corral avanzado
+                    // al siguiente del galpón. Los pendientes siguen subiéndose solos
                     // (WorkManager); la báscula queda conectada para el siguiente muestreo.
+                    ConfiguracionMuestreoStore.marcarCorralCompletado(requireContext())
                     findNavController().navigate(R.id.action_capture_to_captureSetup)
                 }
                 .show()

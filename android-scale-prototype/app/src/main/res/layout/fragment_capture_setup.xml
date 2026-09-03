@@ -69,12 +69,26 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp" />
 
+        <!-- Los campos de texto llevan etiqueta fija además del hint: el hint desaparece al
+             escribir y sin etiqueta era fácil escribir el dato en la casilla equivocada. -->
+        <TextView
+            style="@style/SfFieldLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_campania" />
+
         <EditText
             android:id="@+id/editCampania"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/label_campania"
             android:layout_marginBottom="12dp" />
+
+        <TextView
+            style="@style/SfFieldLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_galpon" />
 
         <EditText
             android:id="@+id/editGalpon"
@@ -120,12 +134,42 @@
                 android:text="@string/categoria_mediano" />
         </RadioGroup>
 
-        <EditText
-            android:id="@+id/editCorral"
+        <TextView
+            style="@style/SfFieldLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/label_corral"
+            android:text="@string/label_corral" />
+
+        <!-- Son 4 corrales por galpón (A-D). Va como selector para evitar erratas y para que
+             cambiar de corral sea un toque; "Otro" deja escribirlo si algún galpón no usa A-D. -->
+        <Spinner
+            android:id="@+id/spinnerCorral"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/editCorralOtro"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/label_corral_otro"
+            android:visibility="gone"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/textCorralHechos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@color/sf_green"
+            android:visibility="gone"
             android:layout_marginBottom="16dp" />
+
+        <TextView
+            style="@style/SfFieldLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_edad" />
 
         <EditText
             android:id="@+id/editEdad"
