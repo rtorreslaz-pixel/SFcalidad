@@ -291,51 +291,49 @@ function r0(v: number | null): string | number {
   return v == null ? "" : Math.round(v);
 }
 
-/** Cabecera común a las dos hojas, para que se puedan leer y cruzar igual. */
-function headersResumen(tolerancia: number): string[] {
-  return [
-    "TIPO", "COMPLEX GALPÓN", "PLANTEL", "NOMBRE PLANTEL", "CAMPAÑA", "GALPÓN", "CORRAL", "SEXO", "DÍA",
-    "EDAD (días)", "LÍNEA", "COMPLEX", "AVES", "AVES INDIVIDUALES", "AVES EN GRUPO", "PROMEDIO (g)",
-    "PROMEDIO (kg)", "DESV. EST. (g)", "CV (%)", `UNIFORMIDAD ±${tolerancia}% (%)`, "MÍNIMO (g)", "MÁXIMO (g)",
-    "VERIFICADOR",
-  ];
-}
-
-/** Hoja "Resumen por galpón": el consolidado de cada galpón y su desglose por sexo. */
+/**
+ * Hoja "Resumen por galpón": un renglón por galpón, nada más.
+ *
+ * Sin desglose por sexo y sin filas de corral: el desglose por sexo se ve en la pantalla web,
+ * y los corrales tienen su propia hoja. Cada hoja abre con su complex para poder cruzarlas.
+ * Tampoco van columnas que en este nivel quedarían siempre vacías (corral, línea, verificador).
+ */
 export function filasResumenGalpones(galpones: GalponResumen[], tolerancia: number): (string | number)[][] {
-  const rows: (string | number)[][] = [headersResumen(tolerancia)];
+  const rows: (string | number)[][] = [[
+    "COMPLEX GALPÓN", "PLANTEL", "NOMBRE PLANTEL", "CAMPAÑA", "GALPÓN", "SEXO", "DÍA", "EDAD (días)",
+    "AVES", "AVES INDIVIDUALES", "AVES EN GRUPO", "PROMEDIO (g)", "PROMEDIO (kg)", "DESV. EST. (g)",
+    "CV (%)", `UNIFORMIDAD ±${tolerancia}% (%)`, "MÍNIMO (g)", "MÁXIMO (g)",
+  ]];
   for (const g of galpones) {
     rows.push([
-      "GALPÓN", g.complexGalpon, g.plantelCodigo, g.plantelNombre, g.campania, g.galpon, "",
+      g.complexGalpon, g.plantelCodigo, g.plantelNombre, g.campania, g.galpon,
       g.categorias.map((c) => CATEGORIA_LABEL[c]).join(" + "),
       g.primerDia === g.ultimoDia ? g.primerDia : `${g.primerDia} a ${g.ultimoDia}`,
-      g.edades.join(", "), "", "",
+      g.edades.join(", "),
       g.totalAves, g.avesIndividuales, g.avesAgrupadas,
       r0(g.promedioTotal), r3(g.promedioTotal), r0(g.stats.desviacion), r1(g.stats.cv), r1(g.stats.uniformidad),
-      r0(g.stats.minimo), r0(g.stats.maximo), "",
+      r0(g.stats.minimo), r0(g.stats.maximo),
     ]);
-    for (const c of g.porCategoria) {
-      rows.push([
-        "GALPÓN · " + CATEGORIA_LABEL[c.categoria].toUpperCase(),
-        g.complexGalpon, g.plantelCodigo, g.plantelNombre, g.campania, g.galpon, "",
-        CATEGORIA_LABEL[c.categoria], "", "", "", "",
-        c.totalAves, c.stats.n, c.totalAves - c.stats.n,
-        r0(c.promedioTotal), r3(c.promedioTotal), r0(c.stats.desviacion), r1(c.stats.cv), r1(c.stats.uniformidad),
-        r0(c.stats.minimo), r0(c.stats.maximo), "",
-      ]);
-    }
   }
   return rows;
 }
 
-/** Hoja "Resumen por corral": un renglón por corral · sexo · día, con su CV y uniformidad. */
+/**
+ * Hoja "Resumen por corral": un renglón por corral · sexo · día, con su CV y uniformidad.
+ * Lleva su propio complex y además el del galpón, para poder agrupar contra la otra hoja.
+ */
 export function filasResumenCorrales(galpones: GalponResumen[], tolerancia: number): (string | number)[][] {
-  const rows: (string | number)[][] = [headersResumen(tolerancia)];
+  const rows: (string | number)[][] = [[
+    "COMPLEX", "COMPLEX GALPÓN", "PLANTEL", "NOMBRE PLANTEL", "CAMPAÑA", "GALPÓN", "CORRAL", "SEXO",
+    "DÍA", "EDAD (días)", "LÍNEA", "AVES", "AVES INDIVIDUALES", "AVES EN GRUPO", "PROMEDIO (g)",
+    "PROMEDIO (kg)", "DESV. EST. (g)", "CV (%)", `UNIFORMIDAD ±${tolerancia}% (%)`, "MÍNIMO (g)",
+    "MÁXIMO (g)", "VERIFICADOR",
+  ]];
   for (const g of galpones) {
     for (const m of g.muestreos) {
       rows.push([
-        "MUESTREO", g.complexGalpon, g.plantelCodigo, g.plantelNombre, g.campania, g.galpon, m.corral,
-        CATEGORIA_LABEL[m.categoria], m.dia, m.edad ?? "", m.linea ?? "", m.complex ?? "",
+        m.complex ?? "", g.complexGalpon, g.plantelCodigo, g.plantelNombre, g.campania, g.galpon,
+        m.corral, CATEGORIA_LABEL[m.categoria], m.dia, m.edad ?? "", m.linea ?? "",
         m.totalAves, m.avesIndividuales, m.avesAgrupadas,
         r0(m.promedioTotal), r3(m.promedioTotal), r0(m.stats.desviacion), r1(m.stats.cv), r1(m.stats.uniformidad),
         r0(m.stats.minimo), r0(m.stats.maximo), m.verificadores.join(", "),
