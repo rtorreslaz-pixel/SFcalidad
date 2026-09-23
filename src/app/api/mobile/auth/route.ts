@@ -4,12 +4,17 @@ import { verifyPassword, generateApiToken } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
-  const email = body?.email;
+  const emailBruto = body?.email;
   const password = body?.password;
 
-  if (typeof email !== "string" || typeof password !== "string") {
+  if (typeof emailBruto !== "string" || typeof password !== "string") {
     return NextResponse.json({ error: "email y password son requeridos" }, { status: 400 });
   }
+
+  // Los usuarios se guardan en minúsculas (así los crea el admin y así los busca la web).
+  // El teclado del celular pone mayúscula inicial solo, y antes eso bastaba para que el
+  // ingreso fallara sin explicación: "Jparado" no encontraba a "jparado".
+  const email = emailBruto.trim().toLowerCase();
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || !user.activo || !(await verifyPassword(password, user.passwordHash))) {

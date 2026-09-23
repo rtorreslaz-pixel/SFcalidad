@@ -15,8 +15,17 @@ export default function UsuarioForm() {
     <form ref={formRef} action={formAction} className="space-y-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
       <h2 className="font-semibold text-slate-900">Nuevo usuario</h2>
       <input type="text" name="nombre" placeholder="Nombre completo" required className="input" />
-      <input type="email" name="email" placeholder="Correo" required className="input" />
-      <input type="password" name="password" placeholder="Contraseña (mín. 6 caracteres)" required className="input" />
+      {/* Texto, no type="email": el usuario es "jparado", no un correo. */}
+      <input
+        type="text"
+        name="email"
+        placeholder="Usuario (ej. jparado)"
+        required
+        autoCapitalize="none"
+        spellCheck={false}
+        className="input"
+      />
+      <input type="password" name="password" placeholder="Contraseña (mín. 8 caracteres)" required className="input" />
       <select name="role" className="input" defaultValue="VERIFICADOR">
         <option value="VERIFICADOR">Verificador</option>
         <option value="SUPERVISOR">Supervisor</option>

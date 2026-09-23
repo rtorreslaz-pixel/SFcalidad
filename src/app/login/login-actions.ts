@@ -21,7 +21,7 @@ export async function loginAction(
   const password = String(formData.get("password") ?? "");
 
   if (!email || !password) {
-    return { error: "Ingresa tu correo y contraseña." };
+    return { error: "Ingresa tu usuario y contraseña." };
   }
 
   const h = await headers();

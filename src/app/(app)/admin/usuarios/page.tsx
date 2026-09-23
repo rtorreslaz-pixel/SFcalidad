@@ -18,7 +18,7 @@ export default async function UsuariosPage() {
             <thead className="bg-slate-50 text-left text-slate-500">
               <tr>
                 <th className="px-3 py-2 font-medium">Nombre</th>
-                <th className="px-3 py-2 font-medium">Correo</th>
+                <th className="px-3 py-2 font-medium">Usuario</th>
                 <th className="px-3 py-2 font-medium">Rol</th>
                 <th className="px-3 py-2 font-medium">Inspecciones</th>
                 <th className="px-3 py-2 font-medium">Estado</th>

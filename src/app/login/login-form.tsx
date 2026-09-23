@@ -10,16 +10,20 @@ export default function LoginForm() {
     <form action={formAction} className="space-y-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-          Correo
+          Usuario
         </label>
+        {/* Texto, no type="email": los usuarios del personal de granja son del tipo
+            "jparado" (inicial del nombre + apellido) y el navegador rechazaría el envío. */}
         <input
           id="email"
           name="email"
-          type="email"
+          type="text"
           required
-          autoComplete="email"
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
           className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-          placeholder="tucorreo@avicola.com"
+          placeholder="jparado"
         />
       </div>
       <div>

@@ -31,10 +31,10 @@
     <string name="label_log">Datos crudos recibidos</string>
 
     <string name="title_login">Iniciar sesión</string>
-    <string name="label_email">Correo</string>
+    <string name="label_email">Usuario</string>
     <string name="label_password">Contraseña</string>
     <string name="action_login">Ingresar</string>
-    <string name="error_login_fields_required">Ingresa correo y contraseña.</string>
+    <string name="error_login_fields_required">Ingresa usuario y contraseña.</string>
     <string name="error_login_invalid">Credenciales inválidas.</string>
     <string name="error_login_network">No se pudo conectar al servidor. Intenta de nuevo.</string>
     <string name="login_hint_sesion">La sesión queda guardada en el teléfono: no hay que reingresar cada día.</string>

@@ -52,13 +52,15 @@
                     android:layout_height="wrap_content"
                     android:text="@string/label_email" />
 
+                <!-- El usuario es "jparado", no un correo: texto sin mayúscula automática,
+                     que era lo que hacía fallar el ingreso con un mensaje poco claro. -->
                 <EditText
                     android:id="@+id/editEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:autofillHints="emailAddress"
+                    android:autofillHints="username"
                     android:hint="@string/label_email"
-                    android:inputType="textEmailAddress"
+                    android:inputType="text"
                     android:layout_marginBottom="12dp" />
 
                 <TextView

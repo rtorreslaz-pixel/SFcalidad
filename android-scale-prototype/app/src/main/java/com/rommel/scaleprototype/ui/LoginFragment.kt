@@ -43,7 +43,7 @@ class LoginFragment : Fragment() {
 
     private fun onLoginClicked(authRepository: AuthRepository) {
         val b = binding ?: return
-        val email = b.editEmail.text.toString().trim()
+        val email = b.editEmail.text.toString().trim().lowercase()
         val password = b.editPassword.text.toString()
         if (email.isEmpty() || password.isEmpty()) {
             showError(getString(R.string.error_login_fields_required))

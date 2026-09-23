@@ -77,7 +77,7 @@ export async function createUsuarioAction(
     // El usuario deberá cambiar esta contraseña inicial en su primer ingreso.
     await prisma.user.create({ data: { nombre, email, passwordHash, role, mustChangePassword: true } });
   } catch {
-    return { error: "Ya existe un usuario con ese correo." };
+    return { error: "Ya existe un usuario con ese nombre de usuario." };
   }
 
   revalidatePath("/admin/usuarios");
