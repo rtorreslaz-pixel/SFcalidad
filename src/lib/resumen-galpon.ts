@@ -273,9 +273,13 @@ export async function construirResumenGalpones(
 
 export const CATEGORIA_LABEL: Record<CategoriaAve, string> = { MACHO: "Macho", HEMBRA: "Hembra", MEDIANO: "Mediano" };
 
-// --- Filas del resumen para Excel/CSV: las comparten la descarga del resumen y la hoja extra
-// del Excel de la toma de muestras. Una fila GALPÓN con el total, las de desglose por sexo cuando
-// aplica y una fila MUESTREO por corral · sexo · día. Pesos en gramos y en kg.
+// --- Filas del resumen para Excel/CSV: las comparten la descarga del resumen y las hojas extra
+// del Excel de la toma de muestras. Pesos en gramos y en kg.
+//
+// Van en DOS hojas distintas, a propósito: antes el galpón y sus corrales compartían hoja y se
+// leían como una sola tabla revuelta. Ahora "Resumen por galpón" trae el consolidado (y su
+// desglose por sexo, que importa porque machos y hembras tienen uniformidades muy distintas) y
+// "Resumen por corral" el detalle de cada corral · sexo · día.
 
 function r3(v: number | null): string | number {
   return v == null ? "" : Number((v / 1000).toFixed(3));
@@ -287,14 +291,19 @@ function r0(v: number | null): string | number {
   return v == null ? "" : Math.round(v);
 }
 
-export function filasResumenGalpones(galpones: GalponResumen[], tolerancia: number): (string | number)[][] {
-  const headers = [
+/** Cabecera común a las dos hojas, para que se puedan leer y cruzar igual. */
+function headersResumen(tolerancia: number): string[] {
+  return [
     "TIPO", "COMPLEX GALPÓN", "PLANTEL", "NOMBRE PLANTEL", "CAMPAÑA", "GALPÓN", "CORRAL", "SEXO", "DÍA",
     "EDAD (días)", "LÍNEA", "COMPLEX", "AVES", "AVES INDIVIDUALES", "AVES EN GRUPO", "PROMEDIO (g)",
     "PROMEDIO (kg)", "DESV. EST. (g)", "CV (%)", `UNIFORMIDAD ±${tolerancia}% (%)`, "MÍNIMO (g)", "MÁXIMO (g)",
     "VERIFICADOR",
   ];
-  const rows: (string | number)[][] = [headers];
+}
+
+/** Hoja "Resumen por galpón": el consolidado de cada galpón y su desglose por sexo. */
+export function filasResumenGalpones(galpones: GalponResumen[], tolerancia: number): (string | number)[][] {
+  const rows: (string | number)[][] = [headersResumen(tolerancia)];
   for (const g of galpones) {
     rows.push([
       "GALPÓN", g.complexGalpon, g.plantelCodigo, g.plantelNombre, g.campania, g.galpon, "",
@@ -315,6 +324,14 @@ export function filasResumenGalpones(galpones: GalponResumen[], tolerancia: numb
         r0(c.stats.minimo), r0(c.stats.maximo), "",
       ]);
     }
+  }
+  return rows;
+}
+
+/** Hoja "Resumen por corral": un renglón por corral · sexo · día, con su CV y uniformidad. */
+export function filasResumenCorrales(galpones: GalponResumen[], tolerancia: number): (string | number)[][] {
+  const rows: (string | number)[][] = [headersResumen(tolerancia)];
+  for (const g of galpones) {
     for (const m of g.muestreos) {
       rows.push([
         "MUESTREO", g.complexGalpon, g.plantelCodigo, g.plantelNombre, g.campania, g.galpon, m.corral,
