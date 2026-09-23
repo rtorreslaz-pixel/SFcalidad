@@ -105,8 +105,7 @@
     <string name="label_aves_esta_pesada">N° aves en esta pesada</string>
     <string name="action_menos">−</string>
     <string name="action_mas">+</string>
-    <string name="aves_estandar_format">Estándar del muestreo: %1$d aves. Baja el número si quedan menos en el corral.</string>
-    <string name="aves_distinto_estandar_format">Esta pesada va con %1$d (el estándar es %2$d).</string>
+    <string name="aves_distinto_estandar_format">N° aves en esta pesada (estándar %1$d)</string>
     <string name="peso_por_ave_format">%1$d g por ave (%2$d aves)</string>
 
     <string name="switch_evaluar_calidad">Evaluar calidad de esta ave</string>

@@ -401,7 +401,6 @@ class CaptureFragment : Fragment() {
             return
         }
         b.layoutAvesPesada.visibility = View.VISIBLE
-        b.textAvesEstandar.text = getString(R.string.aves_estandar_format, nAvesPorPesada)
         b.buttonAvesMenos.setOnClickListener { cambiarAvesEstaPesada(avesEstaPesada - 1) }
         b.buttonAvesMas.setOnClickListener { cambiarAvesEstaPesada(avesEstaPesada + 1) }
         pintarAvesEstaPesada()
@@ -421,11 +420,20 @@ class CaptureFragment : Fragment() {
         b.textAvesEstaPesada.text = avesEstaPesada.toString()
         b.buttonAvesMenos.isEnabled = avesEstaPesada > 1
         b.buttonAvesMas.isEnabled = avesEstaPesada < EstandaresMuestreo.MAX_AVES_POR_PESADA
-        b.textAvesEstandar.text = if (avesEstaPesada == nAvesPorPesada) {
-            getString(R.string.aves_estandar_format, nAvesPorPesada)
+        // Salirse del estándar es legítimo (la última pesada del corral), pero tiene que
+        // notarse: si no, un número que quedó cambiado por error pasa desapercibido.
+        val fueraDelEstandar = avesEstaPesada != nAvesPorPesada
+        b.textAvesEtiqueta.text = if (fueraDelEstandar) {
+            getString(R.string.aves_distinto_estandar_format, nAvesPorPesada)
         } else {
-            getString(R.string.aves_distinto_estandar_format, avesEstaPesada, nAvesPorPesada)
+            getString(R.string.label_aves_esta_pesada)
         }
+        b.textAvesEtiqueta.setTextColor(
+            ContextCompat.getColor(requireContext(), if (fueraDelEstandar) R.color.sf_amber else R.color.sf_ink)
+        )
+        b.textAvesEstaPesada.setTextColor(
+            ContextCompat.getColor(requireContext(), if (fueraDelEstandar) R.color.sf_amber else R.color.sf_blue)
+        )
     }
 
     private fun setStatus(text: String) {
