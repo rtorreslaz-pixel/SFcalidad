@@ -28,6 +28,9 @@
         <action
             android:id="@+id/action_home_to_planDia"
             app:destination="@id/planDiaFragment" />
+        <action
+            android:id="@+id/action_home_to_muestreos"
+            app:destination="@id/muestreosDiaFragment" />
     </fragment>
 
     <fragment

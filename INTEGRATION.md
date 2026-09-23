@@ -160,6 +160,10 @@ Reglas de cada registro:
 - `linea`: string | null — línea genética (ej. `"Ross"`, `"Cobb"`).
 - `lote`: string | null — clasificación del lote (`"J"` Joven / `"A"` Adulto).
 - `nAvesPorPesada`: entero > 0 | null — N° aves pesadas juntas por lectura de báscula.
+  Es **por registro, no por muestreo**: un corral que se pesa de 3 en 3 suele cerrar con una
+  pesada de 1 o 2 aves, y esa llega con su propio número. El `pesoGramos` que acompaña ya es
+  el promedio **por ave** de esa pesada, así que el conteo de aves del lado del servidor debe
+  sumar `nAvesPorPesada` y ponderar el peso por ese mismo número.
 
 Response `200`:
 ```json

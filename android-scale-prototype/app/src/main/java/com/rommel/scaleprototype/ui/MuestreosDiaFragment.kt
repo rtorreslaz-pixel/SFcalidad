@@ -11,18 +11,23 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.rommel.scaleprototype.R
 import com.rommel.scaleprototype.data.AppDatabase
-import com.rommel.scaleprototype.data.MuestreoDiaResumen
+import com.rommel.scaleprototype.data.HistorialCorral
 import com.rommel.scaleprototype.databinding.FragmentMuestreosBinding
+import com.rommel.scaleprototype.databinding.ItemHistorialDiaBinding
+import com.rommel.scaleprototype.databinding.ItemHistorialGalponBinding
 import com.rommel.scaleprototype.databinding.ItemMuestreoBinding
 import com.rommel.scaleprototype.sync.SyncScheduler
 import kotlinx.coroutines.launch
-import java.util.Calendar
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 /**
- * Registro de muestreos del día: lista cada lote muestreado hoy con su estado (completo o con
- * registros pendientes de enviar), para que el verificador controle qué le falta sincronizar.
- * Lee la base local (Room); los registros sincronizados no se borran, así que se ven completos
- * y pendientes.
+ * Historial de pesajes guardados en el teléfono: día por día, con el consolidado de cada
+ * galpón y el detalle de sus corrales (aves y promedio por ave).
+ *
+ * Los registros no se borran al sincronizar, así que aquí se ven también los muestreos ya
+ * enviados: el verificador puede cerrar la app y volver a consultar lo que pesó, que era
+ * justo lo que no se podía hacer antes (solo se listaba el día en curso).
  */
 class MuestreosDiaFragment : Fragment() {
 
@@ -55,49 +60,86 @@ class MuestreosDiaFragment : Fragment() {
     private fun cargar() {
         val dao = AppDatabase.getInstance(requireContext()).registroPesoDao()
         viewLifecycleOwner.lifecycleScope.launch {
-            val muestreos = dao.muestreosDelDia(inicioDeHoyMillis())
-            render(muestreos)
+            render(dao.historialPorCorral())
         }
     }
 
-    private fun render(muestreos: List<MuestreoDiaResumen>) {
+    private fun render(filas: List<HistorialCorral>) {
         val b = binding ?: return
         b.containerMuestreos.removeAllViews()
-        b.textVacio.visibility = if (muestreos.isEmpty()) View.VISIBLE else View.GONE
+        b.textVacio.visibility = if (filas.isEmpty()) View.VISIBLE else View.GONE
 
-        val totalAves = muestreos.sumOf { it.total }
-        val totalPendientes = muestreos.sumOf { it.pendientes }
-        val estadoGlobal = if (totalPendientes == 0) {
-            getString(R.string.muestreos_todo_sincronizado)
+        val totalAves = filas.sumOf { it.aves }
+        val totalPendientes = filas.sumOf { it.pendientes }
+        val dias = filas.map { it.dia }.distinct().size
+        b.textResumen.text = if (filas.isEmpty()) {
+            ""
         } else {
-            getString(R.string.muestreos_pendientes_format, totalPendientes)
+            val estado = if (totalPendientes == 0) {
+                getString(R.string.muestreos_todo_sincronizado)
+            } else {
+                getString(R.string.muestreos_pendientes_format, totalPendientes)
+            }
+            getString(R.string.historial_resumen_format, dias, totalAves, estado)
         }
-        b.textResumen.text = getString(R.string.muestreos_resumen_format, muestreos.size, totalAves, estadoGlobal)
 
         val inflater = LayoutInflater.from(requireContext())
-        for (m in muestreos) {
-            val row = ItemMuestreoBinding.inflate(inflater, b.containerMuestreos, false)
-            row.textLote.text = "${m.plantelCodigo} · ${m.campania} · G${m.galpon} · ${m.corral} · ${m.categoria}"
-            row.textDetalle.text = getString(R.string.muestreo_item_detalle, m.total)
-            if (m.pendientes > 0) {
-                row.textEstado.text = getString(R.string.muestreo_por_enviar_format, m.pendientes)
-                row.textEstado.setTextColor(Color.parseColor("#B45309"))
-            } else {
-                row.textEstado.text = getString(R.string.muestreo_completo)
-                row.textEstado.setTextColor(Color.parseColor("#16A34A"))
+        // La consulta ya viene ordenada por día (más reciente primero) y luego por galpón,
+        // así que basta con recorrerla e ir abriendo encabezados cuando cambia el grupo.
+        for ((dia, delDia) in filas.groupBy { it.dia }) {
+            val cabecera = ItemHistorialDiaBinding.inflate(inflater, b.containerMuestreos, false)
+            cabecera.textHistorialDia.text = diaLegible(dia)
+            b.containerMuestreos.addView(cabecera.root)
+
+            val porGalpon = delDia.groupBy { Triple(it.plantelCodigo, it.campania, it.galpon) }
+            for ((clave, corrales) in porGalpon) {
+                val (plantel, campania, galpon) = clave
+                val fila = ItemHistorialGalponBinding.inflate(inflater, b.containerMuestreos, false)
+                fila.textGalponTitulo.text = getString(R.string.historial_galpon_format, plantel, campania, galpon)
+                fila.textGalponResumen.text = resumen(
+                    corrales.sumOf { it.aves },
+                    corrales.sumOf { it.avesPesadas },
+                    corrales.sumOf { it.pesoTotal },
+                )
+                b.containerMuestreos.addView(fila.root)
+
+                for (c in corrales) pintarCorral(inflater, b.containerMuestreos, c)
             }
-            b.containerMuestreos.addView(row.root)
         }
     }
 
-    private fun inicioDeHoyMillis(): Long {
-        val cal = Calendar.getInstance()
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
-        return cal.timeInMillis
+    private fun pintarCorral(inflater: LayoutInflater, destino: ViewGroup, c: HistorialCorral) {
+        val row = ItemMuestreoBinding.inflate(inflater, destino, false)
+        row.textLote.text = getString(R.string.historial_corral_format, c.corral, sexoLegible(c.categoria))
+        row.textDetalle.text = resumen(c.aves, c.avesPesadas, c.pesoTotal)
+        if (c.pendientes > 0) {
+            row.textEstado.text = getString(R.string.muestreo_por_enviar_format, c.pendientes)
+            row.textEstado.setTextColor(Color.parseColor("#B45309"))
+        } else {
+            row.textEstado.text = getString(R.string.muestreo_completo)
+            row.textEstado.setTextColor(Color.parseColor("#16A34A"))
+        }
+        destino.addView(row.root)
     }
+
+    /** "24 aves · 2465 g/ave", o solo las aves si ese corral fue de solo calidad. */
+    private fun resumen(aves: Int, avesPesadas: Int, pesoTotal: Double): String {
+        if (avesPesadas <= 0) return getString(R.string.historial_solo_calidad_format, aves)
+        val promedio = Math.round(pesoTotal / avesPesadas).toInt()
+        return getString(R.string.historial_resumen_corral_format, aves, promedio)
+    }
+
+    private fun sexoLegible(categoria: String): String = when (categoria) {
+        "HEMBRA" -> getString(R.string.categoria_hembra)
+        "MEDIANO" -> getString(R.string.categoria_mediano)
+        else -> getString(R.string.categoria_macho)
+    }
+
+    /** "2026-09-16" -> "martes 16 de septiembre". Si no parsea, se muestra tal cual. */
+    private fun diaLegible(dia: String): String = runCatching {
+        val fecha = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(dia)!!
+        SimpleDateFormat("EEEE d 'de' MMMM", Locale("es", "PE")).format(fecha)
+    }.getOrDefault(dia)
 
     override fun onDestroyView() {
         super.onDestroyView()

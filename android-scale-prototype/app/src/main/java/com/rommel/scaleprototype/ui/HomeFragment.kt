@@ -40,6 +40,9 @@ class HomeFragment : Fragment() {
         binding?.buttonSaca?.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_sacaSetup)
         }
+        binding?.buttonHistorial?.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_muestreos)
+        }
         binding?.buttonPlan?.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_planDia)
         }

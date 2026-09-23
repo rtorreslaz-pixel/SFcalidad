@@ -113,6 +113,17 @@
                     android:textStyle="bold"
                     android:textColor="@color/sf_blue" />
 
+                <!-- En grupal: cuánto pesa cada ave según cuántas haya en la balanza. -->
+                <TextView
+                    android:id="@+id/textPesoPorAve"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/sf_muted"
+                    android:visibility="gone" />
+
                 <!-- Confirmación de que el peso llegó a la web (o aviso si no) -->
                 <TextView
                     android:id="@+id/textEnvioWeb"
@@ -122,6 +133,76 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:visibility="gone" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Aves de ESTA pesada. Solo en grupal: se pesa de 3 en 3, pero al final del corral
+             pueden quedar 1 o 2 aves sueltas y hay que bajar el número, o si no el peso de
+             esas últimas se dividiría entre 3. Vuelve solo al estándar tras cada registro. -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/layoutAvesPesada"
+            style="@style/SfCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    style="@style/SfFieldLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_aves_esta_pesada" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonAvesMenos"
+                        style="@style/SfButtonGhost"
+                        android:layout_width="64dp"
+                        android:layout_height="56dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="@string/action_menos"
+                        android:textSize="22sp" />
+
+                    <TextView
+                        android:id="@+id/textAvesEstaPesada"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/sf_blue" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonAvesMas"
+                        style="@style/SfButtonGhost"
+                        android:layout_width="64dp"
+                        android:layout_height="56dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="@string/action_mas"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/textAvesEstandar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:textSize="12sp"
+                    android:textColor="@color/sf_muted" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

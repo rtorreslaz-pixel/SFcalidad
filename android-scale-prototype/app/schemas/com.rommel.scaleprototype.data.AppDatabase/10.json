@@ -1,0 +1,484 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 10,
+    "identityHash": "1c7cab43fb95b4f07f345c922b1c68e0",
+    "entities": [
+      {
+        "tableName": "registro_peso",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `plantelId` TEXT NOT NULL, `plantelCodigo` TEXT NOT NULL, `campania` TEXT NOT NULL, `galpon` TEXT NOT NULL, `corral` TEXT NOT NULL, `categoria` TEXT NOT NULL, `numeroAve` INTEGER NOT NULL, `pesoGramos` REAL NOT NULL, `tipoMuestreo` TEXT NOT NULL, `fechaHoraEpochMillis` INTEGER NOT NULL, `tieneHematoma` INTEGER, `tieneDefectoSeleccion` INTEGER, `gradoPododermatitis` INTEGER, `gradoRasguno` INTEGER, `pigmentacion` INTEGER, `edad` INTEGER, `linea` TEXT, `lote` TEXT, `nAvesPorPesada` INTEGER NOT NULL, `verificadorId` TEXT, `verificadorNombre` TEXT, `synced` INTEGER NOT NULL, `createdAtEpochMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plantelId",
+            "columnName": "plantelId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plantelCodigo",
+            "columnName": "plantelCodigo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "campania",
+            "columnName": "campania",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "galpon",
+            "columnName": "galpon",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "corral",
+            "columnName": "corral",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoria",
+            "columnName": "categoria",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numeroAve",
+            "columnName": "numeroAve",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pesoGramos",
+            "columnName": "pesoGramos",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipoMuestreo",
+            "columnName": "tipoMuestreo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaHoraEpochMillis",
+            "columnName": "fechaHoraEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tieneHematoma",
+            "columnName": "tieneHematoma",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "tieneDefectoSeleccion",
+            "columnName": "tieneDefectoSeleccion",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "gradoPododermatitis",
+            "columnName": "gradoPododermatitis",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "gradoRasguno",
+            "columnName": "gradoRasguno",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pigmentacion",
+            "columnName": "pigmentacion",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "edad",
+            "columnName": "edad",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "linea",
+            "columnName": "linea",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lote",
+            "columnName": "lote",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nAvesPorPesada",
+            "columnName": "nAvesPorPesada",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "verificadorId",
+            "columnName": "verificadorId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "verificadorNombre",
+            "columnName": "verificadorNombre",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "synced",
+            "columnName": "synced",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "createdAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "saca_muestreo",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `plantelId` TEXT NOT NULL, `plantelCodigo` TEXT NOT NULL, `campania` TEXT NOT NULL, `galpon` TEXT NOT NULL, `corral` TEXT NOT NULL, `categoria` TEXT NOT NULL, `edad` INTEGER, `avesPorJaba` INTEGER NOT NULL, `taraGramosPorJaba` REAL NOT NULL, `tipoJaba` TEXT, `fechaEpochMillis` INTEGER NOT NULL, `verificadorId` TEXT, `verificadorNombre` TEXT, `synced` INTEGER NOT NULL, `createdAtEpochMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plantelId",
+            "columnName": "plantelId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plantelCodigo",
+            "columnName": "plantelCodigo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "campania",
+            "columnName": "campania",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "galpon",
+            "columnName": "galpon",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "corral",
+            "columnName": "corral",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoria",
+            "columnName": "categoria",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "edad",
+            "columnName": "edad",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "avesPorJaba",
+            "columnName": "avesPorJaba",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taraGramosPorJaba",
+            "columnName": "taraGramosPorJaba",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipoJaba",
+            "columnName": "tipoJaba",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fechaEpochMillis",
+            "columnName": "fechaEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "verificadorId",
+            "columnName": "verificadorId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "verificadorNombre",
+            "columnName": "verificadorNombre",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "synced",
+            "columnName": "synced",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "createdAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "saca_pesada",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `muestreoId` TEXT NOT NULL, `numJabas` INTEGER NOT NULL, `pesoBrutoGramos` REAL NOT NULL, `pesoNetoGramos` REAL NOT NULL, `avesTotal` INTEGER NOT NULL, `promedioGramos` REAL NOT NULL, `fechaHoraEpochMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "muestreoId",
+            "columnName": "muestreoId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numJabas",
+            "columnName": "numJabas",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pesoBrutoGramos",
+            "columnName": "pesoBrutoGramos",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pesoNetoGramos",
+            "columnName": "pesoNetoGramos",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avesTotal",
+            "columnName": "avesTotal",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "promedioGramos",
+            "columnName": "promedioGramos",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaHoraEpochMillis",
+            "columnName": "fechaHoraEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "plan_item",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `fecha` TEXT NOT NULL, `plantelId` TEXT NOT NULL, `plantelCodigo` TEXT NOT NULL, `campania` TEXT NOT NULL, `galpon` TEXT NOT NULL, `corral` TEXT NOT NULL, `categoria` TEXT NOT NULL, `edad` INTEGER, `tipoMuestreo` TEXT NOT NULL, `linea` TEXT, `lote` TEXT, `agrupamiento` TEXT NOT NULL, `avesPorPesada` INTEGER, `circuito` TEXT, `orden` INTEGER NOT NULL, `estado` TEXT NOT NULL, `verificadorId` TEXT, `borrado` INTEGER NOT NULL, `synced` INTEGER NOT NULL, `createdAtEpochMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fecha",
+            "columnName": "fecha",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plantelId",
+            "columnName": "plantelId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plantelCodigo",
+            "columnName": "plantelCodigo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "campania",
+            "columnName": "campania",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "galpon",
+            "columnName": "galpon",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "corral",
+            "columnName": "corral",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoria",
+            "columnName": "categoria",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "edad",
+            "columnName": "edad",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "tipoMuestreo",
+            "columnName": "tipoMuestreo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "linea",
+            "columnName": "linea",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lote",
+            "columnName": "lote",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "agrupamiento",
+            "columnName": "agrupamiento",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avesPorPesada",
+            "columnName": "avesPorPesada",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "circuito",
+            "columnName": "circuito",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "orden",
+            "columnName": "orden",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estado",
+            "columnName": "estado",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "verificadorId",
+            "columnName": "verificadorId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "borrado",
+            "columnName": "borrado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "synced",
+            "columnName": "synced",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "createdAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1c7cab43fb95b4f07f345c922b1c68e0')"
+    ]
+  }
+}

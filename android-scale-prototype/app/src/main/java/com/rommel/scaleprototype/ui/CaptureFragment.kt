@@ -46,6 +46,12 @@ class CaptureFragment : Fragment() {
     private var ultimoPesoOkMillis = 0L
     // Aves registradas en esta sesión de captura (para el resumen de "Finalizar muestreo").
     private var avesRegistradasSesion = 0
+    // Último peso bruto leído de la balanza, en kg: se guarda para poder recalcular el peso
+    // por ave cuando el verificador cambia cuántas aves hay en esta pesada.
+    private var ultimoPesoKg: Double? = null
+    // Aves que hay en la balanza AHORA. Arranca en el estándar del muestreo y se puede bajar
+    // para la última pesada del corral, que suele quedar con 1 o 2 aves.
+    private var avesEstaPesada: Int = 1
 
     // Piso traído del servidor para el corral actual: si la app se reinstaló o se borró su
     // storage, Room local arranca en 0 pero el servidor ya tiene aves sincronizadas de antes
@@ -93,6 +99,7 @@ class CaptureFragment : Fragment() {
         linea = args.getString(CaptureSetupFragment.ARG_LINEA) ?: ""
         lote = args.getString(CaptureSetupFragment.ARG_LOTE) ?: "J"
         nAvesPorPesada = args.getInt(CaptureSetupFragment.ARG_N_AVES_PESADA, 1)
+        avesEstaPesada = nAvesPorPesada
         soloCalidad = args.getBoolean(CaptureSetupFragment.ARG_SOLO_CALIDAD, false)
         planItemId = args.getString(CaptureSetupFragment.ARG_PLAN_ITEM_ID)
 
@@ -118,6 +125,7 @@ class CaptureFragment : Fragment() {
         }
 
         applyCaptureMode()
+        configurarAvesPorPesada()
 
         observePendingCount()
         fetchServerNumeroAveBaseline()
@@ -358,15 +366,66 @@ class CaptureFragment : Fragment() {
     }
 
     private fun setWeight(valueKg: Double?) {
-        // Si se pesan N aves juntas, la báscula devuelve el total. Se divide para obtener
-        // el promedio por ave, que es lo que se almacena y compara contra el estándar.
-        latestWeightGramos = valueKg?.let { (it * 1000.0) / nAvesPorPesada }
+        ultimoPesoKg = valueKg
+        // La báscula devuelve el total de lo que tiene encima; se guarda el peso POR AVE.
+        latestWeightGramos = valueKg?.let { EstandaresMuestreo.pesoPorAveGramos(it, avesEstaPesada) }
         binding?.textCaptureWeight?.text = if (valueKg != null) {
             getString(R.string.weight_format, valueKg, "kg")
         } else {
             getString(R.string.weight_placeholder)
         }
         binding?.buttonRegisterAve?.isEnabled = latestWeightGramos != null
+        mostrarPesoPorAve()
+    }
+
+    /** En grupal, deja ver a cuánto sale cada ave con el número que está puesto. */
+    private fun mostrarPesoPorAve() {
+        val vista = binding?.textPesoPorAve ?: return
+        val porAve = latestWeightGramos
+        if (avesEstaPesada <= 1 || porAve == null) {
+            vista.visibility = View.GONE
+            return
+        }
+        vista.visibility = View.VISIBLE
+        vista.text = getString(R.string.peso_por_ave_format, Math.round(porAve).toInt(), avesEstaPesada)
+    }
+
+    /**
+     * Selector de aves de esta pesada. Solo aparece en grupal; tras cada registro vuelve al
+     * estándar del muestreo, porque lo normal es seguir pesando de a N.
+     */
+    private fun configurarAvesPorPesada() {
+        val b = binding ?: return
+        if (soloCalidad || nAvesPorPesada <= 1) {
+            b.layoutAvesPesada.visibility = View.GONE
+            return
+        }
+        b.layoutAvesPesada.visibility = View.VISIBLE
+        b.textAvesEstandar.text = getString(R.string.aves_estandar_format, nAvesPorPesada)
+        b.buttonAvesMenos.setOnClickListener { cambiarAvesEstaPesada(avesEstaPesada - 1) }
+        b.buttonAvesMas.setOnClickListener { cambiarAvesEstaPesada(avesEstaPesada + 1) }
+        pintarAvesEstaPesada()
+    }
+
+    private fun cambiarAvesEstaPesada(nuevo: Int) {
+        val ajustado = nuevo.coerceIn(1, EstandaresMuestreo.MAX_AVES_POR_PESADA)
+        if (ajustado == avesEstaPesada) return
+        avesEstaPesada = ajustado
+        pintarAvesEstaPesada()
+        // El peso de la balanza no cambió, pero sí a cuánto sale cada ave.
+        setWeight(ultimoPesoKg)
+    }
+
+    private fun pintarAvesEstaPesada() {
+        val b = binding ?: return
+        b.textAvesEstaPesada.text = avesEstaPesada.toString()
+        b.buttonAvesMenos.isEnabled = avesEstaPesada > 1
+        b.buttonAvesMas.isEnabled = avesEstaPesada < EstandaresMuestreo.MAX_AVES_POR_PESADA
+        b.textAvesEstandar.text = if (avesEstaPesada == nAvesPorPesada) {
+            getString(R.string.aves_estandar_format, nAvesPorPesada)
+        } else {
+            getString(R.string.aves_distinto_estandar_format, avesEstaPesada, nAvesPorPesada)
+        }
     }
 
     private fun setStatus(text: String) {
@@ -387,6 +446,9 @@ class CaptureFragment : Fragment() {
             tipoMuestreo = "PREVENTA"
             evaluarCalidad = binding?.switchEvaluarCalidad?.isChecked == true
         }
+        // Se fija ahora, antes de la corrutina: si el verificador toca +/- mientras se guarda,
+        // este registro debe quedar con las aves que tenía la balanza al pulsar Pesar.
+        val avesDeEstaPesada = if (soloCalidad) 1 else avesEstaPesada
         val dao = AppDatabase.getInstance(requireContext()).registroPesoDao()
         val gradoPododermatitis = if (evaluarCalidad) gradoFromRadioGroup(
             binding?.radioGroupPododermatitis?.checkedRadioButtonId, R.id.radioPodoLeve, R.id.radioPodoGrave
@@ -419,7 +481,7 @@ class CaptureFragment : Fragment() {
                     edad = edad,
                     linea = linea,
                     lote = lote,
-                    nAvesPorPesada = nAvesPorPesada,
+                    nAvesPorPesada = avesDeEstaPesada,
                     tieneHematoma = null,
                     tieneDefectoSeleccion = null,
                     gradoPododermatitis = gradoPododermatitis,
@@ -429,11 +491,20 @@ class CaptureFragment : Fragment() {
                 )
             )
             SyncScheduler.scheduleSyncNow(requireContext())
-            avesRegistradasSesion++
+            avesRegistradasSesion += avesDeEstaPesada
             binding?.textLastRegistered?.text = if (soloCalidad) {
                 getString(R.string.last_registered_calidad_format, numeroAve)
+            } else if (avesDeEstaPesada > 1) {
+                getString(R.string.last_registered_grupal_format, numeroAve, avesDeEstaPesada, pesoGramos)
             } else {
                 getString(R.string.last_registered_format, numeroAve, pesoGramos)
+            }
+            // Lo normal es seguir pesando de a N: el selector vuelve al estándar para que
+            // una pesada suelta no arrastre su número a las siguientes.
+            if (avesEstaPesada != nAvesPorPesada) {
+                avesEstaPesada = nAvesPorPesada
+                pintarAvesEstaPesada()
+                setWeight(ultimoPesoKg)
             }
         }
     }

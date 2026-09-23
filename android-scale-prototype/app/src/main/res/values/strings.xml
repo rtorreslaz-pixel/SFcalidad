@@ -99,6 +99,15 @@
     <string name="protocolo_desconocido">sin protocolo elegido</string>
     <string name="last_registered_format">Ave #%1$d registrada — %2$.1f g</string>
     <string name="last_registered_calidad_format">Ave #%1$d — calidad registrada</string>
+    <string name="last_registered_grupal_format">Pesada #%1$d registrada — %2$d aves · %3$.1f g por ave</string>
+
+    <!-- Aves por pesada, editable durante el muestreo grupal -->
+    <string name="label_aves_esta_pesada">N° aves en esta pesada</string>
+    <string name="action_menos">−</string>
+    <string name="action_mas">+</string>
+    <string name="aves_estandar_format">Estándar del muestreo: %1$d aves. Baja el número si quedan menos en el corral.</string>
+    <string name="aves_distinto_estandar_format">Esta pesada va con %1$d (el estándar es %2$d).</string>
+    <string name="peso_por_ave_format">%1$d g por ave (%2$d aves)</string>
 
     <string name="switch_evaluar_calidad">Evaluar calidad de esta ave</string>
     <string name="label_hematoma">Hematoma</string>
@@ -112,15 +121,22 @@
 
     <string name="title_diagnostic">Ajustes de báscula</string>
 
-    <string name="action_muestreos_dia">Muestreos del día</string>
-    <string name="title_muestreos_dia">Muestreos de hoy</string>
+    <string name="action_muestreos_dia">Historial de pesajes</string>
+    <string name="title_muestreos_dia">Historial de pesajes</string>
+    <string name="home_historial">📁 Historial de pesajes</string>
+    <string name="home_historial_desc">Lo que ya pesaste, día por día, con el resumen por corral y galpón.</string>
+    <string name="historial_resumen_format">%1$d día(s) · %2$d aves · %3$s</string>
+    <string name="historial_galpon_format">%1$s · %2$s · Galpón %3$s</string>
+    <string name="historial_corral_format">Corral %1$s · %2$s</string>
+    <string name="historial_resumen_corral_format">%1$d aves · %2$d g/ave</string>
+    <string name="historial_solo_calidad_format">%1$d aves · solo calidad</string>
     <string name="muestreos_resumen_format">%1$d muestreos · %2$d aves · %3$s</string>
     <string name="muestreos_todo_sincronizado">todo sincronizado</string>
     <string name="muestreos_pendientes_format">%1$d pendientes de enviar</string>
     <string name="muestreo_item_detalle">%1$d aves</string>
     <string name="muestreo_completo">✓ Completo</string>
     <string name="muestreo_por_enviar_format">⏳ %1$d por enviar</string>
-    <string name="muestreos_vacio">Aún no hay muestreos registrados hoy.</string>
+    <string name="muestreos_vacio">Aún no hay pesajes registrados en este teléfono.</string>
     <string name="action_sync_pendientes">Sincronizar pendientes</string>
     <string name="action_volver">Volver</string>
 

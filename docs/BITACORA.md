@@ -53,6 +53,12 @@ calidad del pollo en el cliente + pesaje preventa en granja. Omnicanal:
 
 ## 5. Trabajo local (entorno de desarrollo)
 - Si `node_modules` se corrompe: `npm install`; luego **`npx prisma generate`** (cliente en `src/generated/prisma`) y, si falla el binario nativo, `cd node_modules/better-sqlite3 && npx node-gyp rebuild --release`.
+- **Compilar el Android en local** (no hace falta esperar a CI): instalar el SDK con
+  `commandlinetools-linux` en `/opt/android-sdk`, `sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"`,
+  escribir `sdk.dir=/opt/android-sdk` en `android-scale-prototype/local.properties` (está en
+  `.gitignore`) y correr `./gradlew testDebugUnitTest assembleDebug assembleRelease`.
+  Maven Central suele responder **429** desde estos contenedores: **reintentar**, que lo ya
+  descargado queda en caché y cada intento avanza.
 - Para **capturas de la web**: `next build` → `next start` con `DATABASE_URL=file:./algo.db DEMO_MODE=true`, sembrar con `SEED_DEMO=true npx tsx prisma/seed.ts`, crear un token de sesión y capturar con Playwright contra `localhost` (chromium en `/opt/pw-browsers`).
 - `npm start` = `db:setup && next start`; `db:setup` = `migrate deploy && enable-wal.cjs && (seed || no-fatal)`.
 

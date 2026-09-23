@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Separador de día en el historial: "martes 16 de septiembre". -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/textHistorialDia"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="6dp"
+    android:textSize="13sp"
+    android:textStyle="bold"
+    android:textAllCaps="true"
+    android:letterSpacing="0.05"
+    android:textColor="@color/sf_muted" />
