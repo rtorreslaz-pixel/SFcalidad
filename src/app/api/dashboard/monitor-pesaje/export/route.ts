@@ -28,11 +28,6 @@ const GRADO_LESION_LABEL: Record<number, string> = {
   2: "Grave",
 };
 
-function boolLabel(v: boolean | null | undefined): string {
-  if (v === null || v === undefined) return "";
-  return v ? "Sí" : "No";
-}
-
 function gradoLabel(v: number | null | undefined): string {
   if (v === null || v === undefined) return "";
   return GRADO_LESION_LABEL[v] ?? String(v);
@@ -92,8 +87,6 @@ export async function GET(request: NextRequest) {
     "EDAD (días)",
     "LÍNEA",
     "LOTE",
-    "TIENE HEMATOMA",
-    "TIENE DEFECTO SELECCIÓN",
     "GRADO PODODERMATITIS",
     "GRADO RASGUÑO",
     "PIGMENTACIÓN (0-7)",
@@ -120,8 +113,6 @@ export async function GET(request: NextRequest) {
     r.edad ?? "",
     r.linea ?? "",
     r.lote ?? "",
-    boolLabel(r.tieneHematoma),
-    boolLabel(r.tieneDefectoSeleccion),
     gradoLabel(r.gradoPododermatitis),
     gradoLabel(r.gradoRasguno),
     r.pigmentacion ?? "",
