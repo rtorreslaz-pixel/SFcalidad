@@ -104,6 +104,30 @@ label.f{ font-size:12px; font-weight:700; color:var(--scr-muted); display:block;
 .calidad{ display:none; flex-direction:column; gap:11px; background:#fff; border:1px solid var(--scr-line); border-radius:12px; padding:13px; }
 .calidad.show{ display:flex; }
 .lastreg{ text-align:center; font-size:12.5px; font-weight:700; color:var(--green); min-height:16px; }
+/* Fila compacta de aves por pesada: va dentro de la tarjeta del peso para no alargar
+   la pantalla, que debajo lleva los tres criterios de calidad. */
+.avesrow{ display:none; align-items:center; gap:7px; background:var(--scr-bg);
+  border:1px solid var(--scr-line); border-radius:10px; padding:8px 11px; }
+.avesrow.show{ display:flex; }
+.avesrow .et{ flex:1; font-weight:700; font-size:12.5px; line-height:1.25; }
+.avesrow.off .et{ color:var(--amber); }
+.avesbt{ flex:none; width:38px; height:34px; border:1.5px solid var(--blue); border-radius:8px;
+  background:#fff; color:var(--blue); font-size:16px; font-weight:800; cursor:pointer; }
+.avesbt:disabled{ opacity:.35; cursor:default; }
+.avesn{ flex:none; width:32px; text-align:center; font-size:19px; font-weight:800; color:var(--blue); }
+.avesrow.off .avesn{ color:var(--amber); }
+/* Historial: separador de día y consolidado del galpón. */
+.dayhead{ font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--scr-muted); margin-top:4px; }
+.galponrow{ display:flex; align-items:center; gap:8px; padding:2px 2px 0; font-weight:800;
+  font-size:12.5px; color:var(--blue); }
+.galponrow .gs{ margin-left:auto; font-size:12px; }
+/* Plan del día: avance y corrales. */
+.progbar{ height:6px; background:var(--scr-line); border-radius:6px; overflow:hidden; }
+.progbar i{ display:block; height:100%; background:var(--green); }
+.corral{ width:30px; height:30px; border-radius:8px; background:#fef3c7; color:var(--blue);
+  font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center; flex:none; }
+.mrow.hecho{ opacity:.6; }
 
 /* scale diag */
 .devrow{ display:flex; align-items:center; gap:9px; }
@@ -152,12 +176,14 @@ a.weblink:hover{ text-decoration:underline; }
 
   <div class="flow" id="flow">
     <button class="step" data-go="login" aria-current="true"><span class="n">1</span> Iniciar sesión</button>
-    <button class="step" data-go="setup"><span class="n">2</span> Configurar</button>
-    <button class="step" data-go="capture"><span class="n">3</span> Captura</button>
-    <button class="step" data-go="scale"><span class="n">4</span> Ajustes de báscula</button>
-    <button class="step" data-go="registro"><span class="n">5</span> Muestreos del día</button>
-    <button class="step" data-go="saca-setup"><span class="n">6</span> Saca · configurar</button>
-    <button class="step" data-go="saca-capture"><span class="n">7</span> Saca · pesadas</button>
+    <button class="step" data-go="home"><span class="n">2</span> Inicio</button>
+    <button class="step" data-go="plan"><span class="n">3</span> Plan del día</button>
+    <button class="step" data-go="setup"><span class="n">4</span> Configurar</button>
+    <button class="step" data-go="capture"><span class="n">5</span> Captura</button>
+    <button class="step" data-go="scale"><span class="n">6</span> Ajustes de báscula</button>
+    <button class="step" data-go="registro"><span class="n">7</span> Historial</button>
+    <button class="step" data-go="saca-setup"><span class="n">8</span> Saca · configurar</button>
+    <button class="step" data-go="saca-capture"><span class="n">9</span> Saca · pesadas</button>
   </div>
 
   <div class="layout">
@@ -170,9 +196,9 @@ a.weblink:hover{ text-decoration:underline; }
         <div class="body">
           <div class="view active" id="v-login">
             <div class="logo"><div class="n">Iniciar sesión</div><div class="bar"></div>
-              <div class="muted">Ingresa con tu usuario de verificador.</div></div>
-            <div class="field"><label class="f">Correo</label><input class="inp" value="verificador1@avicola.com"></div>
-            <div class="field"><label class="f">Contraseña</label><input class="inp" type="password" value="demo1234"></div>
+              <div class="muted">Cada verificador entra con su propio usuario: inicial del nombre + apellido.</div></div>
+            <div class="field"><label class="f">Usuario</label><input class="inp" value="jparado"></div>
+            <div class="field"><label class="f">Contraseña</label><input class="inp" type="password" value="Granja2026"></div>
             <button class="btn primary" data-go="home">Ingresar</button>
             <div class="muted center">La sesión queda guardada en el teléfono: no hay que reingresar cada día.</div>
           </div>
@@ -180,10 +206,14 @@ a.weblink:hover{ text-decoration:underline; }
           <!-- HOME / SELECTOR DE TIPO DE TRABAJO -->
           <div class="view" id="v-home">
             <div class="muted">¿Qué vas a registrar hoy?</div>
-            <button class="btn primary" data-go="setup">⚖️ Pesaje preventa / calidad</button>
+            <button class="btn primary" data-go="plan">🗓️ Plan del día · preventa / calidad</button>
+            <div class="muted center" style="font-size:11.5px">Arma los corrales que vas a muestrear hoy y ve cumpliéndolos.</div>
+            <button class="btn ghost" data-go="setup">⚖️ Pesar preventa / calidad sin plan</button>
             <div class="muted center" style="font-size:11.5px">Muestreo en granja a ~35 días (aves individuales) o solo calidad.</div>
             <button class="btn ghost" data-go="saca-setup">📦 Pesaje de saca</button>
             <div class="muted center" style="font-size:11.5px">Muestreo de jabas antes de la saca (~40+ días).</div>
+            <button class="btn ghost" data-go="registro">📁 Historial de pesajes</button>
+            <div class="muted center" style="font-size:11.5px">Lo que ya pesaste, día por día, con el resumen por corral y galpón.</div>
           </div>
 
           <!-- SETUP -->
@@ -204,7 +234,7 @@ a.weblink:hover{ text-decoration:underline; }
             <div><label class="f">Línea genética</label><select class="sel"><option>ROSS</option><option>COBB</option></select></div>
             <div><label class="f">Lote</label>
               <div class="radios" data-radio="lote"><div class="chip on">J — Joven</div><div class="chip">A — Adulto</div></div></div>
-            <div><label class="f">N° aves por pesada</label><select class="sel"><option>1</option><option>2</option><option>3</option></select></div>
+            <div><label class="f">N° aves por pesada</label><select class="sel"><option>1</option><option>2</option><option selected>3</option></select></div>
             <button class="btn primary" data-go="capture">Comenzar captura</button>
           </div>
 
@@ -212,7 +242,7 @@ a.weblink:hover{ text-decoration:underline; }
           <div class="view" id="v-capture">
             <div class="selhead">
               <div class="t">P208 · 2705 · G7 · B · Macho</div>
-              <div class="s">Edad 42 d · ROSS · Lote J · 1 ave/pesada &nbsp; <button class="link" data-go="setup">Cambiar</button></div>
+              <div class="s">Edad 42 d · ROSS · Lote J · 3 aves/pesada &nbsp; <button class="link" data-go="setup">Cambiar</button></div>
             </div>
             <span class="badge done" id="syncbadge">✓ Todo sincronizado</span>
             <div class="muted" id="capstatus" style="display:flex;align-items:center;gap:7px"><span class="dot live"></span> Conectado — báscula BIT PS 4.0 IoT</div>
@@ -220,6 +250,13 @@ a.weblink:hover{ text-decoration:underline; }
               <div class="k">Peso en vivo</div>
               <div class="big"><span id="wval">2.612</span><span class="u"> kg</span></div>
               <div class="std muted">Estándar del lote: <b>3.103 kg</b> · <span id="stdgap" style="color:var(--amber);font-weight:700">−0.49 kg</span></div>
+              <div class="std muted" id="porave" style="display:none"></div>
+            </div>
+            <div class="avesrow" id="avesrow">
+              <span class="et" id="avesEt">N° aves en esta pesada</span>
+              <button class="avesbt" id="avesMenos">−</button>
+              <span class="avesn" id="avesN">3</span>
+              <button class="avesbt" id="avesMas">+</button>
             </div>
             <div class="switchrow" id="calrow"><span style="font-weight:700;font-size:13.5px">Evaluar calidad de esta ave</span><div class="sw" id="calSw"></div></div>
             <div class="calidad" id="calidad">
@@ -232,7 +269,7 @@ a.weblink:hover{ text-decoration:underline; }
             <div class="selhead" id="capListHead" style="display:none"><div class="t">Registrados en este muestreo</div><div class="s" id="capListResumen">—</div></div>
             <div id="capList"></div>
             <button class="btn ghost" data-go="scale" id="scaleBtn">Ajustes de báscula</button>
-            <button class="btn ghost" data-go="registro">Muestreos del día</button>
+            <button class="btn ghost" data-go="registro">Historial de pesajes</button>
             <button class="btn ghost" id="finBtn" style="color:var(--red);border-color:color-mix(in srgb,var(--red) 35%,#fff)">Finalizar muestreo</button>
           </div>
 
@@ -254,12 +291,25 @@ a.weblink:hover{ text-decoration:underline; }
             <button class="btn ghost" data-go="capture">Volver a captura</button>
           </div>
 
+          <!-- PLAN DEL DÍA -->
+          <div class="view" id="v-plan">
+            <div class="selhead">
+              <div class="t">Preventa / calidad · lunes 7</div>
+              <div class="s" id="planAvance">—</div>
+              <div class="progbar" style="margin-top:7px"><i id="planProg" style="width:0%"></i></div>
+            </div>
+            <div id="planList"></div>
+            <button class="btn primary" data-go="setup">+ Agregar corrales</button>
+            <button class="btn ghost" id="planSync">Sincronizar</button>
+            <button class="btn ghost" data-go="home">Volver al inicio</button>
+          </div>
+
           <!-- REGISTRO DE MUESTREOS DEL DÍA -->
           <div class="view" id="v-registro">
-            <div class="selhead"><div class="t">Muestreos de hoy</div><div class="s" id="regResumen">—</div></div>
+            <div class="selhead"><div class="t">Historial de pesajes</div><div class="s" id="regResumen">—</div></div>
             <div id="regList"></div>
             <button class="btn ghost" id="regSyncBtn">Sincronizar pendientes</button>
-            <button class="btn ghost" data-go="capture">Volver a captura</button>
+            <button class="btn ghost" data-go="home">Volver al inicio</button>
           </div>
 
           <!-- DETALLE DE UN MUESTREO -->
@@ -349,13 +399,28 @@ a.weblink:hover{ text-decoration:underline; }
   tick(); setInterval(tick,10000);
 
   var state={ screen:'login', online:true, pending:0, aves:0, weight:2.612, capItems:[], detIdx:0,
+    // Aves que hay en la balanza AHORA. Arranca en el estándar del muestreo y se baja para
+    // la última pesada del corral, que suele quedar con 1 o 2 aves sueltas.
+    avesPesada:2, avesEstandar:3,
+    // El historial guarda día y galpón para poder agrupar como lo hace la app.
     muestreos:[
-      {lote:'P054 · 2705 · G3 · A', tipo:'Pesaje', aves:48, pend:0,
+      {dia:'lunes 7 de septiembre', galpon:'P054 · 2705 · Galpón 3', lote:'P054 · 2705 · G3 · A', tipo:'Pesaje', aves:48, pend:0, prom:2984,
         resumen:'48 aves · promedio 2.984 kg',
         items:[{t:'Ave #1',s:'2.91 kg'},{t:'Ave #2',s:'3.02 kg'},{t:'Ave #3',s:'2.97 kg'},{t:'Ave #4',s:'3.05 kg'},{t:'…',s:'(48 en total)'}]},
-      {lote:'P280 · 2705 · G1 · B', tipo:'Solo calidad', aves:20, pend:4,
+      {dia:'lunes 7 de septiembre', galpon:'P054 · 2705 · Galpón 3', lote:'P054 · 2705 · G3 · B', tipo:'Pesaje', aves:11, pend:0, prom:2582,
+        resumen:'11 aves · promedio 2.582 kg',
+        items:[{t:'Pesada #1',s:'3 aves · 2.60 kg/ave'},{t:'Pesada #2',s:'3 aves · 2.60 kg/ave'},{t:'Pesada #3',s:'3 aves · 2.60 kg/ave'},{t:'Pesada #4',s:'2 aves · 2.50 kg/ave'}]},
+      {dia:'viernes 4 de septiembre', galpon:'P280 · 2705 · Galpón 1', lote:'P280 · 2705 · G1 · B', tipo:'Solo calidad', aves:20, pend:4, prom:null,
         resumen:'20 aves evaluadas · 2 con lesión',
         items:[{t:'Ave #1',s:'Podó Sin lesión · Pigm 3'},{t:'Ave #2',s:'Podó Leve · Pigm 4'},{t:'Ave #3',s:'Podó Sin lesión · Pigm 3'},{t:'…',s:'(20 en total)'}]}
+    ],
+    // Plan del día: los corrales que el verificador se propuso muestrear hoy.
+    plan:[
+      {corral:'A', lote:'P208 · G7 · Macho', det:'Pesaje · 38 d · ROSS · Lote J · Individual · CV', hecho:true},
+      {corral:'B', lote:'P208 · G7 · Macho', det:'Pesaje · 38 d · ROSS · Lote J · Individual · CV', hecho:false},
+      {corral:'C', lote:'P208 · G7 · Macho', det:'Pesaje · 38 d · ROSS · Lote J · Individual · CB', hecho:false},
+      {corral:'D', lote:'P208 · G7 · Macho', det:'Pesaje · 38 d · ROSS · Lote J · Individual · CV', hecho:false},
+      {corral:'A', lote:'P208 · G8 · Hembra', det:'Solo calidad · 36 d · COBB · Lote A · Grupal 3 aves · CV', hecho:false}
     ],
     saca:{ avesPorJaba:10, taraKg:2.0, bruto:24.6, pesadas:[] } };
   function chipSel(g){ var c=document.querySelector('[data-radio="'+g+'"] .chip.on'); return c?c.textContent:''; }
@@ -365,28 +430,36 @@ a.weblink:hover{ text-decoration:underline; }
     setup:['Configurar captura','Datos del lote que se va a capturar.'],
     capture:['Captura de pesaje','Peso en vivo y registro ave por ave.'],
     scale:['Ajustes de báscula','Vincular báscula y elegir su protocolo.'],
-    registro:['Muestreos del día','Control de lo capturado y lo que falta enviar.'],
+    registro:['Historial de pesajes','Lo ya pesado, día por día, con el resumen por corral y galpón.'],
+    plan:['Plan del día','Los corrales que se van a muestrear hoy, y su avance.'],
     'muestreo-detalle':['Detalle del muestreo','Cada registro de la muestra y el total.'],
     'saca-setup':['Configurar saca','Lote y parámetros del muestreo de jabas.'],
     'saca-capture':['Pesaje de saca','Muestreo de jabas por pesadas (~40+ días).']
   };
   var feats={
-    login:[['🔒','Sesión persistente','La credencial queda guardada y cifrada en el teléfono; el verificador no reingresa cada día y puede arrancar la jornada sin señal.']],
+    login:[['👤','Un usuario por persona','Cada verificador entra con el suyo (inicial del nombre + apellido), así los muestreos quedan atribuidos a quien los hizo.'],
+      ['🔒','Sesión persistente','La credencial queda guardada y cifrada en el teléfono; el verificador no reingresa cada día y puede arrancar la jornada sin señal.']],
     setup:[['🐔','Identificación del lote','Plantel, campaña, galpón, corral, sexo, edad, línea y lote — para trazar el mismo lote de la granja al cliente.'],
       ['📴','Catálogo sin conexión','El listado de planteles se guarda de la última sesión con internet, así se puede configurar aunque no haya señal.']],
     capture:[['⚖️','Peso en vivo por Bluetooth','Al colocar el ave, el peso se registra solo, sin apuntar en papel. Se compara contra el estándar del lote.'],
-      ['🔬','Calidad opcional por ave','Hematoma, defecto de selección, pododermatitis, rasguños y pigmentación sobre una muestra de aves.'],
+      ['🔢','Aves por pesada corregibles','En grupal se pesa de 3 en 3, pero el corral cierra con 1 o 2 aves sueltas: se baja el número y esas últimas se registran con su peso real, no con un tercio.'],
+      ['🔬','Calidad opcional por ave','Pododermatitis, rasguños y pigmentación 0–7 sobre una muestra de aves.'],
       ['🔁','Offline con cola','Sin señal, cada registro queda pendiente en el teléfono y se sincroniza solo al reconectar. Nunca duplica.']],
     scale:[['📡','Multi-báscula','Varias marcas soportadas (Ohaus, T-Scale, genérico y BIT PS 4.0 IoT). Agregar una marca nueva no toca la conexión.'],
       ['🧪','Diagnóstico hex','Muestra los datos crudos de la báscula para afinar el formato de una marca nueva con una captura real.'],
       ['🔗','Conexión persistente','La báscula se conecta una vez y queda enlazada durante toda la jornada; al volver a pesar el peso aparece de inmediato, sin reconectar.']],
-    registro:[['📋','Control del día','Cada lote muestreado con su estado: completo o con registros pendientes de enviar.'],
-      ['📤','Pendientes visibles','El verificador ve exactamente qué le falta sincronizar antes de cerrar la jornada.'],
-      ['🔍','Revisión del muestreo','Toca un muestreo para ver de nuevo cada registro de la muestra y su total.']],
+    registro:[['📁','Consulta después de cerrar','Los registros no se borran al sincronizar: lo pesado en días anteriores se sigue viendo aunque se cierre la app.'],
+      ['🏠','Resumen por galpón y corral','De cada galpón, el total de aves y el peso promedio; debajo, cada corral con lo suyo.'],
+      ['📤','Pendientes visibles','El verificador ve exactamente qué le falta sincronizar antes de cerrar la jornada.']],
+    plan:[['🗓️','La jornada armada antes de salir','El verificador carga los corrales que va a muestrear, uno a la vez y con sus propios datos: sexo, edad, línea, lote y circuito.'],
+      ['✅','Se cumple solo','Al terminar un muestreo, la fila del plan pasa a Hecho sin que nadie marque nada: el servidor cruza lo pesado contra lo planificado.'],
+      ['📶','Funciona sin señal','El plan se guarda en el teléfono y se sincroniza con la web cuando vuelve el internet.']],
     'muestreo-detalle':[['🔍','Cada registro','La lista de aves/pesadas de ese muestreo, tal como se capturaron.'],
       ['∑','Total al final','Un resumen totalizado (aves, promedio, neto) al final de la lista.']],
-    home:[['⚖️','Preventa / calidad','Muestreo de aves individuales en granja (~35 días) o solo calidad en cliente.'],
-      ['📦','Pesaje de saca','Muestreo de jabas que hace el equipo de saca antes de la saca diaria (~40+ días).']],
+    home:[['🗓️','Plan del día','Los corrales de preventa/calidad que toca muestrear hoy, con su avance.'],
+      ['⚖️','Preventa / calidad','Muestreo de aves individuales en granja (~35 días) o solo calidad en cliente.'],
+      ['📦','Pesaje de saca','Muestreo de jabas que hace el equipo de saca antes de la saca diaria (~40+ días).'],
+      ['📁','Historial','Consulta de lo ya pesado sin empezar ningún muestreo.']],
     'saca-setup':[['🔗','Ligado al lote','Se ata por plantel-campaña-galpón-categoría (mismo lote que la preventa) para comparar estimado vs real.'],
       ['📦','Aves por jaba y tara','Se establecen una vez y valen para todas las pesadas del muestreo.']],
     'saca-capture':[['⚖️','Neto por pesada','Se pesan varias jabas juntas; el neto = bruto − tara×jabas y el promedio por ave sale solo.'],
@@ -398,15 +471,16 @@ a.weblink:hover{ text-decoration:underline; }
     document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
     document.getElementById('v-'+s).classList.add('active');
     document.querySelectorAll('.step').forEach(function(st){ st.setAttribute('aria-current', st.dataset.go===s?'true':'false'); });
-    var sub={login:'Pesaje preventa en granja',home:'Inicio',setup:'Configurar captura',capture:'Captura',scale:'Ajustes de báscula',registro:'Muestreos del día','muestreo-detalle':'Detalle','saca-setup':'Configurar saca','saca-capture':'Pesaje de saca'};
+    var sub={login:'Pesaje preventa en granja',home:'Inicio',plan:'Plan del día',setup:'Configurar captura',capture:'Captura',scale:'Ajustes de báscula',registro:'Historial de pesajes','muestreo-detalle':'Detalle','saca-setup':'Configurar saca','saca-capture':'Pesaje de saca'};
     document.getElementById('appbarsub').textContent=sub[s];
     document.getElementById('exTitle').textContent=titles[s][0];
     document.getElementById('exSub').textContent=titles[s][1];
     var fc=document.getElementById('exFeats'); fc.innerHTML='';
     feats[s].forEach(function(f){ fc.insertAdjacentHTML('beforeend',
       '<div class="feat"><div class="ic">'+f[0]+'</div><div><div class="t">'+f[1]+'</div><div class="d">'+f[2]+'</div></div></div>'); });
-    if(s==='capture'){ applyMode(); renderCapList(); }
+    if(s==='capture'){ applyMode(); renderCapList(); aplicarAvesPesada(); }
     if(s==='registro') renderRegistro();
+    if(s==='plan') renderPlan();
     if(s==='saca-capture'){ aplicarSacaSetup(); renderSaca(); }
   }
 
@@ -457,23 +531,85 @@ a.weblink:hover{ text-decoration:underline; }
       : 'Aún no registras pesadas.';
   }
 
-  // Registro de muestreos del día: control de completos vs pendientes de enviar.
+  // Historial: lo pesado día por día, con el consolidado de cada galpón encima de sus corrales.
+  // Los registros no se borran al sincronizar, así que también se ven los ya enviados.
   function renderRegistro(){
     var list=document.getElementById('regList'); if(!list) return;
-    var totAves=0, totPend=0;
-    list.innerHTML = state.muestreos.map(function(m,idx){
+    var totAves=0, totPend=0, html='', diaAct='', galponAct='';
+    state.muestreos.forEach(function(m,idx){
       totAves+=m.aves; totPend+=m.pend;
+      if(m.dia!==diaAct){ diaAct=m.dia; galponAct=''; html+='<div class="dayhead">'+m.dia+'</div>'; }
+      if(m.galpon!==galponAct){
+        galponAct=m.galpon;
+        var delGalpon=state.muestreos.filter(function(x){ return x.dia===m.dia && x.galpon===m.galpon; });
+        var aves=0, pesoTot=0, avesPes=0;
+        delGalpon.forEach(function(x){ aves+=x.aves; if(x.prom){ pesoTot+=x.prom*x.aves; avesPes+=x.aves; } });
+        var res = avesPes>0 ? aves+' aves · '+Math.round(pesoTot/avesPes)+' g/ave' : aves+' aves · solo calidad';
+        html+='<div class="galponrow"><span>'+m.galpon+'</span><span class="gs">'+res+'</span></div>';
+      }
       var badge = m.pend>0
         ? '<span class="badge pending">⏳ '+m.pend+' por enviar</span>'
         : '<span class="badge done">✓ Completo</span>';
-      return '<div class="mrow" data-idx="'+idx+'" style="cursor:pointer"><div><div class="t">'+m.lote+' ›</div><div class="s">'+m.tipo+' · '+m.aves+' aves</div></div>'+badge+'</div>';
-    }).join('');
+      var det = m.prom ? m.aves+' aves · '+m.prom+' g/ave' : m.aves+' aves · solo calidad';
+      html+='<div class="mrow" data-idx="'+idx+'" style="cursor:pointer"><div><div class="t">Corral '+m.lote.split(' · ').pop()+' ›</div><div class="s">'+det+'</div></div>'+badge+'</div>';
+    });
+    list.innerHTML=html;
     Array.prototype.forEach.call(list.querySelectorAll('.mrow'), function(row){
       row.addEventListener('click', function(){ openDetalle(parseInt(row.dataset.idx,10)); });
     });
+    var dias={}; state.muestreos.forEach(function(m){ dias[m.dia]=1; });
     document.getElementById('regResumen').textContent =
-      state.muestreos.length+' muestreos · '+totAves+' aves · '+(totPend===0?'todo sincronizado':totPend+' pendientes de enviar');
+      Object.keys(dias).length+' día(s) · '+totAves+' aves · '+(totPend===0?'todo sincronizado':totPend+' pendientes de enviar');
   }
+
+  // Plan del día: los corrales propuestos para hoy y cuáles ya se cumplieron. Tocar uno
+  // pendiente abre la configuración de captura con sus datos.
+  function renderPlan(){
+    var list=document.getElementById('planList'); if(!list) return;
+    var hechos=state.plan.filter(function(i){ return i.hecho; }).length;
+    list.innerHTML = state.plan.map(function(i,idx){
+      var badge = i.hecho ? '<span class="badge done">Hecho</span>'
+                          : '<span class="badge pending">Pendiente</span>';
+      return '<div class="mrow'+(i.hecho?' hecho':'')+'" data-plan="'+idx+'"'+(i.hecho?'':' style="cursor:pointer"')+'>'+
+             '<div class="corral">'+i.corral+'</div>'+
+             '<div style="flex:1"><div class="t">'+i.lote+'</div><div class="s">'+i.det+'</div></div>'+badge+'</div>';
+    }).join('');
+    Array.prototype.forEach.call(list.querySelectorAll('[data-plan]'), function(row){
+      var i=state.plan[parseInt(row.dataset.plan,10)];
+      if(!i.hecho) row.addEventListener('click', function(){ setScreen('setup'); });
+    });
+    document.getElementById('planAvance').textContent = hechos+' de '+state.plan.length+' corrales hechos';
+    document.getElementById('planProg').style.width = Math.round(hechos/state.plan.length*100)+'%';
+  }
+
+  // Aves de ESTA pesada. El peso que marca la balanza se reparte entre ellas, no entre el
+  // estándar del muestreo: al cerrar un corral que se pesó de 3 en 3 quedan 1 o 2 aves y
+  // dividirlas entre 3 las registraría con un tercio de su peso.
+  function aplicarAvesPesada(){
+    var fila=document.getElementById('avesrow'); if(!fila) return;
+    var sel=document.querySelector('#v-setup .sel + .sel');
+    state.avesEstandar = parseInt((document.querySelectorAll('#v-setup .sel')[2]||{}).value||'3',10) || 3;
+    if(state.avesPesada>20) state.avesPesada=20;
+    var grupal = state.avesEstandar>1 && !isSoloCalidad();
+    fila.classList.toggle('show', grupal);
+    if(!grupal){ document.getElementById('porave').style.display='none'; return; }
+    var fuera = state.avesPesada!==state.avesEstandar;
+    fila.classList.toggle('off', fuera);
+    document.getElementById('avesEt').textContent = fuera
+      ? 'N° aves en esta pesada (estándar '+state.avesEstandar+')'
+      : 'N° aves en esta pesada';
+    document.getElementById('avesN').textContent = state.avesPesada;
+    document.getElementById('avesMenos').disabled = state.avesPesada<=1;
+    document.getElementById('avesMas').disabled   = state.avesPesada>=20;
+    var por=document.getElementById('porave');
+    por.style.display='';
+    por.innerHTML = '<b>'+Math.round(state.weight*1000/state.avesPesada)+' g por ave</b> ('+state.avesPesada+' aves)';
+  }
+  document.getElementById('avesMenos').onclick=function(){
+    if(state.avesPesada>1){ state.avesPesada--; aplicarAvesPesada(); } };
+  document.getElementById('avesMas').onclick=function(){
+    if(state.avesPesada<20){ state.avesPesada++; aplicarAvesPesada(); } };
+  document.getElementById('planSync').onclick=function(){ renderPlan(); };
 
   // Modo de captura: "Pesaje" (peso + calidad opcional) vs "Solo calidad" (sin báscula).
   function isSoloCalidad(){
@@ -492,6 +628,7 @@ a.weblink:hover{ text-decoration:underline; }
     document.getElementById('exTitle').textContent  = solo?'Captura de calidad':'Captura de pesaje';
     document.getElementById('exSub').textContent    = solo?'Evaluación de calidad ave por ave, sin báscula.':'Peso en vivo y registro ave por ave.';
     document.getElementById('appbarsub').textContent= solo?'Calidad':'Captura';
+    aplicarAvesPesada();
   }
   document.querySelectorAll('[data-go]').forEach(function(b){ b.addEventListener('click',function(){ setScreen(b.dataset.go); }); });
 
@@ -582,7 +719,7 @@ a.weblink:hover{ text-decoration:underline; }
     else{ state.pending++; renderBadge(); showToast('Pesada guardada (sin señal, queda pendiente).', true); }
   };
 
-  // finalizar saca: cierra el muestreo de jabas, lo agrega a "Muestreos del día" y vuelve al inicio.
+  // finalizar saca: cierra el muestreo de jabas, lo agrega al historial y vuelve al inicio.
   document.getElementById('sacaFinBtn').onclick=function(){
     var ps=state.saca.pesadas;
     if(ps.length===0){ showToast('Aún no registras pesadas.'); return; }
