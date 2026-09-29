@@ -12,6 +12,8 @@ import { requireMobileUser } from "@/lib/auth";
 type PesadaInput = {
   id: string;
   jabas: number;
+  /** Aves por jaba de esta tanda. Si no viene, se usa la del despacho (apps anteriores). */
+  densidad?: number | null;
   pesoDestareGramos: number;
   pesoConAveGramos: number;
   fechaHora: string;
@@ -42,6 +44,7 @@ function esPesadaValida(p: unknown): p is PesadaInput {
   return (
     typeof v.id === "string" &&
     esEnteroPositivo(v.jabas) &&
+    (v.densidad === undefined || v.densidad === null || esEnteroPositivo(v.densidad)) &&
     esNumero(v.pesoDestareGramos) &&
     v.pesoDestareGramos >= 0 &&
     esNumero(v.pesoConAveGramos) &&
@@ -127,11 +130,15 @@ export async function POST(request: NextRequest) {
       await tx.gallinaPesada.createMany({
         data: d.pesadas.map((p) => {
           const neto = p.pesoConAveGramos - p.pesoDestareGramos;
-          const unidades = p.jabas * d.densidad;
+          // La densidad puede cambiar a mitad del camión, así que manda la de la tanda;
+          // la del despacho queda de respaldo para apps que todavía no la envían.
+          const densidad = p.densidad ?? d.densidad;
+          const unidades = p.jabas * densidad;
           return {
             id: p.id,
             despachoId: d.id,
             jabas: p.jabas,
+            densidad,
             pesoDestareGramos: p.pesoDestareGramos,
             pesoConAveGramos: p.pesoConAveGramos,
             pesoNetoGramos: neto,

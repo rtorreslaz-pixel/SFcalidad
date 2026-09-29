@@ -82,8 +82,12 @@ export function totalesDespacho(d: DespachoGallina) {
   const destare = d.pesadas.reduce((a, p) => a + p.pesoDestareGramos, 0);
   const conAve = d.pesadas.reduce((a, p) => a + p.pesoConAveGramos, 0);
   const neto = d.pesadas.reduce((a, p) => a + p.pesoNetoGramos, 0);
+  // Si el verificador corrigió la densidad a mitad del camión, se listan todas las que
+  // se usaron en vez de una sola, que sería mentira.
+  const densidades = [...new Set(d.pesadas.map((p) => p.densidad))].sort((a, b) => a - b);
   return {
     pesadas: d.pesadas.length,
+    densidades: densidades.join(" / "),
     jabas,
     unidades,
     destare,
@@ -113,7 +117,7 @@ export function filasGallina(despachos: DespachoGallina[]): (string | number)[][
         d.material.codigo,
         d.material.descripcion,
         p.jabas,
-        d.densidad,
+        p.densidad,
         p.unidades,
         d.guiaReferencia,
         d.placa,
@@ -148,7 +152,7 @@ export function filasResumenDespachos(despachos: DespachoGallina[]): (string | n
       d.placa,
       t.pesadas,
       t.jabas,
-      d.densidad,
+      t.densidades,
       t.unidades,
       kg(t.destare),
       kg(t.conAve),

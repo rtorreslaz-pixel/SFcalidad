@@ -143,6 +143,7 @@ data class PlanItemDto(
 data class GallinaPesadaDto(
     val id: String,
     val jabas: Int,
+    val densidad: Int,
     val pesoDestareGramos: Double,
     val pesoConAveGramos: Double,
     val fechaHora: String,

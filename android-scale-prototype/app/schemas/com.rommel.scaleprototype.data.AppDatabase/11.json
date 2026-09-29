@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 11,
-    "identityHash": "fb5cdc731bab5d5325a9124b0ba58c69",
+    "identityHash": "2a61ee62a0e8b576c82c8d7dcbab76bc",
     "entities": [
       {
         "tableName": "registro_peso",
@@ -574,7 +574,7 @@
       },
       {
         "tableName": "gallina_pesada",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `despachoId` TEXT NOT NULL, `jabas` INTEGER NOT NULL, `pesoDestareGramos` REAL NOT NULL, `pesoConAveGramos` REAL NOT NULL, `pesoNetoGramos` REAL NOT NULL, `unidades` INTEGER NOT NULL, `promedioGramos` REAL NOT NULL, `fechaHoraEpochMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `despachoId` TEXT NOT NULL, `jabas` INTEGER NOT NULL, `densidad` INTEGER NOT NULL, `pesoDestareGramos` REAL NOT NULL, `pesoConAveGramos` REAL NOT NULL, `pesoNetoGramos` REAL NOT NULL, `unidades` INTEGER NOT NULL, `promedioGramos` REAL NOT NULL, `fechaHoraEpochMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -591,6 +591,12 @@
           {
             "fieldPath": "jabas",
             "columnName": "jabas",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "densidad",
+            "columnName": "densidad",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -644,7 +650,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fb5cdc731bab5d5325a9124b0ba58c69')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2a61ee62a0e8b576c82c8d7dcbab76bc')"
     ]
   }
 }

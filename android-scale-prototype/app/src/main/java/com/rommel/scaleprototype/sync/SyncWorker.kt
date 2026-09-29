@@ -172,6 +172,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                 GallinaPesadaDto(
                     id = p.id,
                     jabas = p.jabas,
+                    densidad = p.densidad,
                     pesoDestareGramos = p.pesoDestareGramos,
                     pesoConAveGramos = p.pesoConAveGramos,
                     fechaHora = isoFormat.format(Date(p.fechaHoraEpochMillis)),

@@ -23,7 +23,7 @@ data class GallinaDespacho(
     val materialDescripcion: String,
     val guiaReferencia: String,
     val placa: String,
-    /** Aves por jaba. Vale para todas las pesadas: las unidades salen de multiplicarla. */
+    /** Aves por jaba con la que arranca el despacho; cada pesada guarda la suya. */
     val densidad: Int,
     val fechaEpochMillis: Long,
     val verificadorId: String?,
@@ -45,6 +45,8 @@ data class GallinaPesada(
     @PrimaryKey val id: String,
     val despachoId: String,
     val jabas: Int,
+    /** Aves por jaba de ESTA tanda: el verificador puede corregirla a mitad del camión. */
+    val densidad: Int,
     val pesoDestareGramos: Double,
     val pesoConAveGramos: Double,
     val pesoNetoGramos: Double,

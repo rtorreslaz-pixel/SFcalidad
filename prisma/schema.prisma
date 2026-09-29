@@ -482,8 +482,8 @@ model GallinaDespacho {
   guiaReferencia String
   placa          String
 
-  // Aves por jaba. Vale para todas las pesadas del despacho: las unidades de cada pesada
-  // salen de multiplicarla por sus jabas.
+  // Aves por jaba con la que arranca el despacho. Cada pesada guarda la suya, porque el
+  // verificador puede corregirla a mitad del camión; esta queda como la del encabezado.
   densidad Int
 
   verificadorId String
@@ -507,10 +507,13 @@ model GallinaPesada {
   despacho   GallinaDespacho @relation(fields: [despachoId], references: [id], onDelete: Cascade)
 
   jabas             Int
+  // Aves por jaba de ESTA tanda. Se guarda en la pesada y no solo en el despacho porque
+  // puede cambiar a mitad del camión: no todas las jabas vienen con la misma cantidad.
+  densidad          Int
   pesoDestareGramos Float // las jabas vacías en la balanza
   pesoConAveGramos  Float // las mismas jabas con las gallinas dentro
   pesoNetoGramos    Float // conAve - destare (calculado al registrar)
-  unidades          Int // jabas * densidad del despacho
+  unidades          Int // jabas * densidad de esta pesada
   promedioGramos    Float // pesoNetoGramos / unidades
 
   fechaHora DateTime

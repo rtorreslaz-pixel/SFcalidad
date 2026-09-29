@@ -145,6 +145,7 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL(
                     "CREATE TABLE IF NOT EXISTS gallina_pesada (" +
                         "id TEXT NOT NULL PRIMARY KEY, despachoId TEXT NOT NULL, jabas INTEGER NOT NULL, " +
+                        "densidad INTEGER NOT NULL, " +
                         "pesoDestareGramos REAL NOT NULL, pesoConAveGramos REAL NOT NULL, " +
                         "pesoNetoGramos REAL NOT NULL, unidades INTEGER NOT NULL, promedioGramos REAL NOT NULL, " +
                         "fechaHoraEpochMillis INTEGER NOT NULL)"

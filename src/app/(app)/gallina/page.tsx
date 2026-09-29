@@ -142,6 +142,7 @@ export default async function GallinaPage({
                       <tr>
                         <th className="px-4 py-2 font-medium">Pesada</th>
                         <th className="px-4 py-2 font-medium">Jabas</th>
+                        <th className="px-4 py-2 font-medium">Densidad</th>
                         <th className="px-4 py-2 font-medium">Unidades</th>
                         <th className="px-4 py-2 font-medium">Destare</th>
                         <th className="px-4 py-2 font-medium">Con ave</th>
@@ -154,6 +155,7 @@ export default async function GallinaPage({
                         <tr key={p.id} className="border-t border-slate-100">
                           <td className="px-4 py-2 text-slate-500">{j + 1}</td>
                           <td className="px-4 py-2">{p.jabas}</td>
+                          <td className="px-4 py-2">{p.densidad}</td>
                           <td className="px-4 py-2">{p.unidades}</td>
                           <td className="px-4 py-2">{fmtKg(p.pesoDestareGramos)} kg</td>
                           <td className="px-4 py-2">{fmtKg(p.pesoConAveGramos)} kg</td>
@@ -164,6 +166,7 @@ export default async function GallinaPage({
                       <tr className="border-t-2 border-slate-300 bg-slate-50 font-semibold">
                         <td className="px-4 py-2 text-slate-500">Total</td>
                         <td className="px-4 py-2">{t.jabas}</td>
+                        <td className="px-4 py-2">{t.densidades}</td>
                         <td className="px-4 py-2">{t.unidades}</td>
                         <td className="px-4 py-2">{fmtKg(t.destare)} kg</td>
                         <td className="px-4 py-2">{fmtKg(t.conAve)} kg</td>
@@ -174,7 +177,7 @@ export default async function GallinaPage({
                   </table>
                 </div>
                 <div className="px-4 py-2 text-xs text-slate-500">
-                  Densidad {d.densidad} aves/jaba · {d.verificador.nombre}
+                  Densidad {t.densidades} aves/jaba · {d.verificador.nombre}
                 </div>
               </div>
             );

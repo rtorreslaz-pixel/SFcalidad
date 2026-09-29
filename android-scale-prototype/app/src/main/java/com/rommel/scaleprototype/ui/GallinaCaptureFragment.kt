@@ -8,6 +8,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -101,6 +103,16 @@ class GallinaCaptureFragment : Fragment() {
         binding?.textGallinaHeader?.text = "$clienteNombre · $guia · $placa"
         binding?.textGallinaSubHeader?.text = "$materialCodigo — $materialDesc · $densidad aves/jaba"
 
+        binding?.editGallinaDensidadTanda?.setText(densidad.toString())
+        // Cambiar jabas o densidad reescribe el neto y el promedio al instante, para poder
+        // comprobarlos antes de registrar la pesada.
+        val recalcular = object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) = actualizarTanda()
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) = Unit
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) = Unit
+        }
+        binding?.editGallinaJabas?.addTextChangedListener(recalcular)
+        binding?.editGallinaDensidadTanda?.addTextChangedListener(recalcular)
         binding?.buttonGallinaDestare?.setOnClickListener { capturarPeso(esDestare = true) }
         binding?.buttonGallinaConAve?.setOnClickListener { capturarPeso(esDestare = false) }
         binding?.buttonGallinaRegistrar?.setOnClickListener { registrarPesada() }
@@ -128,6 +140,11 @@ class GallinaCaptureFragment : Fragment() {
         actualizarTanda()
     }
 
+    /** Aves por jaba de la tanda en curso: lo que haya en el campo, o la del despacho. */
+    private fun densidadTanda(): Int =
+        binding?.editGallinaDensidadTanda?.text?.toString()?.trim()?.toIntOrNull()?.takeIf { it > 0 }
+            ?: densidad
+
     private fun actualizarTanda() {
         val b = binding ?: return
         b.textGallinaDestare.text = destareGramos?.let {
@@ -151,7 +168,7 @@ class GallinaCaptureFragment : Fragment() {
             jabas == null || jabas <= 0 -> getString(R.string.gallina_error_jabas)
             else -> {
                 val neto = c - d
-                val unidades = jabas * densidad
+                val unidades = jabas * densidadTanda()
                 getString(
                     R.string.gallina_neto_format,
                     neto / 1000.0, unidades, Math.round(neto / unidades).toInt()
@@ -174,13 +191,15 @@ class GallinaCaptureFragment : Fragment() {
             return
         }
 
+        val densidadDeLaTanda = densidadTanda()
         val neto = c - d
-        val unidades = jabas * densidad
+        val unidades = jabas * densidadDeLaTanda
         pesadas.add(
             GallinaPesada(
                 id = UUID.randomUUID().toString(),
                 despachoId = despachoId,
                 jabas = jabas,
+                densidad = densidadDeLaTanda,
                 pesoDestareGramos = d,
                 pesoConAveGramos = c,
                 pesoNetoGramos = neto,
@@ -193,7 +212,8 @@ class GallinaCaptureFragment : Fragment() {
         b.textGallinaUltima.text = getString(
             R.string.gallina_pesada_registrada, pesadas.size, jabas, Math.round(neto / unidades).toInt()
         )
-        // La siguiente tanda empieza limpia: sus dos pesos son propios.
+        // La siguiente tanda empieza limpia en los pesos y las jabas, pero conserva la
+        // densidad: lo normal es que siga siendo la misma en el resto del camión.
         destareGramos = null
         conAveGramos = null
         b.editGallinaJabas.setText("")
@@ -207,7 +227,8 @@ class GallinaCaptureFragment : Fragment() {
         val inflater = LayoutInflater.from(requireContext())
         for ((i, p) in pesadas.withIndex()) {
             val fila = ItemPesadaBinding.inflate(inflater, b.containerGallinaPesadas, false)
-            fila.textPesadaTitulo.text = getString(R.string.gallina_item_format, i + 1, p.jabas)
+            fila.textPesadaTitulo.text =
+                getString(R.string.gallina_item_format, i + 1, p.jabas, p.densidad)
             fila.textPesadaDetalle.text = getString(
                 R.string.gallina_item_detalle,
                 p.pesoDestareGramos / 1000.0, p.pesoConAveGramos / 1000.0, p.pesoNetoGramos / 1000.0,

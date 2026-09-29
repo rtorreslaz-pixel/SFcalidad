@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import com.rommel.scaleprototype.R
 import com.rommel.scaleprototype.data.AppDatabase
 import com.rommel.scaleprototype.data.HistorialCorral
+import com.rommel.scaleprototype.data.HistorialDespacho
 import com.rommel.scaleprototype.databinding.FragmentMuestreosBinding
 import com.rommel.scaleprototype.databinding.ItemHistorialDiaBinding
 import com.rommel.scaleprototype.databinding.ItemHistorialGalponBinding
@@ -58,21 +59,21 @@ class MuestreosDiaFragment : Fragment() {
     }
 
     private fun cargar() {
-        val dao = AppDatabase.getInstance(requireContext()).registroPesoDao()
+        val db = AppDatabase.getInstance(requireContext())
         viewLifecycleOwner.lifecycleScope.launch {
-            render(dao.historialPorCorral())
+            render(db.registroPesoDao().historialPorCorral(), db.gallinaDao().historialDespachos())
         }
     }
 
-    private fun render(filas: List<HistorialCorral>) {
+    private fun render(filas: List<HistorialCorral>, despachos: List<HistorialDespacho>) {
         val b = binding ?: return
         b.containerMuestreos.removeAllViews()
-        b.textVacio.visibility = if (filas.isEmpty()) View.VISIBLE else View.GONE
+        b.textVacio.visibility = if (filas.isEmpty() && despachos.isEmpty()) View.VISIBLE else View.GONE
 
-        val totalAves = filas.sumOf { it.aves }
-        val totalPendientes = filas.sumOf { it.pendientes }
-        val dias = filas.map { it.dia }.distinct().size
-        b.textResumen.text = if (filas.isEmpty()) {
+        val totalAves = filas.sumOf { it.aves } + despachos.sumOf { it.unidades }
+        val totalPendientes = filas.sumOf { it.pendientes } + despachos.count { !it.synced }
+        val dias = (filas.map { it.dia } + despachos.map { it.dia }).distinct().size
+        b.textResumen.text = if (filas.isEmpty() && despachos.isEmpty()) {
             ""
         } else {
             val estado = if (totalPendientes == 0) {
@@ -106,6 +107,38 @@ class MuestreosDiaFragment : Fragment() {
                 for (c in corrales) pintarCorral(inflater, b.containerMuestreos, c)
             }
         }
+
+        // Los despachos de gallina van en su propia sección: no tienen galpón ni corral,
+        // así que agruparlos con los muestreos de granja confundiría más que ayudar.
+        for ((dia, delDia) in despachos.groupBy { it.dia }) {
+            val cabecera = ItemHistorialDiaBinding.inflate(inflater, b.containerMuestreos, false)
+            cabecera.textHistorialDia.text =
+                getString(R.string.historial_gallina_dia, diaLegible(dia))
+            b.containerMuestreos.addView(cabecera.root)
+            for (d in delDia) pintarDespacho(inflater, b.containerMuestreos, d)
+        }
+    }
+
+    private fun pintarDespacho(inflater: LayoutInflater, destino: ViewGroup, d: HistorialDespacho) {
+        val row = ItemMuestreoBinding.inflate(inflater, destino, false)
+        row.textLote.text = getString(R.string.historial_despacho_format, d.clienteNombre, d.guiaReferencia)
+        val prom = d.promedioGramos
+        row.textDetalle.text = if (prom == null) {
+            getString(R.string.historial_despacho_vacio, d.placa)
+        } else {
+            getString(
+                R.string.historial_despacho_detalle,
+                d.placa, d.jabas, d.unidades, Math.round(prom).toInt()
+            )
+        }
+        if (!d.synced) {
+            row.textEstado.text = getString(R.string.muestreo_por_enviar_format, 1)
+            row.textEstado.setTextColor(Color.parseColor("#B45309"))
+        } else {
+            row.textEstado.text = getString(R.string.muestreo_completo)
+            row.textEstado.setTextColor(Color.parseColor("#16A34A"))
+        }
+        destino.addView(row.root)
     }
 
     private fun pintarCorral(inflater: LayoutInflater, destino: ViewGroup, c: HistorialCorral) {

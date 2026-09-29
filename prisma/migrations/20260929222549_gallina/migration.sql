@@ -29,6 +29,7 @@ CREATE TABLE "GallinaPesada" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "despachoId" TEXT NOT NULL,
     "jabas" INTEGER NOT NULL,
+    "densidad" INTEGER NOT NULL,
     "pesoDestareGramos" REAL NOT NULL,
     "pesoConAveGramos" REAL NOT NULL,
     "pesoNetoGramos" REAL NOT NULL,

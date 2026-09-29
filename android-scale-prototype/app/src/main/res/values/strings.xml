@@ -129,6 +129,10 @@
     <string name="historial_corral_format">Corral %1$s · %2$s</string>
     <string name="historial_resumen_corral_format">%1$d aves · %2$d g/ave</string>
     <string name="historial_solo_calidad_format">%1$d aves · solo calidad</string>
+    <string name="historial_gallina_dia">Gallina · %1$s</string>
+    <string name="historial_despacho_format">%1$s · Guía %2$s</string>
+    <string name="historial_despacho_detalle">%1$s · %2$d jabas · %3$d aves · %4$d g/ave</string>
+    <string name="historial_despacho_vacio">%1$s · sin pesadas</string>
     <string name="muestreos_resumen_format">%1$d muestreos · %2$d aves · %3$s</string>
     <string name="muestreos_todo_sincronizado">todo sincronizado</string>
     <string name="muestreos_pendientes_format">%1$d pendientes de enviar</string>
@@ -231,6 +235,10 @@
     <string name="gallina_densidad_ayuda">Vale para todas las tandas: las unidades salen de multiplicarla por las jabas.</string>
     <string name="action_gallina_comenzar">Comenzar pesaje</string>
     <string name="label_jabas_tanda">N° de jabas en esta tanda</string>
+    <string name="label_tanda">Esta tanda: jabas y aves por jaba</string>
+    <string name="label_densidad_tanda">Aves por jaba</string>
+    <string name="gallina_densidad_cambiada">Densidad %1$d en esta tanda (el despacho empezó con %2$d).</string>
+    <string name="gallina_acumulado_format">Acumulado: %1$d aves · %2$d g/ave</string>
     <string name="action_gallina_destare">1 · Pesar jabas vacías</string>
     <string name="action_gallina_con_ave">2 · Pesar con las gallinas</string>
     <string name="action_gallina_registrar">Registrar pesada</string>
@@ -243,7 +251,7 @@
     <string name="gallina_sin_pesadas">Aún no registras pesadas.</string>
     <string name="gallina_pesada_registrada">Pesada %1$d registrada — %2$d jabas · %3$d g/ave</string>
     <string name="gallina_resumen_format">%1$d pesadas · %2$d jabas · %3$d unidades · promedio %4$d g/ave</string>
-    <string name="gallina_item_format">Pesada %1$d · %2$d jabas</string>
+    <string name="gallina_item_format">Pesada %1$d · %2$d jabas × %3$d aves</string>
     <string name="gallina_item_detalle">destare %1$.2f · con ave %2$.2f · neto %3$.2f kg</string>
     <string name="gallina_item_prom">%1$d g/ave</string>
     <string name="gallina_error_campos">Completa guía, placa y densidad.</string>
