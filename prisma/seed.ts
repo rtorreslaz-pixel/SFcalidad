@@ -36,6 +36,30 @@ const TIPOS_DEFECTO: { nombre: string; categoria: string; orden: number; princip
 ];
 
 // Clientes: destinos donde se vende el pollo a diario (independiente de los planteles).
+// Compradores de gallina de descarte. Van en la misma tabla de clientes que los de granja
+// porque el modelo es uno solo; se distinguen por a qué módulo pertenecen sus registros.
+const CLIENTES_GALLINA = [
+  "INVERSIONES & SERVICIOS GENERALES YOVISA",
+  "NEGOCIACIONES CELESTINA S.A.C",
+  "VEKITO S.A.C.",
+  "AVICOLA TAVITO E.I.R.L.",
+  "L & S AVICOLA S.A.C.",
+  "PEÑA INFANTES JENI ADELIT",
+  "SANTIAGO RETIS BENITO EMILIO",
+  "SOTO SALGADO MELISSA",
+];
+
+// Catálogo de materiales del módulo de gallina: código corporativo y su descripción.
+const MATERIALES_GALLINA = [
+  { codigo: "364", descripcion: "GALLINA DOBLE" },
+  { codigo: "1445", descripcion: "GALLINA MARRON" },
+  { codigo: "1493", descripcion: "GALLO DOBLE" },
+  { codigo: "1495", descripcion: "GALLO ROJO" },
+  { codigo: "45147", descripcion: "GALLINA DOBLE RC SELECCION" },
+  { codigo: "45149", descripcion: "GALLO DOBLE RC SELECCION" },
+  { codigo: "53380", descripcion: "GALLINA MINI DOBLE" },
+];
+
 const CLIENTES = [
   "AKIM",
   "AVISUR",
@@ -326,11 +350,22 @@ async function main() {
   }
 
   console.log("Sembrando clientes...");
-  for (const nombre of CLIENTES) {
+  for (const nombre of [...CLIENTES, ...CLIENTES_GALLINA]) {
     await prisma.cliente.upsert({
       where: { nombre },
       update: {},
       create: { nombre },
+    });
+  }
+
+  console.log("Sembrando materiales de gallina...");
+  for (const m of MATERIALES_GALLINA) {
+    // update vacío: si el supervisor corrigió una descripción desde la web, el seed del
+    // siguiente despliegue no se la pisa.
+    await prisma.materialGallina.upsert({
+      where: { codigo: m.codigo },
+      update: {},
+      create: m,
     });
   }
 
