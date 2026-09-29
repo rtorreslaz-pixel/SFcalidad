@@ -13,8 +13,8 @@ android {
         applicationId = "com.rommel.scaleprototype"
         minSdk = 24
         targetSdk = 34
-        versionCode = 16
-        versionName = "2.5 (historial y pesada variable)"
+        versionCode = 17
+        versionName = "2.6 (modulo gallina)"
     }
 
     buildTypes {
