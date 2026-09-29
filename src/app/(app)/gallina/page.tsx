@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import {
   construirDespachos,
+  ordenarPorCodigo,
   leerFiltrosGallina,
   queryDeFiltrosGallina,
   totalesDespacho,
@@ -31,15 +32,13 @@ export default async function GallinaPage({
   const filtros = leerFiltrosGallina(await searchParams);
   const qs = queryDeFiltrosGallina(filtros);
 
-  const [despachos, clientes, materiales] = await Promise.all([
+  const [despachos, clientes, materialesSinOrden] = await Promise.all([
     construirDespachos(user, filtros),
     prisma.cliente.findMany({ select: { id: true, nombre: true }, orderBy: { nombre: "asc" } }),
-    prisma.materialGallina.findMany({
-      select: { id: true, codigo: true, descripcion: true },
-      orderBy: { codigo: "asc" },
-    }),
+    prisma.materialGallina.findMany({ select: { id: true, codigo: true, descripcion: true } }),
   ]);
 
+  const materiales = ordenarPorCodigo(materialesSinOrden);
   const totales = despachos.map(totalesDespacho);
   const totJabas = totales.reduce((a, t) => a + t.jabas, 0);
   const totUnidades = totales.reduce((a, t) => a + t.unidades, 0);

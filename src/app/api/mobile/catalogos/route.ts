@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireMobileUser } from "@/lib/auth";
+import { ordenarPorCodigo } from "@/lib/gallina";
 
 export async function GET(request: NextRequest) {
   const user = await requireMobileUser(request);
@@ -21,7 +22,6 @@ export async function GET(request: NextRequest) {
     prisma.materialGallina.findMany({
       where: { activo: true },
       select: { id: true, codigo: true, descripcion: true },
-      orderBy: { codigo: "asc" },
     }),
   ]);
 
@@ -34,6 +34,6 @@ export async function GET(request: NextRequest) {
     })),
     pesosEstandar,
     clientes,
-    materiales,
+    materiales: ordenarPorCodigo(materiales),
   });
 }

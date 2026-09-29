@@ -1,14 +1,16 @@
 import { prisma } from "@/lib/db";
+import { ordenarPorCodigo } from "@/lib/gallina";
 import MaterialForm from "./material-form";
 import { toggleMaterialGallinaActivoAction } from "../admin-actions";
 
 // Materiales del módulo de gallina. Se desactivan en vez de borrarse: los despachos ya
 // registrados siguen mostrando el suyo.
 export default async function MaterialesPage() {
-  const materiales = await prisma.materialGallina.findMany({
-    orderBy: { codigo: "asc" },
-    include: { _count: { select: { despachos: true } } },
-  });
+  const materiales = ordenarPorCodigo(
+    await prisma.materialGallina.findMany({
+      include: { _count: { select: { despachos: true } } },
+    })
+  );
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

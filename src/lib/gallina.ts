@@ -4,6 +4,15 @@ import type { SessionUser } from "@/lib/auth";
 // Consulta y filtros del módulo GALLINA. Viven aquí para que la pantalla y la descarga
 // muestren exactamente lo mismo: mismos filtros, misma restricción por verificador.
 
+/** Los códigos son texto, así que "364" caería después de "1495" al ordenar alfabéticamente. */
+export function ordenarPorCodigo<T extends { codigo: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    const na = Number(a.codigo), nb = Number(b.codigo);
+    if (Number.isFinite(na) && Number.isFinite(nb) && na !== nb) return na - nb;
+    return a.codigo.localeCompare(b.codigo, "es", { numeric: true });
+  });
+}
+
 export type FiltrosGallina = {
   desde: string | null;
   hasta: string | null;
