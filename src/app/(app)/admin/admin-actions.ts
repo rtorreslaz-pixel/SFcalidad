@@ -108,6 +108,39 @@ export async function rotateApiTokenAction(formData: FormData) {
   revalidatePath("/admin/usuarios");
 }
 
+// Catálogo de materiales del módulo de gallina: código corporativo + descripción. El
+// verificador los elige de una lista en la app, así el mismo material no queda escrito de
+// tres formas distintas en el reporte.
+export async function createMaterialGallinaAction(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  await requireSupervisor();
+  const codigo = String(formData.get("codigo") ?? "").trim().toUpperCase();
+  const descripcion = String(formData.get("descripcion") ?? "").trim();
+
+  if (!codigo || !descripcion) return { error: "Completa código y descripción." };
+
+  try {
+    await prisma.materialGallina.create({ data: { codigo, descripcion } });
+  } catch {
+    return { error: "Ya existe un material con ese código." };
+  }
+
+  revalidatePath("/admin/materiales");
+  return { success: "Material creado." };
+}
+
+export async function toggleMaterialGallinaActivoAction(id: string) {
+  await requireSupervisor();
+  const actual = await prisma.materialGallina.findUnique({ where: { id } });
+  if (!actual) return;
+  // No se borra: un material desactivado deja de ofrecerse en la app, pero los despachos
+  // que ya lo usaron siguen mostrándolo.
+  await prisma.materialGallina.update({ where: { id }, data: { activo: !actual.activo } });
+  revalidatePath("/admin/materiales");
+}
+
 export async function createTipoDefectoAction(
   _prev: ActionResult,
   formData: FormData

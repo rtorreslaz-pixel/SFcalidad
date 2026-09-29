@@ -56,6 +56,12 @@ class ApiClient(private val baseUrl: String, context: Context) {
         execute(request) { json.decodeFromString(RegistrosBatchResponse.serializer(), it) }
     }
 
+    suspend fun postGallina(despachos: List<GallinaDespachoDto>): GallinaBatchResponse = withContext(Dispatchers.IO) {
+        val body = json.encodeToString(GallinaBatchRequest(despachos)).toRequestBody(JSON_MEDIA_TYPE)
+        val request = Request.Builder().url(baseUrl + "api/mobile/gallina").post(body).build()
+        execute(request) { json.decodeFromString(GallinaBatchResponse.serializer(), it) }
+    }
+
     suspend fun postSaca(muestreos: List<SacaMuestreoDto>): SacaBatchResponse = withContext(Dispatchers.IO) {
         val body = json.encodeToString(SacaBatchRequest(muestreos)).toRequestBody(JSON_MEDIA_TYPE)
         val request = Request.Builder().url(baseUrl + "api/mobile/saca").post(body).build()

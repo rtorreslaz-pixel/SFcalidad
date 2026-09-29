@@ -68,6 +68,22 @@
             android:layout_marginTop="6dp"
             android:text="@string/home_saca_desc" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonGallina"
+            style="@style/SfButtonGhost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="@string/home_gallina" />
+
+        <TextView
+            style="@style/SfMuted"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="6dp"
+            android:text="@string/home_gallina_desc" />
+
         <!-- Consulta de lo ya pesado. Va desde el inicio — no solo desde dentro de una
              captura — para poder revisarlo al abrir la app sin empezar un muestreo. -->
         <com.google.android.material.button.MaterialButton

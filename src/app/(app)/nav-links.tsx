@@ -41,7 +41,12 @@ export default function NavLinks({ role }: { role: Role }) {
   ];
 
   // Pesaje de saca: muestreo de jabas antes de la saca, comparado contra preventa.
-  const conSaca = [...conResumen, { href: "/saca", label: "Pesaje de saca" }];
+  // Gallina: pesaje del despacho de gallina de descarte en el local del cliente.
+  const conSaca = [
+    ...conResumen,
+    { href: "/saca", label: "Pesaje de saca" },
+    { href: "/gallina", label: "Gallina" },
+  ];
 
   // Reporte de apilamiento y ventilación de jabas: lo consultan calidad y jefatura (los
   // verificadores registran desde el enlace público, pero también pueden revisar lo enviado).

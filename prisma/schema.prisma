@@ -58,7 +58,7 @@ enum TipoMuestreo {
 // Plan diario de muestreo (lo arma el verificador antes de salir a campo).
 enum AgrupamientoMuestreo {
   INDIVIDUAL // aves pesadas de una en una
-  GRUPAL     // varias aves por pesada
+  GRUPAL // varias aves por pesada
 }
 
 enum CircuitoMuestreo {
@@ -90,6 +90,7 @@ model User {
   liveWeightReading     LiveWeightReading?
   sessions              Session[]
   planMuestreo          PlanMuestreoItem[]
+  gallinaDespachos      GallinaDespacho[]
 }
 
 // Sesión web con token opaco aleatorio (la cookie guarda el token, no el userId),
@@ -117,6 +118,7 @@ model Cliente {
   jornadas             Jornada[]
   inspecciones         Inspeccion[]
   apilamientoRegistros ApilamientoRegistro[]
+  gallinaDespachos     GallinaDespacho[]
 }
 
 model Plantel {
@@ -353,10 +355,10 @@ model RegistroPesoPreventa {
   // pigNivel*} pero a nivel de ave individual en granja, para poder comparar contra el
   // censo de calidad de cliente lote por lote.
   // Metadatos del lote al momento de la pesada
-  edad          Int?    // días de vida del lote
-  linea         String? // línea genética (ej. Ross, Cobb)
-  lote          String? // J (Joven) / A (Adulto)
-  nAvesPorPesada Int?   // N° aves pesadas juntas por lectura de báscula
+  edad           Int? // días de vida del lote
+  linea          String? // línea genética (ej. Ross, Cobb)
+  lote           String? // J (Joven) / A (Adulto)
+  nAvesPorPesada Int? // N° aves pesadas juntas por lectura de báscula
 
   tieneHematoma         Boolean?
   tieneDefectoSeleccion Boolean?
@@ -365,7 +367,7 @@ model RegistroPesoPreventa {
   pigmentacion          Int? // 0-7
 
   verificadorId String
-  verificador   User @relation(fields: [verificadorId], references: [id])
+  verificador   User   @relation(fields: [verificadorId], references: [id])
 
   syncedAt  DateTime @default(now()) // momento en que el servidor lo recibió
   createdAt DateTime @default(now())
@@ -409,7 +411,7 @@ model SacaMuestreo {
   tipoJaba          String? // etiqueta opcional del tipo de jaba
 
   verificadorId String
-  verificador   User @relation(fields: [verificadorId], references: [id])
+  verificador   User   @relation(fields: [verificadorId], references: [id])
 
   pesadas SacaPesada[]
 
@@ -440,6 +442,81 @@ model SacaPesada {
   createdAt DateTime @default(now())
 
   @@index([sacaMuestreoId])
+}
+
+// ---------------------------------------------------------------------------------------
+// Módulo GALLINA: pesaje de gallina de descarte en el despacho al cliente.
+//
+// A diferencia de preventa y saca, que muestrean un lote en granja, aquí se pesa el
+// despacho completo: un cliente, una guía de referencia y una placa. Las jabas se pesan en
+// tandas ("pesadas"), y cada tanda se pesa DOS veces -- vacía (destare) y con las gallinas
+// dentro -- porque las jabas de gallina no tienen tara fija confiable. El neto es la resta.
+// ---------------------------------------------------------------------------------------
+
+// Catálogo de materiales (código corporativo + descripción), administrable desde la web
+// para que el verificador elija de una lista y no lo escriba distinto cada vez.
+model MaterialGallina {
+  id          String  @id @default(cuid())
+  codigo      String  @unique
+  descripcion String
+  activo      Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  despachos GallinaDespacho[]
+}
+
+// Un despacho = un camión: una guía, una placa y las pesadas que se le hicieron.
+model GallinaDespacho {
+  // Id generado por el cliente Android (UUID v4) antes de sincronizar -> upsert idempotente.
+  id String @id
+
+  clienteId String
+  cliente   Cliente @relation(fields: [clienteId], references: [id])
+
+  materialId String
+  material   MaterialGallina @relation(fields: [materialId], references: [id])
+
+  fecha DateTime // momento del pesaje en el local (hora del celular)
+
+  guiaReferencia String
+  placa          String
+
+  // Aves por jaba. Vale para todas las pesadas del despacho: las unidades de cada pesada
+  // salen de multiplicarla por sus jabas.
+  densidad Int
+
+  verificadorId String
+  verificador   User   @relation(fields: [verificadorId], references: [id])
+
+  pesadas GallinaPesada[]
+
+  syncedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([clienteId, fecha])
+  @@index([verificadorId, fecha])
+  @@index([guiaReferencia])
+}
+
+// Una pesada = una tanda de jabas, pesada vacía y luego con las gallinas.
+model GallinaPesada {
+  id String @id
+
+  despachoId String
+  despacho   GallinaDespacho @relation(fields: [despachoId], references: [id], onDelete: Cascade)
+
+  jabas             Int
+  pesoDestareGramos Float // las jabas vacías en la balanza
+  pesoConAveGramos  Float // las mismas jabas con las gallinas dentro
+  pesoNetoGramos    Float // conAve - destare (calculado al registrar)
+  unidades          Int // jabas * densidad del despacho
+  promedioGramos    Float // pesoNetoGramos / unidades
+
+  fechaHora DateTime
+  createdAt DateTime @default(now())
+
+  @@index([despachoId])
 }
 
 // ---------------------------------------------------------------------------------------
@@ -615,7 +692,7 @@ model ApilamientoAccion {
 
 model PesoEstandar {
   id         String  @id @default(cuid())
-  linea      String  // "Ross", "Cobb", "Hubbard", etc.
+  linea      String // "Ross", "Cobb", "Hubbard", etc.
   sexo       SexoAve // MACHO | HEMBRA
   edadDias   Int
   pesoGramos Float
@@ -650,7 +727,7 @@ model PlanMuestreoItem {
   id String @id
 
   verificadorId String
-  verificador   User @relation(fields: [verificadorId], references: [id])
+  verificador   User   @relation(fields: [verificadorId], references: [id])
 
   // Día del plan en hora de la granja (yyyy-MM-dd). Texto a propósito: no depende de zona horaria.
   fecha String
@@ -658,20 +735,20 @@ model PlanMuestreoItem {
   plantelId String
   plantel   Plantel @relation(fields: [plantelId], references: [id])
 
-  campania     String
-  galpon       String
-  corral       String
-  categoria    CategoriaAve
-  edad         Int?
-  tipoMuestreo TipoMuestreo         @default(PREVENTA)
-  linea        String?
-  lote         String?
-  agrupamiento AgrupamientoMuestreo @default(INDIVIDUAL)
+  campania      String
+  galpon        String
+  corral        String
+  categoria     CategoriaAve
+  edad          Int?
+  tipoMuestreo  TipoMuestreo         @default(PREVENTA)
+  linea         String?
+  lote          String?
+  agrupamiento  AgrupamientoMuestreo @default(INDIVIDUAL)
   // Cuántas aves van juntas en cada pesada cuando el agrupamiento es GRUPAL (null = individual).
   avesPorPesada Int?
-  circuito     CircuitoMuestreo?
+  circuito      CircuitoMuestreo?
   // Orden dentro del día, para listar el plan como lo armó el verificador.
-  orden Int @default(0)
+  orden         Int                  @default(0)
 
   estado     EstadoPlanMuestreo @default(PENDIENTE)
   cumplidoEn DateTime?

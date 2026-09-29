@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Captura del pesaje de gallina. Cada tanda de jabas se pesa DOS veces: vacía (destare) y
+     con las gallinas dentro. El neto es la resta, porque estas jabas no tienen tara fija. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sf_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/SfCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/textGallinaHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/sf_ink" />
+
+                <TextView
+                    android:id="@+id/textGallinaSubHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:textSize="12sp"
+                    android:textColor="@color/sf_muted" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:id="@+id/textGallinaStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:textSize="13sp"
+            android:textColor="@color/sf_muted" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/SfCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_peso_en_vivo"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08"
+                    android:textColor="@color/sf_muted" />
+
+                <TextView
+                    android:id="@+id/textGallinaPeso"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/weight_placeholder"
+                    android:textSize="46sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/sf_blue" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Los dos pesos de la tanda. Se capturan en orden: primero las jabas vacías y
+             después las mismas con las gallinas, para que el neto sea la diferencia real. -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/SfCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    style="@style/SfFieldLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_jabas_tanda" />
+
+                <EditText
+                    android:id="@+id/editGallinaJabas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:autofillHints="none"
+                    android:hint="@string/label_jabas_tanda"
+                    android:inputType="number"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonGallinaDestare"
+                    style="@style/SfButtonGhost"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/action_gallina_destare" />
+
+                <TextView
+                    android:id="@+id/textGallinaDestare"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:textColor="@color/sf_muted" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonGallinaConAve"
+                    style="@style/SfButtonGhost"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/action_gallina_con_ave" />
+
+                <TextView
+                    android:id="@+id/textGallinaConAve"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:textColor="@color/sf_muted" />
+
+                <TextView
+                    android:id="@+id/textGallinaNeto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/sf_ink"
+                    android:text="@string/gallina_neto_vacio" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonGallinaRegistrar"
+            style="@style/SfButtonPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="@string/action_gallina_registrar"
+            android:textSize="17sp" />
+
+        <TextView
+            android:id="@+id/textGallinaUltima"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/sf_green" />
+
+        <TextView
+            android:id="@+id/textGallinaResumen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/sf_ink"
+            android:text="@string/gallina_sin_pesadas" />
+
+        <LinearLayout
+            android:id="@+id/containerGallinaPesadas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonGallinaDiagnostic"
+            style="@style/SfButtonGhost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/action_open_diagnostic" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonGallinaFinalizar"
+            style="@style/SfButtonGhost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/action_gallina_finalizar"
+            android:textColor="@color/sf_red"
+            app:strokeColor="@color/sf_red" />
+    </LinearLayout>
+</ScrollView>

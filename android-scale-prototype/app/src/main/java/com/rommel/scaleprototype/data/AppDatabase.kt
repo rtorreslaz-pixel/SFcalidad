@@ -8,8 +8,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.migration.Migration
 
 @Database(
-    entities = [RegistroPeso::class, SacaMuestreo::class, SacaPesada::class, PlanItem::class],
-    version = 10,
+    entities = [
+        RegistroPeso::class, SacaMuestreo::class, SacaPesada::class, PlanItem::class,
+        GallinaDespacho::class, GallinaPesada::class,
+    ],
+    version = 11,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -19,6 +22,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun sacaDao(): SacaDao
 
     abstract fun planDao(): PlanDao
+
+    abstract fun gallinaDao(): GallinaDao
 
     companion object {
         @Volatile
@@ -124,6 +129,29 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // Módulo de gallina: el despacho al cliente y sus pesadas. Tablas nuevas, así que
+        // nada de lo ya capturado se toca.
+        private val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS gallina_despacho (" +
+                        "id TEXT NOT NULL PRIMARY KEY, " +
+                        "clienteId TEXT NOT NULL, clienteNombre TEXT NOT NULL, " +
+                        "materialId TEXT NOT NULL, materialCodigo TEXT NOT NULL, materialDescripcion TEXT NOT NULL, " +
+                        "guiaReferencia TEXT NOT NULL, placa TEXT NOT NULL, densidad INTEGER NOT NULL, " +
+                        "fechaEpochMillis INTEGER NOT NULL, verificadorId TEXT, verificadorNombre TEXT, " +
+                        "synced INTEGER NOT NULL DEFAULT 0, createdAtEpochMillis INTEGER NOT NULL)"
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS gallina_pesada (" +
+                        "id TEXT NOT NULL PRIMARY KEY, despachoId TEXT NOT NULL, jabas INTEGER NOT NULL, " +
+                        "pesoDestareGramos REAL NOT NULL, pesoConAveGramos REAL NOT NULL, " +
+                        "pesoNetoGramos REAL NOT NULL, unidades INTEGER NOT NULL, promedioGramos REAL NOT NULL, " +
+                        "fechaHoraEpochMillis INTEGER NOT NULL)"
+                )
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -133,7 +161,7 @@ abstract class AppDatabase : RoomDatabase() {
                     // Sin fallbackToDestructiveMigration(): un futuro cambio de esquema
                     // debe ir por una Migration real, no borrar la cola de un verificador.
                 ).addMigrations(
-                    MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10,
+                    MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
                 )
                     .build().also { instance = it }
             }

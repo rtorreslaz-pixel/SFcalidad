@@ -17,7 +17,18 @@ data class LoginResponse(val token: String, val user: LoginResponseUser)
 data class PlantelDto(val id: String, val codigo: String, val nombre: String? = null, val cliente: String? = null)
 
 @Serializable
-data class CatalogosResponse(val planteles: List<PlantelDto>)
+data class ClienteDto(val id: String, val nombre: String)
+
+@Serializable
+data class MaterialDto(val id: String, val codigo: String, val descripcion: String)
+
+@Serializable
+data class CatalogosResponse(
+    val planteles: List<PlantelDto>,
+    // Los usa el módulo de gallina, que pesa en el local del cliente y no en granja.
+    val clientes: List<ClienteDto> = emptyList(),
+    val materiales: List<MaterialDto> = emptyList(),
+)
 
 // categoria viaja como String (no como el enum de Kotlin) para no acoplar nombres
 // de enum entre Android y el servidor.
@@ -127,6 +138,37 @@ data class PlanItemDto(
     val plantelCodigo: String? = null,
     val estado: String? = null,
 )
+
+@Serializable
+data class GallinaPesadaDto(
+    val id: String,
+    val jabas: Int,
+    val pesoDestareGramos: Double,
+    val pesoConAveGramos: Double,
+    val fechaHora: String,
+)
+
+/**
+ * Un despacho de gallina. El neto, las unidades y el promedio NO se envían: los calcula el
+ * servidor a partir de estos campos, para que una app vieja no meta cuentas distintas.
+ */
+@Serializable
+data class GallinaDespachoDto(
+    val id: String,
+    val clienteId: String,
+    val materialId: String,
+    val fecha: String,
+    val guiaReferencia: String,
+    val placa: String,
+    val densidad: Int,
+    val pesadas: List<GallinaPesadaDto>,
+)
+
+@Serializable
+data class GallinaBatchRequest(val despachos: List<GallinaDespachoDto>)
+
+@Serializable
+data class GallinaBatchResponse(val ingested: Int, val ids: List<String>)
 
 @Serializable
 data class PlanBatchRequest(val items: List<PlanItemDto>, val borrar: List<String> = emptyList())

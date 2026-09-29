@@ -215,4 +215,44 @@
     <string name="plan_circuito_ninguno">—</string>
     <string name="plan_circuito_cv">CV — vivo</string>
     <string name="plan_circuito_cb">CB — beneficiado</string>
+
+    <!-- Módulo GALLINA: pesaje del despacho de gallina de descarte en el local del cliente -->
+    <string name="home_gallina">🐓 Pesaje de gallina</string>
+    <string name="home_gallina_desc">Despacho de gallina de descarte al cliente, por guía y placa.</string>
+    <string name="title_gallina_setup">Configurar despacho</string>
+    <string name="title_gallina_capture">Pesaje de gallina</string>
+    <string name="gallina_setup_desc">Datos del camión que se va a pesar. Las jabas se pesan por tandas.</string>
+    <string name="label_cliente">Cliente</string>
+    <string name="label_material">Material</string>
+    <string name="label_guia">Guía de referencia</string>
+    <string name="label_placa">Placa</string>
+    <string name="label_densidad">Densidad (aves por jaba)</string>
+    <string name="gallina_densidad_default">10</string>
+    <string name="gallina_densidad_ayuda">Vale para todas las tandas: las unidades salen de multiplicarla por las jabas.</string>
+    <string name="action_gallina_comenzar">Comenzar pesaje</string>
+    <string name="label_jabas_tanda">N° de jabas en esta tanda</string>
+    <string name="action_gallina_destare">1 · Pesar jabas vacías</string>
+    <string name="action_gallina_con_ave">2 · Pesar con las gallinas</string>
+    <string name="action_gallina_registrar">Registrar pesada</string>
+    <string name="action_gallina_finalizar">Finalizar despacho</string>
+    <string name="gallina_destare_ok">Destare: %1$.2f kg</string>
+    <string name="gallina_con_ave_ok">Con ave: %1$.2f kg</string>
+    <string name="gallina_neto_vacio">Captura los dos pesos para ver el neto</string>
+    <string name="gallina_neto_format">Neto %1$.2f kg · %2$d unidades · %3$d g/ave</string>
+    <string name="gallina_neto_invalido">El peso con ave debe ser mayor que el de las jabas vacías</string>
+    <string name="gallina_sin_pesadas">Aún no registras pesadas.</string>
+    <string name="gallina_pesada_registrada">Pesada %1$d registrada — %2$d jabas · %3$d g/ave</string>
+    <string name="gallina_resumen_format">%1$d pesadas · %2$d jabas · %3$d unidades · promedio %4$d g/ave</string>
+    <string name="gallina_item_format">Pesada %1$d · %2$d jabas</string>
+    <string name="gallina_item_detalle">destare %1$.2f · con ave %2$.2f · neto %3$.2f kg</string>
+    <string name="gallina_item_prom">%1$d g/ave</string>
+    <string name="gallina_error_campos">Completa guía, placa y densidad.</string>
+    <string name="gallina_error_catalogo">No se pudo cargar clientes y materiales: %1$s</string>
+    <string name="gallina_error_sin_material">No hay materiales cargados. Pídele a tu supervisor que los registre en la web.</string>
+    <string name="gallina_error_jabas">Indica cuántas jabas hay en esta tanda.</string>
+    <string name="gallina_error_sin_peso">Espera a que la báscula muestre el peso.</string>
+    <string name="gallina_finalizar_titulo">Finalizar despacho</string>
+    <string name="gallina_finalizar_mensaje">%1$d pesadas · %2$d unidades · promedio %3$d g/ave.</string>
+    <string name="gallina_pendientes_format">%1$d despacho(s) de gallina por sincronizar</string>
+
 </resources>

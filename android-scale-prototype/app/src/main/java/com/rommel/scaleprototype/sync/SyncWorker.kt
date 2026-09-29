@@ -7,12 +7,16 @@ import com.rommel.scaleprototype.auth.AuthRepository
 import com.rommel.scaleprototype.data.AppDatabase
 import com.rommel.scaleprototype.data.PlanItem
 import com.rommel.scaleprototype.data.RegistroPeso
+import com.rommel.scaleprototype.data.GallinaDespacho
+import com.rommel.scaleprototype.data.GallinaPesada
 import com.rommel.scaleprototype.data.SacaMuestreo
 import com.rommel.scaleprototype.data.SacaPesada
 import com.rommel.scaleprototype.net.ApiClient
 import com.rommel.scaleprototype.net.ApiException
 import com.rommel.scaleprototype.net.PlanItemDto
 import com.rommel.scaleprototype.net.RegistroDto
+import com.rommel.scaleprototype.net.GallinaDespachoDto
+import com.rommel.scaleprototype.net.GallinaPesadaDto
 import com.rommel.scaleprototype.net.SacaMuestreoDto
 import com.rommel.scaleprototype.net.SacaPesadaDto
 import java.io.IOException
@@ -28,6 +32,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         val dao = db.registroPesoDao()
         val sacaDao = db.sacaDao()
         val planDao = db.planDao()
+        val gallinaDao = db.gallinaDao()
         val apiClient = ApiClient.getInstance(applicationContext)
 
         return try {
@@ -46,6 +51,16 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                 apiClient.postSaca(dtos)
                 sacaDao.markSynced(sacas.map { it.id })
                 sacas = sacaDao.getUnsyncedMuestreos(SACA_BATCH_SIZE)
+            }
+
+            // Despachos de gallina: igual que saca, cada uno va con sus pesadas y es
+            // idempotente por id, así que un reintento no duplica nada en el servidor.
+            var despachos = gallinaDao.getUnsyncedDespachos(SACA_BATCH_SIZE)
+            while (despachos.isNotEmpty()) {
+                val dtos = despachos.map { d -> d.toDto(gallinaDao.getPesadas(d.id)) }
+                apiClient.postGallina(dtos)
+                gallinaDao.markSynced(despachos.map { it.id })
+                despachos = gallinaDao.getUnsyncedDespachos(SACA_BATCH_SIZE)
             }
 
             // Plan del día: primero lo nuevo o editado, luego lo marcado para borrar. Después se
@@ -141,6 +156,27 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             gradoPododermatitis = gradoPododermatitis,
             gradoRasguno = gradoRasguno,
             pigmentacion = pigmentacion,
+        )
+
+        // El neto, las unidades y el promedio no se envían: los calcula el servidor a
+        // partir de las jabas, la densidad y los dos pesos.
+        private fun GallinaDespacho.toDto(pesadas: List<GallinaPesada>) = GallinaDespachoDto(
+            id = id,
+            clienteId = clienteId,
+            materialId = materialId,
+            fecha = isoFormat.format(Date(fechaEpochMillis)),
+            guiaReferencia = guiaReferencia,
+            placa = placa,
+            densidad = densidad,
+            pesadas = pesadas.map { p ->
+                GallinaPesadaDto(
+                    id = p.id,
+                    jabas = p.jabas,
+                    pesoDestareGramos = p.pesoDestareGramos,
+                    pesoConAveGramos = p.pesoConAveGramos,
+                    fechaHora = isoFormat.format(Date(p.fechaHoraEpochMillis)),
+                )
+            },
         )
 
         private fun SacaMuestreo.toDto(pesadas: List<SacaPesada>) = SacaMuestreoDto(

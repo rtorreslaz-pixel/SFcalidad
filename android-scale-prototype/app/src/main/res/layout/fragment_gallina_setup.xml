@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Configuración del pesaje de gallina: los datos del despacho (el camión). No hay plantel
+     ni galpón, como en preventa o saca: aquí la unidad es la guía y la placa. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sf_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            style="@style/SfSectionTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_gallina_setup" />
+
+        <TextView
+            style="@style/SfMuted"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="10dp"
+            android:text="@string/gallina_setup_desc" />
+
+        <TextView
+            style="@style/SfFieldLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_cliente" />
+
+        <Spinner
+            android:id="@+id/spinnerGallinaCliente"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            style="@style/SfFieldLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_material" />
+
+        <Spinner
+            android:id="@+id/spinnerGallinaMaterial"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            style="@style/SfFieldLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_guia" />
+
+        <EditText
+            android:id="@+id/editGallinaGuia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="none"
+            android:hint="@string/label_guia"
+            android:inputType="textCapCharacters"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            style="@style/SfFieldLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_placa" />
+
+        <EditText
+            android:id="@+id/editGallinaPlaca"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="none"
+            android:hint="@string/label_placa"
+            android:inputType="textCapCharacters"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            style="@style/SfFieldLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_densidad" />
+
+        <EditText
+            android:id="@+id/editGallinaDensidad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="none"
+            android:hint="@string/label_densidad"
+            android:inputType="number"
+            android:text="@string/gallina_densidad_default"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            style="@style/SfMuted"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            android:text="@string/gallina_densidad_ayuda" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonGallinaComenzar"
+            style="@style/SfButtonPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/action_gallina_comenzar" />
+
+        <TextView
+            android:id="@+id/textGallinaPendientes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/sf_amber"
+            android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>

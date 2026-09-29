@@ -17,6 +17,7 @@ export default async function AdminLayout({
     { href: "/admin/planteles", label: "Planteles" },
     { href: "/admin/usuarios", label: "Usuarios" },
     { href: "/admin/defectos", label: "Tipos de defecto" },
+    { href: "/admin/materiales", label: "Materiales (gallina)" },
   ];
 
   return (
