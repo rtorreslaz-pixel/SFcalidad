@@ -291,6 +291,39 @@ a.weblink:hover{ text-decoration:underline; }
             <button class="btn ghost" data-go="capture">Volver a captura</button>
           </div>
 
+          <!-- AGREGAR CORRAL AL PLAN -->
+          <div class="view" id="v-plan-item">
+            <div class="selhead"><div class="t" id="planItemTitulo">Agregar corral al plan</div>
+              <div class="s">Se carga un corral a la vez, con sus propios datos.</div></div>
+            <div><label class="f">Plantel</label><select class="sel"><option>P208 — AKIM</option><option>P054 — VALENTINA</option><option>P280 — LUCARVI</option></select></div>
+            <div class="row2">
+              <div><label class="f">Campaña</label><input class="inp" value="2705"></div>
+              <div><label class="f">Galpón</label><input class="inp" id="piGalpon" value="7"></div>
+            </div>
+            <div><label class="f">Corral</label>
+              <div class="radios" data-radio="picorral"><div class="chip on">A</div><div class="chip">B</div><div class="chip">C</div><div class="chip">D</div><div class="chip">Otro</div></div></div>
+            <div><label class="f">Sexo</label>
+              <div class="radios" data-radio="pisexo"><div class="chip on">Macho</div><div class="chip">Hembra</div><div class="chip">Mediano</div></div></div>
+            <div class="row2">
+              <div><label class="f">Edad (días)</label><input class="inp" id="piEdad" value="38"></div>
+              <div><label class="f">Línea genética</label><select class="sel"><option>ROSS</option><option>COBB</option></select></div>
+            </div>
+            <div><label class="f">Tipo de captura</label>
+              <div class="radios" data-radio="pitipo"><div class="chip on">Pesaje</div><div class="chip">Solo calidad</div></div></div>
+            <div><label class="f">Lote</label>
+              <div class="radios" data-radio="pilote"><div class="chip on">J — Joven</div><div class="chip">A — Adulto</div></div></div>
+            <div><label class="f">Agrupamiento</label>
+              <div class="radios" data-radio="piagrup"><div class="chip on">Individual</div><div class="chip">Grupal</div></div></div>
+            <div id="piAvesWrap" style="display:none"><label class="f">N° aves por pesada</label>
+              <select class="sel" id="piAves"><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div>
+            <div><label class="f">Circuito</label>
+              <div class="radios" data-radio="picirc"><div class="chip">—</div><div class="chip on">CV — vivo</div><div class="chip">CB — benef.</div></div></div>
+            <button class="btn primary" id="piSeguir">Agregar y siguiente corral</button>
+            <div class="lastreg" id="piAviso"></div>
+            <button class="btn ghost" id="piGuardar">Agregar al plan</button>
+            <button class="btn ghost" data-go="plan">Volver al plan</button>
+          </div>
+
           <!-- PLAN DEL DÍA -->
           <div class="view" id="v-plan">
             <div class="selhead">
@@ -299,7 +332,7 @@ a.weblink:hover{ text-decoration:underline; }
               <div class="progbar" style="margin-top:7px"><i id="planProg" style="width:0%"></i></div>
             </div>
             <div id="planList"></div>
-            <button class="btn primary" data-go="setup">+ Agregar corrales</button>
+            <button class="btn primary" data-go="plan-item">+ Agregar corrales</button>
             <button class="btn ghost" id="planSync">Sincronizar</button>
             <button class="btn ghost" data-go="home">Volver al inicio</button>
           </div>
@@ -432,6 +465,7 @@ a.weblink:hover{ text-decoration:underline; }
     scale:['Ajustes de báscula','Vincular báscula y elegir su protocolo.'],
     registro:['Historial de pesajes','Lo ya pesado, día por día, con el resumen por corral y galpón.'],
     plan:['Plan del día','Los corrales que se van a muestrear hoy, y su avance.'],
+    'plan-item':['Agregar corral al plan','Un corral a la vez, con sus propios datos.'],
     'muestreo-detalle':['Detalle del muestreo','Cada registro de la muestra y el total.'],
     'saca-setup':['Configurar saca','Lote y parámetros del muestreo de jabas.'],
     'saca-capture':['Pesaje de saca','Muestreo de jabas por pesadas (~40+ días).']
@@ -451,6 +485,9 @@ a.weblink:hover{ text-decoration:underline; }
     registro:[['📁','Consulta después de cerrar','Los registros no se borran al sincronizar: lo pesado en días anteriores se sigue viendo aunque se cierre la app.'],
       ['🏠','Resumen por galpón y corral','De cada galpón, el total de aves y el peso promedio; debajo, cada corral con lo suyo.'],
       ['📤','Pendientes visibles','El verificador ve exactamente qué le falta sincronizar antes de cerrar la jornada.']],
+    'plan-item':[['🎯','Cada corral con lo suyo','Sexo, edad, línea, lote, agrupamiento y circuito se fijan corral por corral: dentro de un mismo galpón pueden cambiar.'],
+      ['↩️','Agregar y siguiente corral','Al guardar, el formulario se queda lleno y propone el siguiente corral (A → B → C → D): solo se cambia lo que difiere, sin retipear el galpón entero.'],
+      ['📐','El estándar se propone solo','Pesaje va individual y calidad de a 3 aves; si un caso puntual necesita otra cantidad, se cambia ahí mismo.']],
     plan:[['🗓️','La jornada armada antes de salir','El verificador carga los corrales que va a muestrear, uno a la vez y con sus propios datos: sexo, edad, línea, lote y circuito.'],
       ['✅','Se cumple solo','Al terminar un muestreo, la fila del plan pasa a Hecho sin que nadie marque nada: el servidor cruza lo pesado contra lo planificado.'],
       ['📶','Funciona sin señal','El plan se guarda en el teléfono y se sincroniza con la web cuando vuelve el internet.']],
@@ -471,7 +508,7 @@ a.weblink:hover{ text-decoration:underline; }
     document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
     document.getElementById('v-'+s).classList.add('active');
     document.querySelectorAll('.step').forEach(function(st){ st.setAttribute('aria-current', st.dataset.go===s?'true':'false'); });
-    var sub={login:'Pesaje preventa en granja',home:'Inicio',plan:'Plan del día',setup:'Configurar captura',capture:'Captura',scale:'Ajustes de báscula',registro:'Historial de pesajes','muestreo-detalle':'Detalle','saca-setup':'Configurar saca','saca-capture':'Pesaje de saca'};
+    var sub={login:'Pesaje preventa en granja',home:'Inicio',plan:'Plan del día','plan-item':'Agregar corral',setup:'Configurar captura',capture:'Captura',scale:'Ajustes de báscula',registro:'Historial de pesajes','muestreo-detalle':'Detalle','saca-setup':'Configurar saca','saca-capture':'Pesaje de saca'};
     document.getElementById('appbarsub').textContent=sub[s];
     document.getElementById('exTitle').textContent=titles[s][0];
     document.getElementById('exSub').textContent=titles[s][1];
@@ -481,6 +518,7 @@ a.weblink:hover{ text-decoration:underline; }
     if(s==='capture'){ applyMode(); renderCapList(); aplicarAvesPesada(); }
     if(s==='registro') renderRegistro();
     if(s==='plan') renderPlan();
+    if(s==='plan-item'){ document.getElementById('piAviso').textContent=''; piAplicarAgrupamiento(); }
     if(s==='saca-capture'){ aplicarSacaSetup(); renderSaca(); }
   }
 
@@ -562,6 +600,44 @@ a.weblink:hover{ text-decoration:underline; }
       Object.keys(dias).length+' día(s) · '+totAves+' aves · '+(totPend===0?'todo sincronizado':totPend+' pendientes de enviar');
   }
 
+  // Formulario del plan: un corral a la vez. Al guardar, propone el siguiente (A→B→C→D)
+  // conservando lo demás, que es lo que evita retipear el galpón entero en cada corral.
+  var CORRALES=['A','B','C','D'];
+  function piChip(g){ var c=document.querySelector('[data-radio="'+g+'"] .chip.on'); return c?c.textContent:''; }
+  function piAplicarAgrupamiento(){
+    var grupal = /grupal/i.test(piChip('piagrup'));
+    document.getElementById('piAvesWrap').style.display = grupal ? '' : 'none';
+  }
+  function piSiguienteCorral(){
+    var g=document.querySelector('[data-radio="picorral"]');
+    var chips=Array.prototype.slice.call(g.querySelectorAll('.chip'));
+    var act=chips.findIndex(function(c){ return c.classList.contains('on'); });
+    var sig=chips[act+1] && CORRALES.indexOf(chips[act+1].textContent)>=0 ? act+1 : 0;
+    chips.forEach(function(c,i){ c.classList.toggle('on', i===sig); });
+    return chips[sig].textContent;
+  }
+  function piAgregar(seguir){
+    var corral=piChip('picorral');
+    var grupal=/grupal/i.test(piChip('piagrup'));
+    var det=[ /calidad/i.test(piChip('pitipo'))?'Solo calidad':'Pesaje',
+              document.getElementById('piEdad').value+' d',
+              document.querySelectorAll('#v-plan-item .sel')[1].value,
+              'Lote '+piChip('pilote').charAt(0),
+              grupal ? 'Grupal '+document.getElementById('piAves').value+' aves' : 'Individual',
+              piChip('picirc').split(' ')[0] ].join(' · ');
+    state.plan.push({ corral:corral,
+      lote:'P208 · G'+document.getElementById('piGalpon').value+' · '+piChip('pisexo'),
+      det:det, hecho:false });
+    if(seguir){
+      var sig=piSiguienteCorral();
+      document.getElementById('piAviso').textContent='Corral '+corral+' agregado. Sigue con el '+sig+'.';
+    } else {
+      setScreen('plan');
+    }
+  }
+  document.getElementById('piSeguir').onclick=function(){ piAgregar(true); };
+  document.getElementById('piGuardar').onclick=function(){ piAgregar(false); };
+
   // Plan del día: los corrales propuestos para hoy y cuáles ya se cumplieron. Tocar uno
   // pendiente abre la configuración de captura con sus datos.
   function renderPlan(){
@@ -635,8 +711,24 @@ a.weblink:hover{ text-decoration:underline; }
   // radios / chips
   document.querySelectorAll('[data-radio]').forEach(function(g){
     g.querySelectorAll('.chip,.proto').forEach(function(c){ c.addEventListener('click',function(){
-      g.querySelectorAll('.chip,.proto').forEach(function(x){x.classList.remove('on')}); c.classList.add('on'); }); });
+      g.querySelectorAll('.chip,.proto').forEach(function(x){x.classList.remove('on')}); c.classList.add('on');
+      var grupo=g.dataset.radio;
+      // El estándar se propone solo: pesaje va de a una ave, calidad de a tres.
+      if(grupo==='pitipo'){
+        var cal=/calidad/i.test(c.textContent);
+        var ag=document.querySelector('[data-radio="piagrup"]');
+        ag.querySelectorAll('.chip').forEach(function(x){
+          x.classList.toggle('on', cal ? /grupal/i.test(x.textContent) : /individual/i.test(x.textContent)); });
+      }
+      if(grupo==='pitipo'||grupo==='piagrup') piAplicarAgrupamiento();
+      // En la configuración de captura, el N° de aves cambia el selector de la pesada.
+      if(grupo==='modo') applyMode();
+    }); });
   });
+  // Cambiar el estándar en la configuración recalcula la fila de aves por pesada.
+  (function(){ var sels=document.querySelectorAll('#v-setup .sel');
+    if(sels[2]) sels[2].addEventListener('change', function(){
+      state.avesPesada=parseInt(sels[2].value,10)||1; aplicarAvesPesada(); }); })();
   // switches
   var calSw=document.getElementById('calSw'), calidad=document.getElementById('calidad');
   calSw.onclick=function(){ calSw.classList.toggle('on'); calidad.classList.toggle('show', calSw.classList.contains('on')); };
