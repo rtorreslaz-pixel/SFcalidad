@@ -7,6 +7,7 @@ import com.rommel.scaleprototype.auth.AuthRepository
 import com.rommel.scaleprototype.data.AppDatabase
 import com.rommel.scaleprototype.data.PlanItem
 import com.rommel.scaleprototype.data.RegistroPeso
+import com.rommel.scaleprototype.data.AnulacionPendiente
 import com.rommel.scaleprototype.data.GallinaDespacho
 import com.rommel.scaleprototype.data.GallinaPesada
 import com.rommel.scaleprototype.data.SacaMuestreo
@@ -33,6 +34,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         val sacaDao = db.sacaDao()
         val planDao = db.planDao()
         val gallinaDao = db.gallinaDao()
+        val anulacionDao = db.anulacionDao()
         val apiClient = ApiClient.getInstance(applicationContext)
 
         return try {
@@ -61,6 +63,21 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                 apiClient.postGallina(dtos)
                 gallinaDao.markSynced(despachos.map { it.id })
                 despachos = gallinaDao.getUnsyncedDespachos(SACA_BATCH_SIZE)
+            }
+
+            // Anulaciones AL FINAL, a propósito: los registros ya se subieron arriba, así que
+            // el servidor nunca recibe la anulación de algo que todavía no conoce.
+            for (tipo in listOf(
+                AnulacionPendiente.TIPO_PREVENTA,
+                AnulacionPendiente.TIPO_SACA,
+                AnulacionPendiente.TIPO_GALLINA,
+            )) {
+                var anulaciones = anulacionDao.pendientesPorTipo(tipo)
+                while (anulaciones.isNotEmpty()) {
+                    apiClient.postAnulaciones(tipo, anulaciones.map { it.registroId })
+                    anulacionDao.markSynced(anulaciones.map { it.registroId })
+                    anulaciones = anulacionDao.pendientesPorTipo(tipo)
+                }
             }
 
             // Plan del día: primero lo nuevo o editado, luego lo marcado para borrar. Después se

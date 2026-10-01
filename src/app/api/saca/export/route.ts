@@ -36,7 +36,10 @@ export async function GET(request: NextRequest) {
     include: {
       plantel: { select: { codigo: true, nombre: true } },
       verificador: { select: { nombre: true } },
-      pesadas: { orderBy: { fechaHora: "asc" } },
+      pesadas: {
+        orderBy: { fechaHora: "asc" },
+        include: { anuladoPor: { select: { nombre: true } } },
+      },
     },
   });
 
@@ -85,7 +88,7 @@ export async function GET(request: NextRequest) {
   for (const m of muestreos) {
     const pv = m.complexLote ? pvPorLote.get(m.complexLote) : undefined;
     const promPreventa = pv && pv.n > 0 ? pv.suma / pv.n : null;
-    m.pesadas.forEach((p, i) => {
+    m.pesadas.filter((p) => p.anuladoEn == null).forEach((p, i) => {
       rows.push([
         m.id,
         fecha(m.fecha),
@@ -114,5 +117,29 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  return tablaResponse(rows, "saca", searchParams, "Pesaje de saca");
+    // Los anulados van en su propia hoja: el detalle queda limpio y la trazabilidad viaja
+  // igual en el archivo.
+  const anulados: (string | number)[][] = [[
+    "PLANTEL", "CAMPAÑA", "GALPÓN", "CORRAL", "CATEGORÍA", "FECHA", "N° JABAS",
+    "PESO BRUTO (kg)", "PESO NETO (kg)", "AVES", "PROMEDIO (g)", "ANULADO EL", "ANULADO POR",
+  ]];
+  for (const m of muestreos) {
+    for (const p of m.pesadas.filter((x) => x.anuladoEn != null)) {
+      anulados.push([
+        m.plantel?.codigo ?? "", m.campania ?? "", m.galpon, m.corral ?? "",
+        CATEGORIA_LABEL[m.categoria] ?? m.categoria,
+        m.fecha.toISOString().slice(0, 10),
+        p.numJabas,
+        Number((p.pesoBrutoGramos / 1000).toFixed(3)),
+        Number((p.pesoNetoGramos / 1000).toFixed(3)),
+        p.avesTotal,
+        Math.round(p.promedioGramos),
+        p.anuladoEn ? p.anuladoEn.toISOString().slice(0, 16).replace("T", " ") : "",
+        p.anuladoPor?.nombre ?? "",
+      ]);
+    }
+  }
+
+  return tablaResponse(rows, "saca", searchParams, "Pesaje de saca",
+    [{ nombre: "Anulados", filas: anulados }]);
 }

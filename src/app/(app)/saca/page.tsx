@@ -88,9 +88,11 @@ export default async function SacaPage({
   }
 
   const filas = muestreos.map((m) => {
-    const totalJabas = m.pesadas.reduce((a, p) => a + p.numJabas, 0);
-    const totalAves = m.pesadas.reduce((a, p) => a + p.avesTotal, 0);
-    const totalNeto = m.pesadas.reduce((a, p) => a + p.pesoNetoGramos, 0);
+    // Las pesadas anuladas siguen guardadas pero no suman: son errores marcados.
+    const pesadas = m.pesadas.filter((p) => p.anuladoEn == null);
+    const totalJabas = pesadas.reduce((a, p) => a + p.numJabas, 0);
+    const totalAves = pesadas.reduce((a, p) => a + p.avesTotal, 0);
+    const totalNeto = pesadas.reduce((a, p) => a + p.pesoNetoGramos, 0);
     const promSaca = totalAves > 0 ? totalNeto / totalAves : null;
 
     // Preferencia: mismo lado (complex exacto); si no hay, el galpón completo.
@@ -258,7 +260,7 @@ export default async function SacaPage({
                   <td className="px-3 py-2">{f.m.corral ?? "—"}</td>
                   <td className="px-3 py-2">{CATEGORIA_LABEL[f.m.categoria] ?? f.m.categoria}</td>
                   <td className="px-3 py-2">{f.m.edad != null ? `${f.m.edad} d` : "—"}</td>
-                  <td className="px-3 py-2">{f.m.pesadas.length}</td>
+                  <td className="px-3 py-2">{f.m.pesadas.filter((p) => p.anuladoEn == null).length}</td>
                   <td className="px-3 py-2">{f.totalJabas}</td>
                   <td className="px-3 py-2">{f.totalAves}</td>
                   <td className="px-3 py-2 font-semibold whitespace-nowrap">{fmtKg(f.promSaca)}</td>

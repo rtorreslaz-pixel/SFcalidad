@@ -241,7 +241,19 @@ function FilaMuestreo({ m }: { m: MuestreoResumen }) {
   return (
     <tr className="hover:bg-slate-50">
       <td className="whitespace-nowrap px-3 py-2">{fecha(m.dia)}</td>
-      <td className="px-3 py-2 font-semibold">{m.corral}</td>
+      <td className="px-3 py-2 font-semibold">
+        {m.complex ? (
+          <Link
+            href={`/pesajes?complex=${encodeURIComponent(m.complex)}&dia=${m.dia}`}
+            className="text-brand hover:underline"
+            title="Ver y anular los pesajes de este corral"
+          >
+            {m.corral}
+          </Link>
+        ) : (
+          m.corral
+        )}
+      </td>
       <td className="px-3 py-2">{CATEGORIA_LABEL[m.categoria]}</td>
       <td className="px-3 py-2">{m.edad != null ? `${m.edad} d` : "—"}</td>
       <td className="px-3 py-2 text-right tabular-nums">

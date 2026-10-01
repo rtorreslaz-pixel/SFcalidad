@@ -263,4 +263,17 @@
     <string name="gallina_finalizar_mensaje">%1$d pesadas · %2$d unidades · promedio %3$d g/ave.</string>
     <string name="gallina_pendientes_format">%1$d despacho(s) de gallina por sincronizar</string>
 
+
+    <!-- Anulación de pesajes: en granja se cometen errores y hay que poder corregirlos -->
+    <string name="anular_titulo">Anular pesaje</string>
+    <string name="anular_mensaje">%1$s\n\nEl registro no se borra: queda marcado en rojo y deja de contar en los promedios.</string>
+    <string name="anular_confirmar">Anular</string>
+    <string name="anulado_badge">ANULADO</string>
+    <string name="aves_titulo_format">Aves de este muestreo (%1$d)</string>
+    <string name="ave_item_format">Ave #%1$d</string>
+    <string name="ave_item_peso">%1$d g</string>
+    <string name="ave_item_grupal">%1$d g/ave · %2$d aves</string>
+    <string name="ave_item_calidad">solo calidad</string>
+    <string name="anular_toque_largo">Mantén pulsado un registro para anularlo.</string>
+
 </resources>

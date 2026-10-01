@@ -122,6 +122,10 @@ export async function construirResumenGalpones(
     if (f.hasta) where.fechaHora.lte = new Date(f.hasta + "T23:59:59");
   }
 
+  // Los anulados quedan fuera de promedios, CV y uniformidad: son errores de pesaje
+  // marcados, no datos del lote.
+  where.anuladoEn = null;
+
   const registros = await prisma.registroPesoPreventa.findMany({
     where,
     orderBy: { fechaHora: "asc" },

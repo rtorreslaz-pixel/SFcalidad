@@ -26,8 +26,10 @@ import com.rommel.scaleprototype.ScaleEvent
 import com.rommel.scaleprototype.ScaleProtocols
 import com.rommel.scaleprototype.auth.AuthRepository
 import com.rommel.scaleprototype.data.AppDatabase
+import com.rommel.scaleprototype.data.AnulacionPendiente
 import com.rommel.scaleprototype.data.RegistroPeso
 import com.rommel.scaleprototype.databinding.FragmentCaptureBinding
+import com.rommel.scaleprototype.databinding.ItemPesadaBinding
 import com.rommel.scaleprototype.net.ApiClient
 import com.rommel.scaleprototype.net.ApiException
 import com.rommel.scaleprototype.net.LiveWeightRequest
@@ -52,6 +54,8 @@ class CaptureFragment : Fragment() {
     // Aves que hay en la balanza AHORA. Arranca en el estándar del muestreo y se puede bajar
     // para la última pesada del corral, que suele quedar con 1 o 2 aves.
     private var avesEstaPesada: Int = 1
+    /** Inicio de esta sesión de captura: acota la lista al muestreo en curso. */
+    private val inicioDelMuestreoMillis: Long = System.currentTimeMillis()
 
     // Piso traído del servidor para el corral actual: si la app se reinstaló o se borró su
     // storage, Room local arranca en 0 pero el servidor ya tiene aves sincronizadas de antes
@@ -128,6 +132,7 @@ class CaptureFragment : Fragment() {
         configurarAvesPorPesada()
 
         observePendingCount()
+        observarAvesDelMuestreo()
         fetchServerNumeroAveBaseline()
         // En "solo calidad" no hay báscula: no se conecta ni se escucha peso.
         if (!soloCalidad) {
@@ -515,6 +520,77 @@ class CaptureFragment : Fragment() {
                 setWeight(ultimoPesoKg)
             }
         }
+    }
+
+    /**
+     * Aves registradas en este muestreo. Se listan para poder revisarlas y anular la que
+     * salió mal -- el ave se movió, se leyó mal la balanza, se registró dos veces -- sin
+     * salir de la pantalla. La anulada se queda en rojo y deja de contar.
+     */
+    private fun observarAvesDelMuestreo() {
+        val dao = AppDatabase.getInstance(requireContext()).registroPesoDao()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                dao.avesDelMuestreoFlow(
+                    plantelId, campania, galpon, corral, categoria, inicioDelMuestreoMillis
+                ).collect { aves -> pintarAves(aves) }
+            }
+        }
+    }
+
+    private fun pintarAves(aves: List<RegistroPeso>) {
+        val b = binding ?: return
+        val vigentes = aves.count { it.anuladoEnEpochMillis == null }
+        b.textAvesTitulo.visibility = if (aves.isEmpty()) View.GONE else View.VISIBLE
+        b.textAvesTitulo.text = getString(R.string.aves_titulo_format, vigentes)
+        b.containerAves.removeAllViews()
+        val inflater = LayoutInflater.from(requireContext())
+        for (ave in aves) {
+            val fila = ItemPesadaBinding.inflate(inflater, b.containerAves, false)
+            val anulada = ave.anuladoEnEpochMillis != null
+            fila.textPesadaTitulo.text = getString(R.string.ave_item_format, ave.numeroAve)
+            fila.textPesadaDetalle.text = when {
+                ave.tipoMuestreo == "CALIDAD" || ave.pesoGramos <= 0 -> getString(R.string.ave_item_calidad)
+                ave.nAvesPorPesada > 1 ->
+                    getString(R.string.ave_item_grupal, Math.round(ave.pesoGramos).toInt(), ave.nAvesPorPesada)
+                else -> getString(R.string.ave_item_peso, Math.round(ave.pesoGramos).toInt())
+            }
+            if (anulada) {
+                fila.textPesadaPromedio.text = getString(R.string.anulado_badge)
+                fila.textPesadaPromedio.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.sf_red)
+                )
+                // Sombreado rojo: se distingue de un vistazo lo que ya no cuenta.
+                fila.root.setCardBackgroundColor(
+                    ContextCompat.getColor(requireContext(), R.color.sf_red_bg)
+                )
+                fila.root.alpha = 0.75f
+            } else {
+                fila.textPesadaPromedio.text = ""
+                fila.root.setOnLongClickListener {
+                    confirmarAnular(ave)
+                    true
+                }
+            }
+            b.containerAves.addView(fila.root)
+        }
+    }
+
+    private fun confirmarAnular(ave: RegistroPeso) {
+        val detalle = getString(R.string.ave_item_format, ave.numeroAve) +
+            " · " + Math.round(ave.pesoGramos).toInt() + " g"
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.anular_titulo)
+            .setMessage(getString(R.string.anular_mensaje, detalle))
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.anular_confirmar) { _, _ ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    AppDatabase.getInstance(requireContext()).anulacionDao()
+                        .anular(ave.id, AnulacionPendiente.TIPO_PREVENTA)
+                    SyncScheduler.scheduleSyncNow(requireContext())
+                }
+            }
+            .show()
     }
 
     /** Pigmentación 0–7 (botones): devuelve null si no se seleccionó ninguno. */

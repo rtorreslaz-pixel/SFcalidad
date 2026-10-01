@@ -10,9 +10,9 @@ import androidx.room.migration.Migration
 @Database(
     entities = [
         RegistroPeso::class, SacaMuestreo::class, SacaPesada::class, PlanItem::class,
-        GallinaDespacho::class, GallinaPesada::class,
+        GallinaDespacho::class, GallinaPesada::class, AnulacionPendiente::class,
     ],
-    version = 11,
+    version = 12,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -24,6 +24,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun planDao(): PlanDao
 
     abstract fun gallinaDao(): GallinaDao
+
+    abstract fun anulacionDao(): AnulacionDao
 
     companion object {
         @Volatile
@@ -153,6 +155,22 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // Anulación de pesajes: la marca en cada tabla y la cola de lo que falta avisar al
+        // servidor. Columnas nuevas y opcionales, así que nada de lo capturado se toca.
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE registro_peso ADD COLUMN anuladoEnEpochMillis INTEGER")
+                db.execSQL("ALTER TABLE saca_pesada ADD COLUMN anuladoEnEpochMillis INTEGER")
+                db.execSQL("ALTER TABLE gallina_pesada ADD COLUMN anuladoEnEpochMillis INTEGER")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS anulacion_pendiente (" +
+                        "registroId TEXT NOT NULL PRIMARY KEY, tipo TEXT NOT NULL, " +
+                        "anuladoEnEpochMillis INTEGER NOT NULL, " +
+                        "synced INTEGER NOT NULL DEFAULT 0)"
+                )
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -162,7 +180,7 @@ abstract class AppDatabase : RoomDatabase() {
                     // Sin fallbackToDestructiveMigration(): un futuro cambio de esquema
                     // debe ir por una Migration real, no borrar la cola de un verificador.
                 ).addMigrations(
-                    MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
+                    MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
                 )
                     .build().also { instance = it }
             }

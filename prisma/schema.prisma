@@ -91,6 +91,9 @@ model User {
   sessions              Session[]
   planMuestreo          PlanMuestreoItem[]
   gallinaDespachos      GallinaDespacho[]
+  anulacionesPreventa   RegistroPesoPreventa[] @relation("AnulacionesPreventa")
+  anulacionesSaca       SacaPesada[]           @relation("AnulacionesSaca")
+  anulacionesGallina    GallinaPesada[]        @relation("AnulacionesGallina")
 }
 
 // Sesión web con token opaco aleatorio (la cookie guarda el token, no el userId),
@@ -369,8 +372,15 @@ model RegistroPesoPreventa {
   verificadorId String
   verificador   User   @relation(fields: [verificadorId], references: [id])
 
-  syncedAt  DateTime @default(now()) // momento en que el servidor lo recibió
-  createdAt DateTime @default(now())
+  syncedAt     DateTime  @default(now()) // momento en que el servidor lo recibió
+  createdAt    DateTime  @default(now())
+  // --- Anulación (borrado lógico) ---------------------------------------------------
+  // En granja se cometen errores al pesar: el ave se movió, se leyó mal la balanza, se
+  // registró dos veces. El registro NO se borra, se marca: queda a la vista en rojo para
+  // poder auditarlo, pero sale de promedios, conteos y totales.
+  anuladoEn    DateTime?
+  anuladoPorId String?
+  anuladoPor   User?     @relation("AnulacionesPreventa", fields: [anuladoPorId], references: [id])
 
   @@index([plantelId, galpon, corral, categoria])
   @@index([verificadorId, fechaHora])
@@ -438,8 +448,15 @@ model SacaPesada {
   avesTotal       Int // numJabas * avesPorJaba
   promedioGramos  Float // pesoNetoGramos / avesTotal
 
-  fechaHora DateTime
-  createdAt DateTime @default(now())
+  fechaHora    DateTime
+  createdAt    DateTime  @default(now())
+  // --- Anulación (borrado lógico) ---------------------------------------------------
+  // En granja se cometen errores al pesar: el ave se movió, se leyó mal la balanza, se
+  // registró dos veces. El registro NO se borra, se marca: queda a la vista en rojo para
+  // poder auditarlo, pero sale de promedios, conteos y totales.
+  anuladoEn    DateTime?
+  anuladoPorId String?
+  anuladoPor   User?     @relation("AnulacionesSaca", fields: [anuladoPorId], references: [id])
 
   @@index([sacaMuestreoId])
 }
@@ -516,8 +533,15 @@ model GallinaPesada {
   unidades          Int // jabas * densidad de esta pesada
   promedioGramos    Float // pesoNetoGramos / unidades
 
-  fechaHora DateTime
-  createdAt DateTime @default(now())
+  fechaHora    DateTime
+  createdAt    DateTime  @default(now())
+  // --- Anulación (borrado lógico) ---------------------------------------------------
+  // En granja se cometen errores al pesar: el ave se movió, se leyó mal la balanza, se
+  // registró dos veces. El registro NO se borra, se marca: queda a la vista en rojo para
+  // poder auditarlo, pero sale de promedios, conteos y totales.
+  anuladoEn    DateTime?
+  anuladoPorId String?
+  anuladoPor   User?     @relation("AnulacionesGallina", fields: [anuladoPorId], references: [id])
 
   @@index([despachoId])
 }

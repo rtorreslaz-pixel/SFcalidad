@@ -27,6 +27,7 @@ import com.rommel.scaleprototype.ScaleConnectionManager
 import com.rommel.scaleprototype.ScaleEvent
 import com.rommel.scaleprototype.ScaleProtocols
 import com.rommel.scaleprototype.auth.AuthRepository
+import com.rommel.scaleprototype.data.AnulacionPendiente
 import com.rommel.scaleprototype.data.AppDatabase
 import com.rommel.scaleprototype.data.GallinaDespacho
 import com.rommel.scaleprototype.data.GallinaPesada
@@ -233,24 +234,67 @@ class GallinaCaptureFragment : Fragment() {
                 R.string.gallina_item_detalle,
                 p.pesoDestareGramos / 1000.0, p.pesoConAveGramos / 1000.0, p.pesoNetoGramos / 1000.0,
             )
-            fila.textPesadaPromedio.text =
-                getString(R.string.gallina_item_prom, Math.round(p.promedioGramos).toInt())
+            if (p.anuladoEnEpochMillis != null) {
+                // Sombreado rojo: se distingue de un vistazo lo que ya no cuenta.
+                fila.textPesadaPromedio.text = getString(R.string.anulado_badge)
+                fila.textPesadaPromedio.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.sf_red)
+                )
+                fila.root.setCardBackgroundColor(
+                    ContextCompat.getColor(requireContext(), R.color.sf_red_bg)
+                )
+                fila.root.alpha = 0.75f
+            } else {
+                fila.textPesadaPromedio.text =
+                    getString(R.string.gallina_item_prom, Math.round(p.promedioGramos).toInt())
+                fila.root.setOnLongClickListener {
+                    confirmarAnularPesada(p.id, getString(R.string.gallina_item_format, i + 1, p.jabas, p.densidad))
+                    true
+                }
+            }
             b.containerGallinaPesadas.addView(fila.root)
         }
 
-        val totalJabas = pesadas.sumOf { it.jabas }
-        val totalUnidades = pesadas.sumOf { it.unidades }
-        val totalNeto = pesadas.sumOf { it.pesoNetoGramos }
-        b.textGallinaResumen.text = if (pesadas.isEmpty()) {
+        // Las anuladas se quedan a la vista pero no suman en ningún total.
+        val vigentes = pesadas.filter { it.anuladoEnEpochMillis == null }
+        val totalJabas = vigentes.sumOf { it.jabas }
+        val totalUnidades = vigentes.sumOf { it.unidades }
+        val totalNeto = vigentes.sumOf { it.pesoNetoGramos }
+        b.textGallinaResumen.text = if (vigentes.isEmpty()) {
             getString(R.string.gallina_sin_pesadas)
         } else {
             getString(
                 R.string.gallina_resumen_format,
-                pesadas.size, totalJabas, totalUnidades,
+                vigentes.size, totalJabas, totalUnidades,
                 // Promedio ponderado por ave del despacho, no el promedio de los promedios.
                 Math.round(totalNeto / totalUnidades).toInt(),
             )
         }
+    }
+
+    /**
+     * Anular una pesada. Si el despacho todavía no se guardó (se guarda al finalizar), basta
+     * con marcarla en memoria; si ya está en Room, se marca y se encola el aviso al servidor.
+     */
+    private fun confirmarAnularPesada(id: String, detalle: String) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.anular_titulo)
+            .setMessage(getString(R.string.anular_mensaje, detalle))
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.anular_confirmar) { _, _ ->
+                val i = pesadas.indexOfFirst { it.id == id }
+                if (i < 0) return@setPositiveButton
+                pesadas[i] = pesadas[i].copy(anuladoEnEpochMillis = System.currentTimeMillis())
+                pintarPesadas()
+                if (despachoCreado) {
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        AppDatabase.getInstance(requireContext()).anulacionDao()
+                            .anular(id, AnulacionPendiente.TIPO_GALLINA)
+                        SyncScheduler.scheduleSyncNow(requireContext())
+                    }
+                }
+            }
+            .show()
     }
 
     // --- Cierre ---

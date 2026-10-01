@@ -67,10 +67,29 @@ interface RegistroPesoDao {
             "COUNT(*) AS total, " +
             "SUM(CASE WHEN synced = 0 THEN 1 ELSE 0 END) AS pendientes " +
             "FROM registro_peso WHERE createdAtEpochMillis >= :desdeEpochMillis " +
+            "AND anuladoEnEpochMillis IS NULL " +
             "GROUP BY plantelCodigo, campania, galpon, corral, categoria " +
             "ORDER BY MAX(createdAtEpochMillis) DESC"
     )
     suspend fun muestreosDelDia(desdeEpochMillis: Long): List<MuestreoDiaResumen>
+
+    // Aves registradas en el muestreo en curso, para poder revisarlas y anular la que salió
+    // mal sin salir de la pantalla de captura.
+    @Query(
+        "SELECT * FROM registro_peso " +
+            "WHERE plantelId = :plantelId AND campania = :campania AND galpon = :galpon " +
+            "AND corral = :corral AND categoria = :categoria " +
+            "AND createdAtEpochMillis >= :desdeEpochMillis " +
+            "ORDER BY numeroAve DESC"
+    )
+    fun avesDelMuestreoFlow(
+        plantelId: String,
+        campania: String,
+        galpon: String,
+        corral: String,
+        categoria: String,
+        desdeEpochMillis: Long,
+    ): Flow<List<RegistroPeso>>
 
     // Historial completo del teléfono, un renglón por corral y día. Los registros no se
     // borran al sincronizar, así que esto cubre también los muestreos ya enviados.
@@ -90,7 +109,7 @@ interface RegistroPesoDao {
             "SUM(CASE WHEN pesoGramos > 0 THEN (CASE WHEN nAvesPorPesada > 1 THEN nAvesPorPesada ELSE 1 END) ELSE 0 END) AS avesPesadas, " +
             "SUM(CASE WHEN pesoGramos > 0 THEN pesoGramos * (CASE WHEN nAvesPorPesada > 1 THEN nAvesPorPesada ELSE 1 END) ELSE 0 END) AS pesoTotal, " +
             "SUM(CASE WHEN synced = 0 THEN 1 ELSE 0 END) AS pendientes " +
-            "FROM registro_peso " +
+            "FROM registro_peso WHERE anuladoEnEpochMillis IS NULL " +
             "GROUP BY dia, plantelCodigo, campania, galpon, corral, categoria " +
             "ORDER BY dia DESC, plantelCodigo, campania, galpon, corral, categoria"
     )
@@ -113,6 +132,8 @@ interface RegistroPesoDao {
 
     // El "siguiente número de ave" siempre se calcula desde lo persistido (nunca un
     // contador en memoria), para que un crash a mitad de corral no duplique números.
+    // Los anulados SÍ cuentan aquí: su número ya se usó y reciclarlo crearía dos aves con
+    // el mismo número en el mismo corral.
     // Escopado también por campania: el mismo corral físico se reutiliza entre campañas,
     // y cada campaña debe re-empezar su conteo de aves.
     @Query(

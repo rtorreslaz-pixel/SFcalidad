@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { anularSacaAction, restaurarSacaAction } from "@/lib/anulacion-actions";
 import { getCurrentUser } from "@/lib/auth";
 import { complexLoteFromComplex } from "@/lib/complex-entity";
 
@@ -24,17 +25,22 @@ export default async function SacaDetallePage({ params }: { params: Promise<{ id
     include: {
       plantel: { select: { codigo: true, nombre: true } },
       verificador: { select: { nombre: true } },
-      pesadas: { orderBy: { fechaHora: "asc" } },
+      pesadas: {
+        orderBy: { fechaHora: "asc" },
+        include: { anuladoPor: { select: { nombre: true } } },
+      },
     },
   });
   if (!m) notFound();
   // Un verificador solo ve sus propios muestreos.
   if (user.role === "VERIFICADOR" && m.verificadorId !== user.id) notFound();
 
-  const totalJabas = m.pesadas.reduce((a, p) => a + p.numJabas, 0);
-  const totalAves = m.pesadas.reduce((a, p) => a + p.avesTotal, 0);
-  const totalBruto = m.pesadas.reduce((a, p) => a + p.pesoBrutoGramos, 0);
-  const totalNeto = m.pesadas.reduce((a, p) => a + p.pesoNetoGramos, 0);
+  // Las pesadas anuladas siguen a la vista, en rojo, pero no suman en ningún total.
+  const vigentes = m.pesadas.filter((p) => p.anuladoEn == null);
+  const totalJabas = vigentes.reduce((a, p) => a + p.numJabas, 0);
+  const totalAves = vigentes.reduce((a, p) => a + p.avesTotal, 0);
+  const totalBruto = vigentes.reduce((a, p) => a + p.pesoBrutoGramos, 0);
+  const totalNeto = vigentes.reduce((a, p) => a + p.pesoNetoGramos, 0);
   const promSaca = totalAves > 0 ? totalNeto / totalAves : null;
 
   // Preventa del mismo lote (mismo complexLote) para la comparación.
@@ -123,11 +129,17 @@ export default async function SacaDetallePage({ params }: { params: Promise<{ id
               <th className="px-3 py-2.5 font-medium">Tara</th>
               <th className="px-3 py-2.5 font-medium">Neto</th>
               <th className="px-3 py-2.5 font-medium">Prom. por ave</th>
+              <th className="px-3 py-2.5" />
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {m.pesadas.map((p, i) => (
-              <tr key={p.id} className="hover:bg-slate-50">
+            {m.pesadas.map((p, i) => {
+              const anulada = p.anuladoEn != null;
+              return (
+              <tr
+                key={p.id}
+                className={anulada ? "bg-red-50 text-red-700 line-through" : "hover:bg-slate-50"}
+              >
                 <td className="px-3 py-2 text-slate-500">{i + 1}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-slate-500">
                   {p.fechaHora.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })}
@@ -142,13 +154,32 @@ export default async function SacaDetallePage({ params }: { params: Promise<{ id
                 <td className="px-3 py-2 whitespace-nowrap font-semibold text-blue-700">
                   {Math.round(p.promedioGramos)} g
                 </td>
+                <td className="px-3 py-2 text-right no-underline whitespace-nowrap">
+                  {anulada ? (
+                    <form action={restaurarSacaAction.bind(null, p.id, `/saca/${m.id}`)}>
+                      <span className="mr-2 text-xs text-red-600">
+                        Anulado{p.anuladoPor ? ` por ${p.anuladoPor.nombre}` : ""}
+                      </span>
+                      <button type="submit" className="text-xs font-semibold text-slate-600 hover:underline">
+                        Restaurar
+                      </button>
+                    </form>
+                  ) : (
+                    <form action={anularSacaAction.bind(null, p.id, `/saca/${m.id}`)}>
+                      <button type="submit" className="text-xs font-semibold text-red-600 hover:underline">
+                        Anular
+                      </button>
+                    </form>
+                  )}
+                </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
           <tfoot className="border-t-2 border-slate-200 bg-slate-50 font-semibold text-slate-900">
             <tr>
               <td className="px-3 py-2.5" colSpan={2}>
-                Total ({m.pesadas.length} pesadas)
+                Total ({vigentes.length} pesadas)
               </td>
               <td className="px-3 py-2.5">{totalJabas}</td>
               <td className="px-3 py-2.5">{totalAves}</td>

@@ -172,6 +172,12 @@ data class GallinaBatchRequest(val despachos: List<GallinaDespachoDto>)
 data class GallinaBatchResponse(val ingested: Int, val ids: List<String>)
 
 @Serializable
+data class AnulacionesRequest(val tipo: String, val ids: List<String>)
+
+@Serializable
+data class AnulacionesResponse(val anulados: Int, val recibidos: Int)
+
+@Serializable
 data class PlanBatchRequest(val items: List<PlanItemDto>, val borrar: List<String> = emptyList())
 
 @Serializable

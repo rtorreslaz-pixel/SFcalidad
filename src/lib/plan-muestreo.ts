@@ -155,7 +155,7 @@ export async function cumplirPlanPendiente(verificadorId: string, fechas: string
     if (pendientes.length === 0) continue;
     const { desde, hasta } = rangoUtcDelDia(fecha);
     const registros = await prisma.registroPesoPreventa.findMany({
-      where: { verificadorId, fechaHora: { gte: desde, lt: hasta } },
+      where: { verificadorId, fechaHora: { gte: desde, lt: hasta }, anuladoEn: null },
       select: { plantelId: true, galpon: true, corral: true, categoria: true, tipoMuestreo: true, fechaHora: true },
     });
     if (registros.length === 0) continue;

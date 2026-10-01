@@ -35,6 +35,8 @@ data class RegistroPeso(
     // Null solo en filas creadas por versiones anteriores de la app.
     val verificadorId: String? = null,
     val verificadorNombre: String? = null,
+    /** Anulación (borrado lógico): el registro se queda, marcado, y sale de los totales. */
+    val anuladoEnEpochMillis: Long? = null,
     val synced: Boolean = false,
     val createdAtEpochMillis: Long,
 )

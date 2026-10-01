@@ -4,6 +4,16 @@ import type { SessionUser } from "@/lib/auth";
 // Consulta y filtros del módulo GALLINA. Viven aquí para que la pantalla y la descarga
 // muestren exactamente lo mismo: mismos filtros, misma restricción por verificador.
 
+/** Una pesada anulada sigue guardada, pero no suma en ningún total. */
+export function vigentes<T extends { anuladoEn: Date | null }>(pesadas: T[]): T[] {
+  return pesadas.filter((p) => p.anuladoEn == null);
+}
+
+/** Las anuladas, para la hoja de trazabilidad. */
+export function anuladas<T extends { anuladoEn: Date | null }>(pesadas: T[]): T[] {
+  return pesadas.filter((p) => p.anuladoEn != null);
+}
+
 /** Los códigos son texto, así que "364" caería después de "1495" al ordenar alfabéticamente. */
 export function ordenarPorCodigo<T extends { codigo: string }>(items: T[]): T[] {
   return [...items].sort((a, b) => {
@@ -79,23 +89,28 @@ export async function construirDespachos(user: SessionUser | null, f: FiltrosGal
       cliente: { select: { nombre: true } },
       material: { select: { codigo: true, descripcion: true } },
       verificador: { select: { nombre: true } },
-      pesadas: { orderBy: { fechaHora: "asc" } },
+      pesadas: {
+        orderBy: { fechaHora: "asc" },
+        include: { anuladoPor: { select: { nombre: true } } },
+      },
     },
   });
 }
 
 /** Totales de un despacho: lo que se mira para saber si el camión cuadra. */
 export function totalesDespacho(d: DespachoGallina) {
-  const jabas = d.pesadas.reduce((a, p) => a + p.jabas, 0);
-  const unidades = d.pesadas.reduce((a, p) => a + p.unidades, 0);
-  const destare = d.pesadas.reduce((a, p) => a + p.pesoDestareGramos, 0);
-  const conAve = d.pesadas.reduce((a, p) => a + p.pesoConAveGramos, 0);
-  const neto = d.pesadas.reduce((a, p) => a + p.pesoNetoGramos, 0);
+  const pesadas = vigentes(d.pesadas);
+  const jabas = pesadas.reduce((a, p) => a + p.jabas, 0);
+  const unidades = pesadas.reduce((a, p) => a + p.unidades, 0);
+  const destare = pesadas.reduce((a, p) => a + p.pesoDestareGramos, 0);
+  const conAve = pesadas.reduce((a, p) => a + p.pesoConAveGramos, 0);
+  const neto = pesadas.reduce((a, p) => a + p.pesoNetoGramos, 0);
   // Si el verificador corrigió la densidad a mitad del camión, se listan todas las que
   // se usaron en vez de una sola, que sería mentira.
-  const densidades = [...new Set(d.pesadas.map((p) => p.densidad))].sort((a, b) => a - b);
+  const densidades = [...new Set(pesadas.map((p) => p.densidad))].sort((a, b) => a - b);
   return {
-    pesadas: d.pesadas.length,
+    pesadas: pesadas.length,
+    anuladas: d.pesadas.length - pesadas.length,
     densidades: densidades.join(" / "),
     jabas,
     unidades,
@@ -119,7 +134,7 @@ export function filasGallina(despachos: DespachoGallina[]): (string | number)[][
   ]];
   const kg = (g: number) => Number((g / 1000).toFixed(3));
   for (const d of despachos) {
-    d.pesadas.forEach((p, i) => {
+    vigentes(d.pesadas).forEach((p, i) => {
       rows.push([
         d.cliente.nombre,
         d.fecha.toISOString().slice(0, 10),
@@ -169,6 +184,40 @@ export function filasResumenDespachos(despachos: DespachoGallina[]): (string | n
       t.promedio == null ? "" : Math.round(t.promedio),
       d.verificador.nombre,
     ]);
+  }
+  return rows;
+}
+
+/**
+ * Hoja "Anulados": los pesajes que se marcaron como error, con quién y cuándo. No suman en
+ * ningún total; están aquí para poder auditar qué se descartó y por decisión de quién.
+ */
+export function filasAnuladasGallina(despachos: DespachoGallina[]): (string | number)[][] {
+  const rows: (string | number)[][] = [[
+    "CLIENTE", "FECHA", "MATERIAL", "GUÍA DE REFERENCIA", "PLACA", "JABAS", "DENSIDAD",
+    "UNIDADES", "PESO DESTARE (kg)", "PESO CON AVE (kg)", "NETO (kg)", "PROMEDIO (g)",
+    "ANULADO EL", "ANULADO POR",
+  ]];
+  const kg = (g: number) => Number((g / 1000).toFixed(3));
+  for (const d of despachos) {
+    for (const p of anuladas(d.pesadas)) {
+      rows.push([
+        d.cliente.nombre,
+        d.fecha.toISOString().slice(0, 10),
+        d.material.codigo,
+        d.guiaReferencia,
+        d.placa,
+        p.jabas,
+        p.densidad,
+        p.unidades,
+        kg(p.pesoDestareGramos),
+        kg(p.pesoConAveGramos),
+        kg(p.pesoNetoGramos),
+        Math.round(p.promedioGramos),
+        p.anuladoEn ? p.anuladoEn.toISOString().slice(0, 16).replace("T", " ") : "",
+        p.anuladoPor?.nombre ?? "",
+      ]);
+    }
   }
   return rows;
 }

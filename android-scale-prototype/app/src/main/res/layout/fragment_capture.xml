@@ -438,6 +438,26 @@
             android:textStyle="bold"
             android:textColor="@color/sf_green" />
 
+        <!-- Aves de este muestreo. Permite revisar lo registrado y anular la que salió mal
+             (el ave se movió, se leyó mal la balanza, se registró dos veces) sin salir de
+             aquí: el registro se queda marcado en rojo y deja de contar. -->
+        <TextView
+            android:id="@+id/textAvesTitulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="6dp"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/sf_ink"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/containerAves"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/textOpenDiagnostic"
             style="@style/SfButtonGhost"

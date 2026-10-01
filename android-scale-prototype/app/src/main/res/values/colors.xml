@@ -21,6 +21,8 @@
     <color name="sf_green_bg">#DCFCE7</color>
     <color name="sf_amber">#B45309</color>
     <color name="sf_amber_bg">#FEF3C7</color>
+    <!-- Fondo de un registro anulado: se distingue de un vistazo lo que ya no cuenta. -->
+    <color name="sf_red_bg">#FEE2E2</color>
 
     <!-- Escala de pigmentación 0–7: del amarillo pálido al intenso, para que el verificador
          elija por color y no por número. -->

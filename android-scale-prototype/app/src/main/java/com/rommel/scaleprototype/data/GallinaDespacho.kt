@@ -53,4 +53,6 @@ data class GallinaPesada(
     val unidades: Int,
     val promedioGramos: Double,
     val fechaHoraEpochMillis: Long,
+    /** Anulación (borrado lógico): la pesada se queda, marcada, y sale de los totales. */
+    val anuladoEnEpochMillis: Long? = null,
 )

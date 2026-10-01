@@ -64,7 +64,8 @@ interface GallinaDao {
             "COALESCE(SUM(p.jabas), 0) AS jabas, " +
             "COALESCE(SUM(p.unidades), 0) AS unidades, " +
             "COALESCE(SUM(p.pesoNetoGramos), 0) AS netoGramos " +
-            "FROM gallina_despacho d LEFT JOIN gallina_pesada p ON p.despachoId = d.id " +
+            "FROM gallina_despacho d LEFT JOIN gallina_pesada p " +
+            "ON p.despachoId = d.id AND p.anuladoEnEpochMillis IS NULL " +
             "GROUP BY d.id ORDER BY d.fechaEpochMillis DESC"
     )
     suspend fun historialDespachos(): List<HistorialDespacho>

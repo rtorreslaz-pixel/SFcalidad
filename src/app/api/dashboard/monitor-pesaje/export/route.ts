@@ -66,6 +66,7 @@ export async function GET(request: NextRequest) {
     include: {
       plantel: { select: { codigo: true, nombre: true } },
       verificador: { select: { nombre: true } },
+      anuladoPor: { select: { nombre: true } },
     },
   });
 
@@ -95,7 +96,8 @@ export async function GET(request: NextRequest) {
     "CREADO",
   ];
 
-  const dataRows: (string | number)[][] = registros.map((r) => [
+  const vigentes = registros.filter((r) => r.anuladoEn == null);
+  const dataRows: (string | number)[][] = vigentes.map((r) => [
     r.id,
     fechaHoraLegible(r.fechaHora),
     r.plantel?.codigo ?? "",
@@ -127,6 +129,32 @@ export async function GET(request: NextRequest) {
   // fecha y plantel, misma restricción por verificador): esta hoja con los pesajes uno por uno,
   // otra con el consolidado de cada galpón y otra con el detalle por corral. Antes el galpón y
   // sus corrales compartían pestaña y se leían como una sola tabla revuelta.
+  // Los anulados van en su propia hoja: el detalle queda limpio y la trazabilidad viaja
+  // igual en el archivo.
+  const anulados: (string | number)[][] = [[
+    "ID (UUID)", "FECHA/HORA CAPTURA", "PLANTEL", "CAMPAÑA", "GALPÓN", "CORRAL", "CATEGORÍA",
+    "TIPO MUESTREO", "N° AVE", "PESO (g)", "N° AVES POR PESADA", "VERIFICADOR",
+    "ANULADO EL", "ANULADO POR",
+  ]];
+  for (const r of registros.filter((x) => x.anuladoEn != null)) {
+    anulados.push([
+      r.id,
+      fechaHoraLegible(r.fechaHora),
+      r.plantel?.codigo ?? "",
+      r.campania ?? "",
+      r.galpon,
+      r.corral,
+      CATEGORIA_LABEL[r.categoria] ?? r.categoria,
+      r.tipoMuestreo,
+      r.numeroAve,
+      r.pesoGramos ?? "",
+      r.nAvesPorPesada ?? "",
+      r.verificador?.nombre ?? "",
+      r.anuladoEn ? fechaHoraLegible(r.anuladoEn) : "",
+      r.anuladoPor?.nombre ?? "",
+    ]);
+  }
+
   const filtrosResumen = leerFiltrosResumen({
     desde: desde ?? undefined,
     hasta: hasta ?? undefined,
