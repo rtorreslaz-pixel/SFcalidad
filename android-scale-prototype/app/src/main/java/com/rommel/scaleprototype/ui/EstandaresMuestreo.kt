@@ -26,6 +26,32 @@ object EstandaresMuestreo {
     const val MAX_AVES_POR_PESADA = 20
 
     /**
+     * Resumen de un muestreo de preventa/calidad: cuántas aves lleva y a cuánto salen.
+     *
+     * Una lectura grupal vale por SUS aves, así que el promedio se pondera por ellas en vez
+     * de promediar lecturas: tres aves de 2600 g y una suelta de 2000 g dan 2450, no 2300.
+     * Las anuladas y las de solo calidad no entran al promedio, aunque las anuladas tampoco
+     * cuentan como aves.
+     *
+     * @param lecturas pares (peso por ave en gramos, aves de esa lectura, anulada)
+     */
+    fun resumirMuestreo(lecturas: List<Triple<Double, Int, Boolean>>): ResumenMuestreo {
+        val vigentes = lecturas.filterNot { it.third }
+        val aves = vigentes.sumOf { aves(it.second) }
+        val conPeso = vigentes.filter { it.first > 0 }
+        val avesConPeso = conPeso.sumOf { aves(it.second) }
+        val suma = conPeso.sumOf { it.first * aves(it.second) }
+        return ResumenMuestreo(
+            aves = aves,
+            promedioGramos = if (avesConPeso > 0) suma / avesConPeso else null,
+        )
+    }
+
+    private fun aves(n: Int): Int = if (n > 1) n else 1
+
+    data class ResumenMuestreo(val aves: Int, val promedioGramos: Double?)
+
+    /**
      * Peso por ave a partir de lo que marca la balanza y de cuántas aves hay EN ELLA.
      *
      * Se divide entre las aves de esa pesada concreta, no entre el estándar del muestreo: al

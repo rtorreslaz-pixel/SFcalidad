@@ -446,7 +446,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
-            android:layout_marginBottom="6dp"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/sf_ink"
+            android:text="@string/aves_titulo"
+            android:visibility="gone" />
+
+        <!-- Totales del muestreo, como en saca y gallina: se ve el promedio sin salir de aquí. -->
+        <TextView
+            android:id="@+id/textAvesResumen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="7dp"
+            android:gravity="center"
             android:textSize="13sp"
             android:textStyle="bold"
             android:textColor="@color/sf_ink"

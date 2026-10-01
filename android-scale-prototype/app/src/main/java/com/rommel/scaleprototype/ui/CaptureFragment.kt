@@ -540,21 +540,42 @@ class CaptureFragment : Fragment() {
 
     private fun pintarAves(aves: List<RegistroPeso>) {
         val b = binding ?: return
-        val vigentes = aves.count { it.anuladoEnEpochMillis == null }
-        b.textAvesTitulo.visibility = if (aves.isEmpty()) View.GONE else View.VISIBLE
-        b.textAvesTitulo.text = getString(R.string.aves_titulo_format, vigentes)
+        val hay = aves.isNotEmpty()
+        b.textAvesTitulo.visibility = if (hay) View.VISIBLE else View.GONE
+        b.textAvesResumen.visibility = if (hay) View.VISIBLE else View.GONE
+
+        // Totales del muestreo, como en saca y gallina.
+        val resumen = EstandaresMuestreo.resumirMuestreo(
+            aves.map { Triple(it.pesoGramos, it.nAvesPorPesada, it.anuladoEnEpochMillis != null) }
+        )
+        b.textAvesResumen.text = resumen.promedioGramos?.let {
+            getString(R.string.aves_resumen_format, resumen.aves, Math.round(it).toInt())
+        } ?: getString(R.string.aves_resumen_sin_peso, resumen.aves)
+
         b.containerAves.removeAllViews()
         val inflater = LayoutInflater.from(requireContext())
         for (ave in aves) {
             val fila = ItemPesadaBinding.inflate(inflater, b.containerAves, false)
             val anulada = ave.anuladoEnEpochMillis != null
-            fila.textPesadaTitulo.text = getString(R.string.ave_item_format, ave.numeroAve)
-            fila.textPesadaDetalle.text = when {
-                ave.tipoMuestreo == "CALIDAD" || ave.pesoGramos <= 0 -> getString(R.string.ave_item_calidad)
-                ave.nAvesPorPesada > 1 ->
-                    getString(R.string.ave_item_grupal, Math.round(ave.pesoGramos).toInt(), ave.nAvesPorPesada)
-                else -> getString(R.string.ave_item_peso, Math.round(ave.pesoGramos).toInt())
+            val grupal = ave.nAvesPorPesada > 1
+            val soloCalidadAve = ave.tipoMuestreo == "CALIDAD" || ave.pesoGramos <= 0
+
+            // En grupal la fila es una PESADA de varias aves, igual que en saca y gallina:
+            // el título dice cuántas y el detalle el total que marcó la balanza.
+            fila.textPesadaTitulo.text = if (grupal) {
+                getString(R.string.ave_item_grupal_titulo, ave.numeroAve, ave.nAvesPorPesada)
+            } else {
+                getString(R.string.ave_item_format, ave.numeroAve)
             }
+            fila.textPesadaDetalle.text = when {
+                soloCalidadAve -> getString(R.string.ave_item_calidad)
+                grupal -> getString(
+                    R.string.ave_item_grupal_detalle,
+                    ave.pesoGramos * ave.nAvesPorPesada / 1000.0
+                )
+                else -> getString(R.string.ave_item_individual)
+            }
+
             if (anulada) {
                 fila.textPesadaPromedio.text = getString(R.string.anulado_badge)
                 fila.textPesadaPromedio.setTextColor(
@@ -566,7 +587,13 @@ class CaptureFragment : Fragment() {
                 )
                 fila.root.alpha = 0.75f
             } else {
-                fila.textPesadaPromedio.text = ""
+                // El peso por ave va a la derecha y en verde, como el promedio de saca y
+                // gallina: es el número que el verificador compara contra el estándar.
+                fila.textPesadaPromedio.text = when {
+                    soloCalidadAve -> ""
+                    grupal -> getString(R.string.ave_item_prom, Math.round(ave.pesoGramos).toInt())
+                    else -> getString(R.string.ave_item_peso, Math.round(ave.pesoGramos).toInt())
+                }
                 fila.root.setOnLongClickListener {
                     confirmarAnular(ave)
                     true
@@ -576,9 +603,17 @@ class CaptureFragment : Fragment() {
         }
     }
 
+    /** Aves que representa una lectura: una, o las de la pesada grupal. */
+    private fun avesDe(r: RegistroPeso): Int = if (r.nAvesPorPesada > 1) r.nAvesPorPesada else 1
+
     private fun confirmarAnular(ave: RegistroPeso) {
-        val detalle = getString(R.string.ave_item_format, ave.numeroAve) +
-            " · " + Math.round(ave.pesoGramos).toInt() + " g"
+        val detalle = if (ave.nAvesPorPesada > 1) {
+            getString(R.string.ave_item_grupal_titulo, ave.numeroAve, ave.nAvesPorPesada) +
+                " · " + Math.round(ave.pesoGramos).toInt() + " g/ave"
+        } else {
+            getString(R.string.ave_item_format, ave.numeroAve) +
+                " · " + Math.round(ave.pesoGramos).toInt() + " g"
+        }
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.anular_titulo)
             .setMessage(getString(R.string.anular_mensaje, detalle))
