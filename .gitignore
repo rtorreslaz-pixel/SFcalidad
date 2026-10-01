@@ -69,3 +69,9 @@ demo-test.db
 demo-test.db-*
 basetest.db
 basetest.db-*
+
+# Bases SQLite de trabajo local (pruebas de migraciones, capturas, sandbox).
+prisma/*.db
+prisma/*.db-journal
+prisma/*.db-shm
+prisma/*.db-wal
